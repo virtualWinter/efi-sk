@@ -41,7 +41,7 @@ if [[ -z "$firmware" ]]; then
 fi
 [[ -r "$firmware" ]] || die 'OVMF not found; set OVMF_FIRMWARE to a non-Secure-Boot firmware file.'
 
-cargo build --locked --release --target x86_64-unknown-uefi
+tools/build-efi.sh
 work=$(mktemp -d build/qemu.XXXXXXXX)
 trap 'rm -rf -- "$work"' EXIT
 trap 'exit 130' INT
@@ -77,7 +77,7 @@ mkfs.fat -F 32 -s 1 -h "$esp_start" -n PICKEREFI \
     --offset="$esp_start" "$image" "$((esp_size / 2))" >/dev/null
 esp="$image@@$((esp_start * 512))"
 mmd -i "$esp" ::/EFI ::/EFI/BOOT
-mcopy -i "$esp" build/x86_64-unknown-uefi/release/efi-sk.efi ::/EFI/BOOT/BOOTX64.EFI
+mcopy -i "$esp" build/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
 mcopy -i "$esp" vendor/memtest86plus/memtest86plus.efi ::/EFI/BOOT/memtest86plus.efi
 mcopy -i "$esp" vendor/edk2-shell/shell.efi ::/EFI/BOOT/shell.efi
 mcopy -i "$esp" vendor/keytool/KeyTool.efi ::/EFI/BOOT/KeyTool.efi

@@ -1,6 +1,7 @@
 # EFI Swiss Knife
 
-Project name: `efiswissknife`. Build target executable: `efi-sk.efi`.
+Project name: `efiswissknife` (`efi-sk`). Run `tools/build-efi.sh` to produce
+`build/BOOTX64.EFI`.
 
 A Rust boot menu for x86-64 UEFI. It automatically discovers supported
 ISO files in `iso/` on the `ISOS` ext4 partition and shows a built-in

@@ -43,13 +43,12 @@ From the source directory, with current stable Rust and Cargo:
 
 ```sh
 rustup target add x86_64-unknown-uefi
-cargo build --locked --release --target x86_64-unknown-uefi
+tools/build-efi.sh
 ```
 
-The result is `build/x86_64-unknown-uefi/release/efi-sk.efi`.
-Copy it to the USB with the filename `BOOTX64.EFI`. The USB creation scripts
-prefer `build/BOOTX64.EFI` if present, otherwise they use the release build
-directly. A fresh checkout does not contain a prebuilt picker.
+The result is `build/BOOTX64.EFI`, ready to copy to `EFI/BOOT/` on the USB.
+The desktop installer and USB creation scripts use it automatically.
+A fresh checkout does not contain a prebuilt picker.
 
 ## Font
 
