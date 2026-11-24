@@ -351,11 +351,12 @@ QQC2.ApplicationWindow {
 
         RowLayout {
             Layout.fillWidth: true
+            visible: installer.status.length > 0
             QQC2.Label {
                 id: statusLabel
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
-                text: (window.selectedIsoIndexes ? window.selectedIsoIndexes.split(",").length + " image(s) selected" : "No images selected") + "  ·  " + installer.status
+                text: installer.status
                 color: "#a1a1a1"
                 elide: Text.ElideRight
             }

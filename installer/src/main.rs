@@ -140,7 +140,6 @@ impl Installer {
     fn refresh(&mut self) {
         self.devices = list_usb_disks();
         self.devices_changed();
-        self.set_status("USB device list refreshed");
     }
 
     fn download_iso(&mut self, index: i32) {
@@ -401,7 +400,6 @@ fn main() {
         .collect::<Vec<_>>()
         .join("\n");
     let installer = RefCell::new(Installer {
-        status: "Ready".into(),
         release_mode: release_repo().is_some(),
         iso_names: names.into(),
         iso_icons: icons.into(),
