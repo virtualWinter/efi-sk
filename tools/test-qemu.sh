@@ -51,8 +51,8 @@ bytes=0
 for iso in "${isos[@]}"; do
     for file in "$iso" "$iso.vmlinuz" "$iso.initrd.gz"; do
         [[ -f "$file" ]] || continue
-        cp --reflink=auto -- "$file" "$work/data/iso/"
-        bytes=$((bytes + $(stat -c %s -- "$file")))
+        cp --dereference --reflink=auto -- "$file" "$work/data/iso/"
+        bytes=$((bytes + $(stat -c %s -- "$work/data/iso/${file##*/}")))
     done
 done
 
