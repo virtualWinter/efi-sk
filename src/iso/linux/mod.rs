@@ -1,5 +1,5 @@
+mod archive;
 mod initrd;
-pub(super) use initrd::Payload;
 
 use alloc::vec::Vec;
 use core::mem::size_of_val;
@@ -7,27 +7,25 @@ use uefi::boot::{self, LoadImageSource};
 use uefi::proto::loaded_image::LoadedImage;
 use uefi::{CString16, Handle, Status};
 
+pub(super) fn append_reopen(
+    initrd: &mut Vec<u8>,
+    uuid: &str,
+    path: &str,
+    extra: &[(&[u8], &[u8], u32)],
+) -> Result<(), Status> {
+    let mut files: Vec<(&[u8], &[u8], u32)> = alloc::vec![
+        (b"efi-sk-reopen", include_bytes!("reopen.sh"), 0o100755),
+        (b"efi-sk-source-uuid", uuid.as_bytes(), 0o100644),
+        (b"efi-sk-source-path", path.as_bytes(), 0o100644),
+    ];
+    files.extend_from_slice(extra);
+    archive::append(initrd, &files)
+}
+
 pub fn launch(
     parent: Handle,
     kernel: Vec<u8>,
     initrd: Vec<u8>,
-    command: &str,
-) -> Result<(), Status> {
-    launch_payload(
-        parent,
-        kernel,
-        Payload {
-            prefix: initrd,
-            media: None,
-        },
-        command,
-    )
-}
-
-pub(super) fn launch_payload(
-    parent: Handle,
-    kernel: Vec<u8>,
-    initrd: Payload,
     command: &str,
 ) -> Result<(), Status> {
     let options = CString16::try_from(command).map_err(|_| Status::INVALID_PARAMETER)?;

@@ -79,7 +79,7 @@ impl Profile {
             Self::Ubuntu => ubuntu::boot(iso, partition, path),
             Self::Debian => debian::boot(iso, partition, path),
             Self::Fedora => fedora::boot(iso, partition, path),
-            Self::Proxmox => Err(Status::UNSUPPORTED),
+            Self::Proxmox => proxmox::boot(iso, partition, path),
             Self::Generic => generic::boot(iso, partition, path),
             Self::EfiMedia => Err(Status::UNSUPPORTED),
         }
@@ -116,7 +116,6 @@ pub fn launch(parent: Handle, esp: Handle, profile: Profile, path: &str) -> Resu
     let mut image = Iso::open(file)?;
     match profile {
         Profile::EfiMedia => return efi::launch(parent, image),
-        Profile::Proxmox => return proxmox::launch(parent, image),
         _ => {}
     }
 

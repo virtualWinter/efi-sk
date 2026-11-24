@@ -5,6 +5,7 @@ use uefi::Status;
 use super::{
     artwork::{Icon, Metadata, jpeg, png},
     filesystem::Iso,
+    linux,
 };
 
 pub const NAME: &str = "Debian Installer";
@@ -16,7 +17,9 @@ pub const INITRD: &str = "install.amd/initrd.gz";
 const MAX_COMPANION: u64 = 256 * 1024 * 1024;
 
 pub fn detect(iso: &mut Iso, partition: &Ext4, path: &str) -> bool {
-    iso.has_boot_file(KERNEL) && iso.has_boot_file(INITRD) && companions(partition, path)
+    iso.has_boot_file(KERNEL)
+        && iso.has_boot_file(INITRD)
+        && (module_packages(iso).is_some() || companions(partition, path))
 }
 
 pub fn boot(
@@ -27,12 +30,46 @@ pub fn boot(
     if !iso.has_boot_file(KERNEL) || !iso.has_boot_file(INITRD) {
         return Err(Status::UNSUPPORTED);
     }
+    if let Some([ext4_package, loop_package]) = module_packages(iso) {
+        let kernel = iso.read_boot_file(KERNEL)?;
+        let mut initrd = iso.read_boot_file(INITRD)?;
+        let ext4 = iso.read_boot_file(&ext4_package)?;
+        let loop_module = iso.read_boot_file(&loop_package)?;
+        linux::append_reopen(
+            &mut initrd,
+            &format!("{}\n", partition.uuid()),
+            &format!("{path}\n"),
+            &[
+                (b"efi-sk-ext4.udeb", &ext4, 0o100644),
+                (b"efi-sk-loop.udeb", &loop_module, 0o100644),
+            ],
+        )?;
+        return Ok((kernel, initrd, String::from("rdinit=/efi-sk-reopen")));
+    }
     let [kernel, initrd] = companion_paths(path);
     Ok((
         read_companion(partition, &kernel)?,
         read_companion(partition, &initrd)?,
         String::new(),
     ))
+}
+
+fn module_packages(iso: &mut Iso) -> Option<[String; 2]> {
+    const DIRECTORY: &str = "pool/main/l/linux-signed-amd64";
+    let entries = iso.read_dir(DIRECTORY).ok()?;
+    let package = |prefix: &str| {
+        let mut matches = entries.iter().filter(|(name, size)| {
+            name.starts_with(prefix)
+                && name.ends_with("_amd64.udeb")
+                && (1..=4 * 1024 * 1024).contains(size)
+        });
+        let (name, _) = matches.next()?;
+        matches
+            .next()
+            .is_none()
+            .then(|| format!("{DIRECTORY}/{name}"))
+    };
+    Some([package("ext4-modules-")?, package("loop-modules-")?])
 }
 
 pub fn metadata(partition: &Ext4, path: &str, need_icon: bool) -> Option<Metadata> {

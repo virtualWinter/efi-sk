@@ -7,13 +7,14 @@
 - Fedora netinst expects `images/pxeboot/vmlinuz`, `images/pxeboot/initrd.img`,
   and `images/install.img`. The picker passes the ISO path and ext4
   filesystem UUID to Anaconda for its installer runtime.
-- Debian supports amd64 netinst ISOs with the matching Debian
-  Installer `hd-media` kernel and initramfs. The installer scans the disk
-  for Debian ISOs; if it offers a choice, select the intended ISO.
+- Debian amd64 netinst can boot directly from the ISO when it includes
+  matching ext4 and loop driver packages. Older layouts can still use the
+  matching Debian Installer `hd-media` kernel and initramfs.
 - Proxmox VE has an experimental drop-in profile. It loads the kernel and
-  initramfs from the ISO, then passes the unchanged ISO as `/proxmox.iso`
-  inside the initramfs, as Proxmox does for iPXE. It needs enough memory
-  for the ISO and installer together and is limited to 2 GiB ISOs.
+  initramfs from the ISO and adds a small early-boot helper. The helper
+  reopens the read-only USB partition by UUID and points `/proxmox.iso`
+  to the original file, which the installer uses through its existing
+  iPXE media path. It does not copy the ISO into memory.
 
 Each profile expects an x86-64 Linux kernel built with the EFI stub and
 an initramfs that can reopen the ISO from ext4. The ISO reader uses
@@ -52,6 +53,11 @@ installer that can read its packages. Keep firmware-only EFI launch
 distinct from verified full boots.
 
 ## Debian netinst
+
+Try copying just the ISO into `iso/` first. The picker can use the netinst
+kernel and initramfs and load the storage drivers from the same ISO. For
+images that lack those driver packages in the expected layout, use the
+following companion-file method.
 
 Download `vmlinuz` and `initrd.gz` from Debian's
 [amd64 hd-media directory for Debian 13 (trixie)](https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/hd-media/).
