@@ -43,6 +43,18 @@ Neither path invokes scripts under `tools/`.
 
 ## Run
 
+On Ubuntu 24.04 x86-64 or a compatible Linux distribution, download the
+archive from an `installer-v*` release, verify it with
+`sha256sum -c SHA256SUMS`, and extract it. Install the Qt 6 QML runtime
+modules and Kirigami (on Ubuntu: `qml6-module-qtquick`,
+`qml6-module-qtquick-controls`, `qml6-module-qtquick-layouts`,
+`qml6-module-qtquick-templates`, `qml6-module-qtquick-window`,
+`qml6-module-qtqml-workerscript`, and `qml6-module-org-kde-kirigami`).
+Then run `./efi-sk-installer` from the extracted directory. The packaged
+installer is configured to download EFI assets from the latest firmware release.
+
+To run from a source checkout:
+
 ```sh
 tools/run-installer.sh
 ```
