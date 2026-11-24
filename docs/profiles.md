@@ -44,7 +44,9 @@ OpenWrt are not handled.
 - **VyOS rolling (experimental):** the picker can match the kernel and
   initramfs under `live/` by their shared version suffix. It passes the
   original ISO path to Debian live-boot and preserves the normal VyOS
-  live boot options.
+  live boot options. The 2026.11.22 rolling ISO reached the live login
+  prompt in QEMU with no companion files. Login and disk installation
+  have not been verified.
 - **OPNsense DVD (download only):** the installer catalog verifies the
   upstream `.iso.bz2`. The firmware can try its EFI loader on the
   decompressed ISO, but there is no FreeBSD media handoff yet. Do not
