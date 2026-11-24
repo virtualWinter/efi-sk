@@ -6,6 +6,48 @@ const SECTOR: usize = 2048;
 const MAX_DIRECTORY: usize = 8 * 1024 * 1024;
 const MAX_BOOT_FILE: usize = 512 * 1024 * 1024;
 
+fn media_name(bytes: &[u8]) -> Option<String> {
+    let text = core::str::from_utf8(bytes).ok()?;
+    if let Some(product) = text
+        .lines()
+        .find_map(|line| line.strip_prefix("PRODUCTLONG="))
+    {
+        let product = display_name(product.trim_matches(['\'', '"']).as_bytes())?;
+        let release = text
+            .lines()
+            .find_map(|line| line.strip_prefix("RELEASE="))
+            .and_then(|value| display_name(value.trim_matches(['\'', '"']).as_bytes()));
+        return Some(match release {
+            Some(release) => alloc::format!("{product} {release}"),
+            None => product,
+        });
+    }
+    let first = text.lines().find(|line| !line.trim().is_empty())?;
+    if first.contains('=') {
+        return None;
+    }
+    display_name(first.as_bytes())
+}
+
+fn display_name(bytes: &[u8]) -> Option<String> {
+    let text = core::str::from_utf8(bytes)
+        .ok()?
+        .trim_matches(|c: char| c.is_whitespace() || c == '\0');
+    let mut name = String::new();
+    for c in text.chars().take(100) {
+        // Do not pass terminal escapes or Unicode formatting controls to the menu.
+        if c.is_ascii_graphic() || c == ' ' {
+            name.push(c);
+        } else {
+            name.push(' ');
+        }
+    }
+    let name = name.trim();
+    name.bytes()
+        .any(|b| b.is_ascii_alphanumeric())
+        .then(|| String::from(name))
+}
+
 #[derive(Clone, Copy)]
 struct Extent {
     offset: u64,
@@ -38,9 +80,25 @@ impl Extent {
 pub struct Iso {
     file: File,
     root: Extent,
+    volume_id: [u8; 32],
 }
 
 impl Iso {
+    pub(super) fn name(&mut self) -> Option<String> {
+        for path in [".disk/info", ".cd-info"] {
+            if let Ok(mut info) = self.open_file(path) {
+                let mut buffer = [0; 1024];
+                let len = info.len().min(buffer.len() as u64) as usize;
+                if info.read_at(0, &mut buffer[..len]).is_ok()
+                    && let Some(name) = media_name(&buffer[..len])
+                {
+                    return Some(name);
+                }
+            }
+        }
+        display_name(&self.volume_id)
+    }
+
     pub(super) fn image_len(&self) -> u64 {
         self.file.metadata().len()
     }
@@ -62,7 +120,13 @@ impl Iso {
                         return Err(Status::UNSUPPORTED);
                     }
                     let root = Extent::parse(&descriptor[156..])?;
-                    return Ok(Self { file, root });
+                    let mut volume_id = [0; 32];
+                    volume_id.copy_from_slice(&descriptor[40..72]);
+                    return Ok(Self {
+                        file,
+                        root,
+                        volume_id,
+                    });
                 }
                 255 => break,
                 _ => {}

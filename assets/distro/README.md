@@ -7,8 +7,9 @@ for coverage; logo recognition does not imply boot support.
 
 `logo` uses the distro's own mark when available; `family` uses a related
 project's mark; `generic` uses a neutral Tux icon. Unknown filenames use
-the picker's generic boot-image glyph. Matching is case-insensitive,
-ignores filename separators, and prefers the longest matching alias.
+the picker's generic boot-image glyph. Matching uses the name reported
+by the ISO, is case-insensitive, ignores separators, and prefers the
+longest matching alias. It does not use the on-disk filename.
 
 SVG sources come from [Simple Icons 14.15.0 and 16.38.1](https://github.com/simple-icons/simple-icons)
 ([CC0](../../installer/icons/LICENSE.simple-icons)) and

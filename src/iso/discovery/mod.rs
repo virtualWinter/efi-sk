@@ -43,14 +43,14 @@ pub fn add(esp: Handle, entries: &mut Vec<Entry>) {
         let Some(boot) = detect(&mut iso, &partition, &path) else {
             continue;
         };
-        let name = path.trim_start_matches("/iso/");
-        let icon = artwork::for_image(name);
-        let stem = name.get(..name.len() - 4).unwrap_or(name);
+        let name = iso.name();
+        let icon = name.as_deref().and_then(artwork::for_image);
+        let name = name.unwrap_or_else(|| String::from("Unknown ISO"));
         entries.push(Entry {
             label: if matches!(boot, Boot::Efi) {
-                format!("{stem} (EFI)")
+                format!("{name} (EFI)")
             } else {
-                String::from(stem)
+                name
             },
             target: Target::Iso(path),
             icon,

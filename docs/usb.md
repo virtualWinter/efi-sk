@@ -123,10 +123,11 @@ Unreadable and unrecognized images are skipped.
 
 ## Automatic entries and artwork
 
-The menu uses the ISO filename for its label and picks a [bundled logo or
-fallback](../assets/distro/README.md) by filename prefix. Unknown names get
-a generic icon. Renaming an ISO can
-change its label or icon, but boot detection is based on its contents.
+The menu reads the image's name from its media metadata or ISO volume
+label and uses that name to pick a [bundled logo or
+fallback](../assets/distro/README.md). Images without usable name metadata
+appear as **Unknown ISO**. Renaming a file does not affect its menu
+identity, and the picker never extracts artwork from the image.
 
 ## Menu input
 
