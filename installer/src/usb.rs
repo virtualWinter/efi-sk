@@ -76,7 +76,23 @@ fn run(command: &mut Command) -> Result<()> {
     output(command).map(drop)
 }
 
-pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
+fn release_path(version: &str) -> Result<String> {
+    if version.is_empty() || version == "latest" {
+        return Ok("latest/download".into());
+    }
+    if !version.strip_prefix("esk-").is_some_and(|suffix| {
+        !suffix.is_empty()
+            && suffix.bytes().next().is_some_and(|b| b.is_ascii_digit())
+            && suffix
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b".-_".contains(&b))
+    }) {
+        return Err("Enter latest or an EFI release tag such as esk-0.1.1".into());
+    }
+    Ok(format!("download/{version}"))
+}
+
+pub fn download(repo: &str, version: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
     let valid = |part: &str| {
         !part.is_empty()
             && part != "."
@@ -91,6 +107,7 @@ pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
     {
         return Err("Expected a GitHub repository in OWNER/REPO form".into());
     }
+    let release = release_path(version)?;
     let fetch = |name: &str| {
         run(Command::new("curl")
             .args([
@@ -112,7 +129,7 @@ pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
             .arg("--output")
             .arg(dir.join(name))
             .arg(format!(
-                "https://github.com/{repo}/releases/latest/download/{name}"
+                "https://github.com/{repo}/releases/{release}/{name}"
             )))
     };
     fetch("SHA256SUMS")?;
@@ -372,6 +389,16 @@ mod tests {
     fn rejects_unknown_exclusions() {
         assert!(selected_assets("999").is_err());
         assert!(selected_assets("invalid").is_err());
+    }
+
+    #[test]
+    fn validates_release_versions() -> Result<()> {
+        assert_eq!(release_path("")?, "latest/download");
+        assert_eq!(release_path("latest")?, "latest/download");
+        assert_eq!(release_path("esk-0.1.1")?, "download/esk-0.1.1");
+        assert!(release_path("esk-1/../../other").is_err());
+        assert!(release_path("installer-v0.1").is_err());
+        Ok(())
     }
 
     #[test]

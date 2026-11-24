@@ -108,6 +108,17 @@ Kirigami.ApplicationWindow {
                     banner.title: "Optional EFI tools"
                     contentItem: ColumnLayout {
                         QQC2.Label {
+                            text: "EFI release version"
+                            visible: installer.release_mode
+                        }
+                        QQC2.TextField {
+                            id: efiVersion
+                            visible: installer.release_mode
+                            Layout.fillWidth: true
+                            placeholderText: "latest (or a tag, e.g. esk-0.1.1)"
+                            Accessible.name: "EFI release version"
+                        }
+                        QQC2.Label {
                             text: "Choose which tools to install. The boot picker is always included."
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
@@ -196,7 +207,7 @@ Kirigami.ApplicationWindow {
                 if (!(toolList.itemAt(i) as QQC2.CheckBox).checked)
                     excluded.push(i)
             }
-            installer.create_usb(window.selectedIsoIndexes, diskBox.currentIndex, excluded.join(","))
+            installer.create_usb(window.selectedIsoIndexes, diskBox.currentIndex, excluded.join(","), efiVersion.text)
         }
     }
 }

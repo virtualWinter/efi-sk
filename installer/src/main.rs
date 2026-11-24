@@ -103,6 +103,7 @@ struct Installer {
     status_changed: qmetaobject::qt_signal!(),
     iso_names: qmetaobject::qt_property!(QString),
     tool_names: qmetaobject::qt_property!(QString),
+    release_mode: qmetaobject::qt_property!(bool),
     iso_icons: qmetaobject::qt_property!(QString),
     iso_paths: qmetaobject::qt_property!(QString),
     devices: qmetaobject::qt_property!(QString; NOTIFY devices_changed),
@@ -110,7 +111,13 @@ struct Installer {
     refresh: qmetaobject::qt_method!(fn(&mut self)),
     download_iso: qmetaobject::qt_method!(fn(&mut self, index: i32)),
     create_usb: qmetaobject::qt_method!(
-        fn(&mut self, iso_indices: QString, disk_index: i32, excluded_tools: QString)
+        fn(
+            &mut self,
+            iso_indices: QString,
+            disk_index: i32,
+            excluded_tools: QString,
+            efi_version: QString,
+        )
     ),
 }
 
@@ -194,7 +201,13 @@ impl Installer {
         }
     }
 
-    fn create_usb(&mut self, iso_indices: QString, disk_index: i32, excluded_tools: QString) {
+    fn create_usb(
+        &mut self,
+        iso_indices: QString,
+        disk_index: i32,
+        excluded_tools: QString,
+        efi_version: QString,
+    ) {
         let device_list = self.devices.to_string();
         let selected = device_list
             .lines()
@@ -225,7 +238,12 @@ impl Installer {
             }
             images.push(iso);
         }
-        let result = self.prepare_usb(&disk, &images, &excluded_tools.to_string());
+        let result = self.prepare_usb(
+            &disk,
+            &images,
+            &excluded_tools.to_string(),
+            efi_version.to_string().trim(),
+        );
         self.set_status(match result {
             Ok(()) => "USB created successfully".to_owned(),
             Err(error) => format!("USB creation failed: {error}"),
@@ -237,17 +255,15 @@ impl Installer {
         disk: &str,
         images: &[PathBuf],
         excluded_tools: &str,
+        efi_version: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let assets = usb::selected_assets(excluded_tools)?;
         let sequence = usb::sequence(Path::new(disk))?;
         let stage = usb::Temp::new()?;
         let result = (|| {
-            if let Some(repo) = std::env::var("EFI_SK_GITHUB_REPO")
-                .ok()
-                .or_else(|| option_env!("EFI_SK_GITHUB_REPO").map(str::to_owned))
-            {
+            if let Some(repo) = release_repo() {
                 self.set_status("Downloading and verifying EFI binaries…");
-                usb::download(&repo, &stage.0, &assets)?;
+                usb::download(&repo, efi_version, &stage.0, &assets)?;
             } else {
                 let root = project_root();
                 let mut picker = root.join("build/BOOTX64.EFI");
@@ -305,13 +321,17 @@ fn project_root() -> PathBuf {
         .to_path_buf()
 }
 
+fn release_repo() -> Option<String> {
+    std::env::var("EFI_SK_GITHUB_REPO")
+        .ok()
+        .or_else(|| option_env!("EFI_SK_GITHUB_REPO").map(str::to_owned))
+}
+
 fn iso_directory() -> PathBuf {
     if let Some(path) = std::env::var_os("EFI_SK_ISO_DIR") {
         return PathBuf::from(path);
     }
-    if std::env::var_os("EFI_SK_GITHUB_REPO").is_some()
-        || option_env!("EFI_SK_GITHUB_REPO").is_some()
-    {
+    if release_repo().is_some() {
         if let Some(base) = std::env::var_os("XDG_DATA_HOME")
             .map(PathBuf::from)
             .or_else(|| {
@@ -371,6 +391,7 @@ fn main() {
         .join("\n");
     let installer = RefCell::new(Installer {
         status: "Ready".into(),
+        release_mode: release_repo().is_some(),
         iso_names: names.into(),
         iso_icons: icons.into(),
         tool_names: usb::TOOLS
