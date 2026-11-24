@@ -9,8 +9,8 @@ QQC2.ApplicationWindow {
     visible: true
     width: 800
     height: 570
-    minimumWidth: 720
-    minimumHeight: 540
+    minimumWidth: 730
+    minimumHeight: 550
     title: "EFI Swiss Knife"
     color: "#0a0a0a"
     font.family: Qt.fontFamilies().includes("Geist") ? "Geist" : Qt.application.font.family
@@ -173,10 +173,10 @@ QQC2.ApplicationWindow {
             Section {
                 title: "Optional EFI tools"
                 Layout.fillHeight: true
-                Layout.preferredWidth: 330
-                Layout.minimumWidth: 330
+                Layout.preferredWidth: 350
+                Layout.minimumWidth: 350
                 contentItem: ColumnLayout {
-                    spacing: 6
+                    spacing: 12
                     RowLayout {
                         visible: installer.release_mode
                         Layout.fillWidth: true
@@ -198,7 +198,8 @@ QQC2.ApplicationWindow {
                             text: "Boot picker always included."
                         }
                         Button {
-                            text: "Deselect all tools"
+                            text: "Clear all"
+                            Accessible.name: "Deselect all EFI tools"
                             onClicked: {
                                 for (let i = 0; i < toolList.count; ++i)
                                     (toolList.itemAt(i) as QQC2.CheckBox).checked = false;
@@ -208,7 +209,8 @@ QQC2.ApplicationWindow {
                     GridLayout {
                         Layout.fillWidth: true
                         columns: 2
-                        rowSpacing: 0
+                        rowSpacing: 5
+                        columnSpacing: 12
                         Repeater {
                             id: toolList
                             model: installer.tool_names.split("\n")
@@ -218,15 +220,15 @@ QQC2.ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredWidth: 1
                                 Layout.minimumWidth: 0
-                                implicitHeight: 28
+                                implicitHeight: 32
                                 topPadding: 0
                                 bottomPadding: 0
                                 text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
                                 checked: true
                                 contentItem: RowLayout {
-                                    spacing: 5
+                                    spacing: 6
                                     Item {
-                                        Layout.preferredWidth: toolCheck.indicator.width + 6
+                                        Layout.preferredWidth: toolCheck.indicator.width + 2
                                     }
                                     Image {
                                         readonly property var icons: ({

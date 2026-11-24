@@ -26,7 +26,7 @@ checksums before requesting administrator privileges. The repository can
 also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
-don't want, or use **Deselect all tools** to install only the picker and your
+don't want, or use **Clear all** to install only the picker and your
 images. Release mode downloads and verifies the EFI archive, then extracts
 only the picker and selected tools using `tar`. Leave **EFI release version**
 blank to use the latest release, or enter an exact tag such as `v0.1.1`
