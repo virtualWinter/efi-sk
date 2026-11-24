@@ -8,10 +8,10 @@ import org.kde.kirigami as Kirigami
 QQC2.ApplicationWindow {
     id: window
     visible: true
-    width: 840
-    height: 760
-    minimumWidth: 620
-    minimumHeight: 560
+    width: 700
+    height: 570
+    minimumWidth: 580
+    minimumHeight: 510
     title: "EFI Swiss Knife"
     color: "#0a0a0a"
     font.family: Qt.fontFamilies().includes("Geist") ? "Geist" : Qt.application.font.family
@@ -77,6 +77,7 @@ QQC2.ApplicationWindow {
     }
 
     property string selectedIsoIndexes: ""
+    property int activeTab: 0
 
     function toggleIso(index, checked) {
         var values = selectedIsoIndexes ? selectedIsoIndexes.split(",") : [];
@@ -88,34 +89,52 @@ QQC2.ApplicationWindow {
         selectedIsoIndexes = values.join(",");
     }
 
-    QQC2.ScrollView {
+    ColumnLayout {
         anchors.fill: parent
-        leftPadding: 24
-        rightPadding: 24
-        topPadding: 22
-        bottomPadding: 22
-        contentWidth: availableWidth
-        clip: true
+        anchors.margins: 18
+        spacing: 10
 
-        ColumnLayout {
-            width: Math.min(parent.width, 700)
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 14
+        Muted {
+            text: "EFI SWISS KNIFE  /  INSTALLER"
+            font.pixelSize: 11
+            font.letterSpacing: 1.5
+        }
+        QQC2.Label {
+            text: "Create a bootable USB"
+            font.pixelSize: 30
+            font.weight: Font.DemiBold
+            Layout.fillWidth: true
+        }
+        QQC2.TabBar {
+            id: sections
+            Layout.fillWidth: true
+            currentIndex: window.activeTab
+            onCurrentIndexChanged: window.activeTab = currentIndex
+            background: Rectangle {
+                color: "#171717"
+                radius: 7
+                border.color: "#2e2e2e"
+            }
+            Repeater {
+                model: ["Boot images", "EFI tools", "USB drive"]
+                delegate: QQC2.TabButton {
+                    id: tab
+                    required property string modelData
+                    text: modelData
+                    implicitHeight: 36
+                    background: Rectangle {
+                        radius: 7
+                        color: tab.checked || tab.hovered ? "#262626" : "transparent"
+                        border.color: tab.checked || tab.visualFocus ? "#737373" : "transparent"
+                    }
+                }
+            }
+        }
 
-            Muted {
-                text: "EFI SWISS KNIFE  /  INSTALLER"
-                font.pixelSize: 11
-                font.letterSpacing: 1.5
-            }
-            QQC2.Label {
-                text: "Create a bootable USB"
-                font.pixelSize: 30
-                font.weight: Font.DemiBold
-                Layout.fillWidth: true
-            }
-            Muted {
-                text: "Choose the images you want to carry with you, then install them on a USB drive."
-            }
+        StackLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: window.activeTab
 
             Section {
                 title: "Boot images"
@@ -127,15 +146,17 @@ QQC2.ApplicationWindow {
                     ListView {
                         id: imageList
                         Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(contentHeight, 220)
-                        implicitHeight: contentHeight
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 0
                         clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
                         model: installer.iso_names.split("\n")
                         spacing: 1
                         delegate: Rectangle {
                             required property int index
                             required property string modelData
-                            width: imageList.width
+                            width: imageList.width - 14
                             height: 44
                             radius: 7
                             color: isoCheck.checked || rowHover.hovered ? "#262626" : "transparent"
@@ -178,42 +199,55 @@ QQC2.ApplicationWindow {
             Section {
                 title: "Optional EFI tools"
                 contentItem: ColumnLayout {
-                    QQC2.Label {
-                        text: "EFI release version"
-                        visible: installer.release_mode
-                    }
-                    QQC2.TextField {
-                        id: efiVersion
+                    spacing: 6
+                    RowLayout {
                         visible: installer.release_mode
                         Layout.fillWidth: true
-                        placeholderText: "latest (or a tag, e.g. v0.1.1)"
-                        Accessible.name: "EFI release version"
+                        QQC2.Label {
+                            text: "EFI release version"
+                        }
+                        QQC2.TextField {
+                            id: efiVersion
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            implicitHeight: 34
+                            placeholderText: "latest (or a tag, e.g. v0.1.1)"
+                            Accessible.name: "EFI release version"
+                        }
                     }
-                    QQC2.Label {
-                        text: "Choose which tools to install. The boot picker is always included."
+                    RowLayout {
                         Layout.fillWidth: true
-                        wrapMode: Text.Wrap
-                    }
-                    Button {
-                        text: "Deselect all tools"
-                        onClicked: {
-                            for (let i = 0; i < toolList.count; ++i)
-                                (toolList.itemAt(i) as QQC2.CheckBox).checked = false;
+                        Muted {
+                            text: "Boot picker always included."
+                        }
+                        Button {
+                            text: "Deselect all tools"
+                            onClicked: {
+                                for (let i = 0; i < toolList.count; ++i)
+                                    (toolList.itemAt(i) as QQC2.CheckBox).checked = false;
+                            }
                         }
                     }
                     GridLayout {
                         Layout.fillWidth: true
                         columns: 2
+                        rowSpacing: 0
                         Repeater {
                             id: toolList
                             model: installer.tool_names.split("\n")
                             delegate: QQC2.CheckBox {
                                 required property string modelData
                                 Layout.fillWidth: true
+                                implicitHeight: 28
+                                topPadding: 0
+                                bottomPadding: 0
                                 text: modelData
                                 checked: true
                             }
                         }
+                    }
+                    Item {
+                        Layout.fillHeight: true
                     }
                 }
             }
@@ -223,14 +257,16 @@ QQC2.ApplicationWindow {
                 contentItem: ColumnLayout {
                     spacing: Kirigami.Units.smallSpacing
                     Muted {
-                        text: "Only writable USB disks are shown. Existing contents will be erased."
+                        text: "Choose a writable USB drive. Its existing contents will be erased."
                     }
                     RowLayout {
                         Layout.fillWidth: true
                         QQC2.ComboBox {
                             id: diskBox
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             model: installer.devices ? installer.devices.split("\n") : []
+                            displayText: count === 0 ? "No USB drive detected" : currentText
                             Accessible.name: "USB drive"
                         }
                         Button {
@@ -238,28 +274,63 @@ QQC2.ApplicationWindow {
                             onClicked: installer.refresh()
                         }
                     }
+                    Item {
+                        Layout.fillHeight: true
+                    }
                 }
             }
+        }
 
-            Section {
-                title: "Status"
-                visible: installer.status.length > 0
-                contentItem: Muted {
-                    text: installer.status
-                }
-            }
-
-            RowLayout {
+        RowLayout {
+            Layout.fillWidth: true
+            QQC2.Label {
+                id: statusLabel
                 Layout.fillWidth: true
-                Muted {
-                    text: selectedIsoIndexes ? selectedIsoIndexes.split(",").length + " image(s) selected" : "No images selected"
+                Layout.minimumWidth: 0
+                text: installer.status
+                color: "#a1a1a1"
+                elide: Text.ElideRight
+            }
+            Button {
+                text: "Details"
+                visible: statusLabel.truncated
+                onClicked: statusDialog.open()
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Muted {
+                text: selectedIsoIndexes ? selectedIsoIndexes.split(",").length + " image(s) selected" : "No images selected"
+            }
+            Button {
+                text: window.activeTab === 2 ? "Create USB" : "Next"
+                primary: true
+                enabled: window.activeTab !== 2 || (diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0)
+                onClicked: {
+                    if (window.activeTab === 2)
+                        eraseDialog.open();
+                    else
+                        sections.setCurrentIndex(window.activeTab + 1);
                 }
-                Button {
-                    text: "Create USB"
-                    primary: true
-                    enabled: diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0
-                    onClicked: eraseDialog.open()
-                }
+            }
+        }
+    }
+    QQC2.Dialog {
+        id: statusDialog
+        anchors.centerIn: parent
+        modal: true
+        width: Math.min(window.width - 48, 460)
+        height: Math.min(window.height - 48, 330)
+        title: "Installer status"
+        standardButtons: QQC2.Dialog.Close
+        contentItem: QQC2.ScrollView {
+            clip: true
+            contentWidth: availableWidth
+            QQC2.TextArea {
+                text: installer.status
+                readOnly: true
+                wrapMode: TextEdit.Wrap
             }
         }
     }
