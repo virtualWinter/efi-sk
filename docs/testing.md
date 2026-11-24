@@ -32,6 +32,9 @@ path of a non-Secure-Boot firmware file.
 The script opens a GTK window by default. If the GTK backend is missing,
 install `qemu-ui-gtk` on Arch. To run headless, pass `-display none`.
 
+Set `ISO_DIR` to test a different directory of ISOs, or `QEMU_MEMORY`
+to change the default 4 GiB of guest RAM.
+
 ## Mouse input
 
 The regular test uses installed OVMF and never builds firmware. Stock OVMF

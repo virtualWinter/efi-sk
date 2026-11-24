@@ -6,7 +6,7 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 shopt -s nullglob nocaseglob
 isos=()
-for iso in isos/*.iso; do
+for iso in "${ISO_DIR:-isos}"/*.iso; do
     [[ -f "$iso" ]] && isos+=("$iso")
 done
 
@@ -95,7 +95,7 @@ mkfs.ext4 -q -F -m 0 -b 4096 -L ISOS -d "$work/data" \
 rm -rf -- "$work/data"
 
 printf 'Booting QEMU with %s ISO(s).\n' "${#isos[@]}"
-qemu-system-x86_64 -machine q35,accel=kvm:tcg -m 4G \
+qemu-system-x86_64 -machine q35,accel=kvm:tcg -m "${QEMU_MEMORY:-4G}" \
     -bios "$firmware" -snapshot \
     -drive "if=none,id=usb,format=raw,file=$image" \
     -device qemu-xhci -device usb-storage,drive=usb -device usb-mouse \
