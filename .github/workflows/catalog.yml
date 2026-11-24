@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/catalog.yml'
       - 'catalog/sources.json'
+      - 'assets/distro/index.tsv'
       - 'tools/update-catalog.py'
   schedule:
     - cron: '23 5 * * 2'

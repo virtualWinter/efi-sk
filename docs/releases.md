@@ -16,8 +16,8 @@ archives kept in `vendor/`. Keep the notices and source available alongside
 any redistribution of the release binaries.
 
 The ISO catalog workflow runs weekly and can be dispatched manually on
-the default branch. It reads `catalog/sources.json`, resolves each entry
-against the distributor's HTTPS SHA-256 list, and uploads `catalog.json`
+the default branch. It reads `catalog/sources.json`, resolves download
+checksums from upstream HTTPS lists or pinned upstream digests, and uploads `catalog.json`
 to the non-latest `iso-catalog` release. Its download path is
 `releases/download/iso-catalog/catalog.json` under the GitHub repository.
 If generation fails, the workflow does not upload a replacement.
@@ -28,6 +28,15 @@ To preview a refresh locally:
 python3 tools/update-catalog.py
 ```
 
-This is a starter catalog, separate from the installer’s built-in list.
-It does not yet include official logo assets or verify upstream signatures.
-The installer does not fetch this catalog yet.
+`catalog.json` has two separate lists:
+
+- `distros`: all entries in the embedded artwork index, including
+  filename-independent recognition aliases and whether the artwork is
+  a project logo, a related project's mark, or generic.
+- `images`: specific downloads with checksums, linked to `distros` by
+  distro ID. `qemu-verified` means a live boot or installer startup was
+  verified, not a full installation; `layout-supported` covers a known
+  layout, and `untested` or `download-only` do not claim boot support.
+
+The desktop installer still uses its built-in list. The published
+catalog does not bundle image files or verify upstream signatures.

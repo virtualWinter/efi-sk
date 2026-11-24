@@ -4,20 +4,241 @@
     "category": "live",
     "filename": "archlinux-x86_64.iso",
     "base_url": "https://geo.mirror.pkgbuild.com/iso/latest/",
-    "checksum_file": "sha256sums.txt"
+    "checksum_file": "sha256sums.txt",
+    "distro": "arch"
   },
   {
     "name": "Ubuntu Server 24.04 LTS",
     "category": "server",
     "filename_pattern": "ubuntu-24\\.04\\.\\d+-live-server-amd64\\.iso",
     "base_url": "https://releases.ubuntu.com/24.04/",
-    "checksum_file": "SHA256SUMS"
+    "checksum_file": "SHA256SUMS",
+    "distro": "ubuntu"
   },
   {
     "name": "Ubuntu Desktop 24.04 LTS",
     "category": "desktop",
     "filename_pattern": "ubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
     "base_url": "https://releases.ubuntu.com/24.04/",
+    "checksum_file": "SHA256SUMS",
+    "distro": "ubuntu"
+  },
+  {
+    "distro": "xubuntu",
+    "name": "Xubuntu 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "xubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
     "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "lubuntu",
+    "name": "Lubuntu 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "lubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "kubuntu",
+    "name": "Kubuntu 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/kubuntu/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "kubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "ubuntumate",
+    "name": "Ubuntu MATE 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntu-mate/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "ubuntu-mate-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "ubuntustudio",
+    "name": "Ubuntu Studio 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntustudio/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "ubuntustudio-24\\.04\\.\\d+-dvd-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "ubuntukylin",
+    "name": "Ubuntu Kylin 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntukylin/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "ubuntukylin-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "ubuntuunity",
+    "name": "Ubuntu Unity 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntu-unity/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "ubuntu-unity-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "edubuntu",
+    "name": "Edubuntu 24.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/edubuntu/releases/24.04/release/",
+    "boot_status": "untested",
+    "filename_pattern": "edubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian amd64 netinst",
+    "category": "installer",
+    "base_url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/",
+    "boot_status": "layout-supported",
+    "filename_pattern": "debian-13\\.\\d+\\.\\d+-amd64-netinst\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live standard",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-standard\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live GNOME",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-gnome\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live KDE",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-kde\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live XFCE",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-xfce\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live CINNAMON",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-cinnamon\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live MATE",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-mate\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live LXDE",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-lxde\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "debian",
+    "name": "Debian Live LXQT",
+    "category": "live",
+    "base_url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+    "boot_status": "untested",
+    "filename_pattern": "debian-live-13\\.\\d+\\.\\d+-amd64-lxqt\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "freebsd",
+    "name": "FreeBSD 15.1 bootonly",
+    "category": "installer",
+    "base_url": "https://download.freebsd.org/releases/ISO-IMAGES/15.1/",
+    "boot_status": "untested",
+    "filename": "FreeBSD-15.1-RELEASE-amd64-bootonly.iso",
+    "checksum_file": "CHECKSUM.SHA256-FreeBSD-15.1-RELEASE-amd64"
+  },
+  {
+    "distro": "freebsd",
+    "name": "FreeBSD 15.1 disc1",
+    "category": "installer",
+    "base_url": "https://download.freebsd.org/releases/ISO-IMAGES/15.1/",
+    "boot_status": "untested",
+    "filename": "FreeBSD-15.1-RELEASE-amd64-disc1.iso",
+    "checksum_file": "CHECKSUM.SHA256-FreeBSD-15.1-RELEASE-amd64"
+  },
+  {
+    "distro": "freebsd",
+    "name": "FreeBSD 15.1 dvd1",
+    "category": "installer",
+    "base_url": "https://download.freebsd.org/releases/ISO-IMAGES/15.1/",
+    "boot_status": "untested",
+    "filename": "FreeBSD-15.1-RELEASE-amd64-dvd1.iso",
+    "checksum_file": "CHECKSUM.SHA256-FreeBSD-15.1-RELEASE-amd64"
+  },
+  {
+    "distro": "opnsense",
+    "name": "OPNsense 26.7 DVD",
+    "category": "router",
+    "base_url": "https://pkg.opnsense.org/releases/26.7/",
+    "boot_status": "qemu-verified",
+    "filename": "OPNsense-26.7-dvd-amd64.iso.bz2",
+    "checksum_file": "OPNsense-26.7-checksums-amd64.sha256"
+  },
+  {
+    "distro": "openwrt",
+    "name": "OpenWrt 25.12.6 EFI disk image",
+    "category": "router",
+    "base_url": "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/",
+    "boot_status": "download-only",
+    "filename": "openwrt-25.12.6-x86-64-generic-ext4-combined-efi.img.gz",
+    "checksum_file": "sha256sums"
+  },
+  {
+    "distro": "proxmox",
+    "name": "Proxmox VE 9.2",
+    "category": "virtualization",
+    "base_url": "https://enterprise.proxmox.com/iso/",
+    "boot_status": "qemu-verified",
+    "filename": "proxmox-ve_9.2-1.iso",
+    "sha256": "4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c",
+    "checksum_url": "https://www.proxmox.com/en/downloads/proxmox-virtual-environment/iso"
+  },
+  {
+    "distro": "vyos",
+    "name": "VyOS rolling 2026.11.22",
+    "category": "router",
+    "base_url": "https://github.com/vyos/vyos-nightly-build/releases/download/2026.11.22-0018-rolling/",
+    "boot_status": "qemu-verified",
+    "filename": "vyos-2026.11.22-0018-rolling-generic-amd64.iso",
+    "sha256": "9c7915e8c113ed371e23115610d9d1d6e642e466844eed10cd74ed2c207e8123",
+    "checksum_url": "https://github.com/vyos/vyos-nightly-build/releases/tag/2026.11.22-0018-rolling"
   }
 ]
