@@ -1,24 +1,32 @@
-//! Experimental firmware-only El Torito boot via EFI_RAM_DISK_PROTOCOL.
-use alloc::vec::Vec;
-use core::{mem, ptr};
+//! Firmware-side virtual optical media backed by an ISO on the USB.
+use alloc::{boxed::Box, vec::Vec};
+use core::{cell::RefCell, ffi::c_void, mem, ptr, slice};
 use uefi::{
     Handle, Status, boot,
     proto::{
-        device_path::{DevicePath, FfiDevicePath},
+        device_path::{
+            DevicePath,
+            build::{DevicePathBuilder, media::Vendor},
+        },
         media::fs::SimpleFileSystem,
-        unsafe_protocol,
+    },
+};
+use uefi_raw::{
+    Boolean,
+    protocol::{
+        block::{BlockIoMedia, BlockIoProtocol},
+        device_path::DevicePathProtocol,
     },
 };
 
 use super::filesystem::Iso;
 
 const SECTOR: u64 = 2048;
-const MAX_IMAGE: u64 = 2 * 1024 * 1024 * 1024;
-const VIRTUAL_CD: uefi::Guid = uefi::guid!("3d5abd30-4175-87ce-6d64-d2ade523c4bb");
+const ISO_DEVICE: uefi::Guid = uefi::guid!("bff95fa8-312a-43bf-823e-c862b96c64d5");
 
 pub fn detect(iso: &mut Iso) -> bool {
     let len = iso.image_len();
-    if len > MAX_IMAGE || !len.is_multiple_of(SECTOR) {
+    if len == 0 || !len.is_multiple_of(SECTOR) {
         return false;
     }
     let mut sector = [0; SECTOR as usize];
@@ -84,58 +92,147 @@ fn efi_catalog(catalog: &[u8; SECTOR as usize]) -> bool {
 }
 
 #[repr(C)]
-#[unsafe_protocol("ab38a0df-6873-44a9-87e6-d4eb56148449")]
-struct RamDisk {
-    register: unsafe extern "efiapi" fn(
-        u64,
-        u64,
-        *const uefi::Guid,
-        *const FfiDevicePath,
-        *mut *const FfiDevicePath,
-    ) -> Status,
-    unregister: unsafe extern "efiapi" fn(*const FfiDevicePath) -> Status,
+struct Optical {
+    protocol: BlockIoProtocol,
+    media: BlockIoMedia,
+    iso: RefCell<Iso>,
 }
 
 pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
     if !detect(&mut iso) {
         return Err(Status::UNSUPPORTED);
     }
-    let handle = boot::get_handle_for_protocol::<RamDisk>().map_err(|e| e.status())?;
-    let protocol = boot::open_protocol_exclusive::<RamDisk>(handle).map_err(|e| e.status())?;
-    let len = iso.image_len() as usize;
-    let mut image = Vec::new();
-    image
-        .try_reserve_exact(len)
-        .map_err(|_| Status::OUT_OF_RESOURCES)?;
-    image.resize(len, 0);
-    iso.read_image(0, &mut image)?;
-    drop(iso);
-
-    let mut path = ptr::null();
-    // The buffer is never resized after registration and outlives all EFI I/O.
-    let status = unsafe {
-        (protocol.register)(
-            image.as_mut_ptr() as u64,
-            len as u64,
-            &VIRTUAL_CD,
-            ptr::null(),
-            &mut path,
-        )
+    let mut optical = Box::new(Optical {
+        protocol: BlockIoProtocol {
+            revision: BlockIoProtocol::REVISION,
+            media: ptr::null(),
+            reset,
+            read_blocks,
+            write_blocks,
+            flush_blocks,
+        },
+        media: BlockIoMedia {
+            media_id: 1,
+            removable_media: true.into(),
+            media_present: true.into(),
+            logical_partition: false.into(),
+            read_only: true.into(),
+            write_caching: false.into(),
+            block_size: SECTOR as u32,
+            io_align: 1,
+            last_block: iso.image_len() / SECTOR - 1,
+            lowest_aligned_lba: 0,
+            logical_blocks_per_physical_block: 0,
+            optimal_transfer_length_granularity: 0,
+        },
+        iso: RefCell::new(iso),
+    });
+    optical.protocol.media = ptr::from_ref(&optical.media);
+    let mut path = Vec::new();
+    let instance = (ptr::from_ref(&*optical) as usize).to_le_bytes();
+    DevicePathBuilder::with_vec(&mut path)
+        .push(&Vendor {
+            vendor_guid: ISO_DEVICE,
+            vendor_defined_data: &instance,
+        })
+        .and_then(DevicePathBuilder::finalize)
+        .map_err(|_| Status::INVALID_PARAMETER)?;
+    let path_ptr = path.as_ptr().cast();
+    let block_ptr = ptr::from_ref(&optical.protocol).cast();
+    // Both pointers remain valid until their protocols are uninstalled.
+    let handle =
+        unsafe { boot::install_protocol_interface(None, &DevicePathProtocol::GUID, path_ptr) }
+            .map_err(|e| e.status())?;
+    let installed = unsafe {
+        boot::install_protocol_interface(Some(handle), &BlockIoProtocol::GUID, block_ptr)
     };
-    if status.is_error() {
-        return Err(status);
+    if let Err(e) = installed {
+        if unsafe {
+            boot::uninstall_protocol_interface(handle, &DevicePathProtocol::GUID, path_ptr)
+        }
+        .is_err()
+        {
+            mem::forget(path);
+        }
+        return Err(e.status());
     }
-    let result = if path.is_null() {
-        Err(Status::DEVICE_ERROR)
-    } else {
-        // The protocol owns this device path until unregister returns.
-        launch_registered(parent, unsafe { DevicePath::from_ffi_ptr(path) })
-    };
-    if path.is_null() || unsafe { (protocol.unregister)(path) }.is_error() {
-        // Firmware may still refer to the backing memory.
-        mem::forget(image);
+    let _ = boot::connect_controller(handle, &[], None, true);
+    let result = launch_registered(parent, unsafe { DevicePath::from_ffi_ptr(path_ptr.cast()) });
+    let _ = boot::disconnect_controller(handle, None, None);
+    if unsafe { boot::uninstall_protocol_interface(handle, &BlockIoProtocol::GUID, block_ptr) }
+        .is_err()
+    {
+        // A driver still owns the virtual device. Keep both allocations alive.
+        mem::forget(optical);
+        mem::forget(path);
+    } else if unsafe {
+        boot::uninstall_protocol_interface(handle, &DevicePathProtocol::GUID, path_ptr)
+    }
+    .is_err()
+    {
+        mem::forget(path);
     }
     result
+}
+
+unsafe extern "efiapi" fn reset(_: *mut BlockIoProtocol, _: Boolean) -> Status {
+    Status::SUCCESS
+}
+
+unsafe extern "efiapi" fn flush_blocks(_: *mut BlockIoProtocol) -> Status {
+    Status::SUCCESS
+}
+
+unsafe extern "efiapi" fn write_blocks(
+    _: *mut BlockIoProtocol,
+    _: u32,
+    _: u64,
+    _: usize,
+    _: *const c_void,
+) -> Status {
+    Status::WRITE_PROTECTED
+}
+
+unsafe extern "efiapi" fn read_blocks(
+    this: *const BlockIoProtocol,
+    media: u32,
+    lba: u64,
+    len: usize,
+    buffer: *mut c_void,
+) -> Status {
+    if this.is_null() || (len != 0 && buffer.is_null()) {
+        return Status::INVALID_PARAMETER;
+    }
+    // The protocol is the first field of the registered Optical allocation.
+    let optical = unsafe { &*this.cast::<Optical>() };
+    if media != optical.media.media_id {
+        return Status::MEDIA_CHANGED;
+    }
+    if !len.is_multiple_of(SECTOR as usize) || len > isize::MAX as usize {
+        return Status::BAD_BUFFER_SIZE;
+    }
+    if len == 0 {
+        return Status::SUCCESS;
+    }
+    let blocks = len as u64 / SECTOR;
+    if lba
+        .checked_add(blocks - 1)
+        .is_none_or(|end| end > optical.media.last_block)
+    {
+        return Status::INVALID_PARAMETER;
+    }
+    let Ok(mut iso) = optical.iso.try_borrow_mut() else {
+        return Status::NOT_READY;
+    };
+    // UEFI supplies a writable buffer. Initialize it before creating a slice.
+    let target = unsafe {
+        let p = buffer.cast::<u8>();
+        p.write_bytes(0, len);
+        slice::from_raw_parts_mut(p, len)
+    };
+    iso.read_image(lba * SECTOR, target)
+        .err()
+        .unwrap_or(Status::SUCCESS)
 }
 
 fn launch_registered(parent: Handle, ram_path: &DevicePath) -> Result<(), Status> {

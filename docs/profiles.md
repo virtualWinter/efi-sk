@@ -25,17 +25,31 @@ additional support.
 
 If no Linux profile matches, the picker checks for an EFI
 boot entry in the ISO's El Torito catalog. It shows matching images as
-**experimental EFI** entries. Selecting one loads the ISO into a UEFI
-virtual CD and tries to start `\EFI\BOOT\BOOTX64.EFI` from the firmware's
-filesystem for that image. Existing Linux profiles take precedence.
+**experimental EFI** entries. Selecting one exposes the ISO as a
+read-only UEFI virtual CD and tries to start `\EFI\BOOT\BOOTX64.EFI` from
+its El Torito boot filesystem. Reads are served from the USB on demand;
+the firmware does not need to load the whole ISO into RAM. Existing Linux
+profiles take precedence for now.
 
-This path requires firmware with the EFI RAM Disk Protocol and a driver
-that exposes the El Torito boot filesystem. Images larger than 2 GiB are
-not offered by this fallback, and loading an image requires enough free
-firmware memory for the whole file. This does not preserve access to the
-virtual CD after the OS exits UEFI boot services. Reaching an ISO's boot
-menu does not mean its installer can find its media. Windows is not yet
-verified, and raw disk images such as OpenWrt are not handled.
+This path still requires firmware drivers for El Torito and FAT. It does
+not preserve access to the virtual CD after the OS exits UEFI boot
+services. Reaching an ISO's boot menu does not mean its installer can
+find its media. Windows is not yet verified, and raw disk images such as
+OpenWrt are not handled.
+
+### Replacing compatibility profiles
+
+The intended next layer hands off the USB partition UUID and ISO path to
+early userspace. Linux can reopen the USB partition and expose the ISO
+through a read-only loop device. The loader must arrange for that helper
+to run; merely launching an ISO's EFI executable cannot do this for
+arbitrary installers. Where an image cannot reopen its source filesystem,
+an extent-based block mapping can be evaluated separately.
+
+Retire each existing profile only after its replacement boots an untouched
+ISO from `iso/` without companion files and reaches a live system or an
+installer that can read its packages. Keep firmware-only EFI launch
+distinct from verified full boots.
 
 ## Debian netinst
 
