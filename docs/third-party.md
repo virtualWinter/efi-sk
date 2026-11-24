@@ -1,0 +1,26 @@
+# Third-party notices
+
+The project's ISC license does not replace the terms for bundled third-party
+files or external dependencies.
+
+- [Geist fonts and generated glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
+- [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the
+  [bundled license](../assets/lucide/LICENSE).
+- [Vendored zune-png](../vendor/zune-png/Cargo.toml): see the bundled
+  [Apache](../vendor/zune-png/LICENSE-APACHE),
+  [MIT](../vendor/zune-png/LICENSE-MIT), and
+  [Zlib](../vendor/zune-png/LICENSE-ZLIB) license texts.
+
+The bundled EFI tools have their own notices and upstream source information:
+[ACPIdump](../vendor/acpidump/README.md),
+[EDK II Shell](../vendor/edk2-shell/README.md),
+[GPT fdisk](../vendor/gpt-fdisk/README.md),
+[iPXE](../vendor/ipxe/README.md),
+[KeyTool](../vendor/keytool/README.md),
+[Memtest86+](../vendor/memtest86plus/README.md), and
+[UEFI SCT](../vendor/uefi-sct/README.md).
+Keep those notices and any required corresponding source when redistributing
+the tools or USB images that contain them.
+
+Linux ISOs are downloaded separately, not distributed by this repository.
+Distro names and logos remain subject to their respective trademark policies.

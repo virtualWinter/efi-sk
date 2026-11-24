@@ -1,0 +1,8 @@
+[package]
+name = "iso-boot-picker-installer"
+version = "0.1.0"
+edition = "2024"
+license = "ISC"
+
+[dependencies]
+qmetaobject = "0.2.10"

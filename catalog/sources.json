@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Arch Linux",
+    "category": "live",
+    "filename": "archlinux-x86_64.iso",
+    "base_url": "https://geo.mirror.pkgbuild.com/iso/latest/",
+    "checksum_file": "sha256sums.txt"
+  },
+  {
+    "name": "Ubuntu Server 24.04 LTS",
+    "category": "server",
+    "filename_pattern": "ubuntu-24\\.04\\.\\d+-live-server-amd64\\.iso",
+    "base_url": "https://releases.ubuntu.com/24.04/",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "name": "Ubuntu Desktop 24.04 LTS",
+    "category": "desktop",
+    "filename_pattern": "ubuntu-24\\.04\\.\\d+-desktop-amd64\\.iso",
+    "base_url": "https://releases.ubuntu.com/24.04/",
+    "checksum_file": "SHA256SUMS"
+  }
+]

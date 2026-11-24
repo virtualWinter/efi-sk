@@ -1,0 +1,33 @@
+name: Publish ISO catalog
+
+on:
+  schedule:
+    - cron: '23 5 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iso-catalog
+
+jobs:
+  publish:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Resolve upstream SHA-256 checksums
+        run: python3 tools/update-catalog.py > catalog.json
+      - name: Publish rolling catalog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view iso-catalog >/dev/null 2>&1; then
+            gh release upload iso-catalog catalog.json --clobber
+          else
+            gh release create iso-catalog --target "$GITHUB_SHA" --title 'ISO catalog' \
+              --notes 'Machine-readable ISO download catalog.' --latest=false catalog.json
+          fi
