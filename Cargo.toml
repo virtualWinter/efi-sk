@@ -9,6 +9,9 @@ ext4-view = "=1.0.0"
 uefi-raw = "=0.17.0"
 uefi = { version = "=0.41.0", features = ["alloc", "global_allocator", "panic_handler"] }
 
+[patch.crates-io]
+ext4-view = { path = "vendor/ext4-view" }
+
 [profile.release]
 lto = true
 strip = true

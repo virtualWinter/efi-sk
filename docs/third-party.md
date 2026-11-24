@@ -3,6 +3,9 @@
 The project's ISC license does not replace the terms for bundled third-party
 files or external dependencies.
 
+- [ext4-view](../vendor/ext4-view/README.md): MIT or Apache-2.0, with a
+  local read-only physical block iterator.
+
 - [Geist fonts and generated glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
 - [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the
   [bundled license](../assets/lucide/LICENSE).
