@@ -15,7 +15,8 @@ SVG sources come from [Simple Icons 14.15.0 and 16.38.1](https://github.com/simp
 ([CC0](../../installer/icons/LICENSE.simple-icons)) and
 [font-logos at `d3bf5d2`](https://github.com/lukas-w/font-logos/tree/d3bf5d299e54595db1b19681a0cc57ab10454857)
 ([Unlicense](LICENSE.font-logos)). The icons from 16.38.1 are `gnome`,
-`kde`, `omarchy`, `reactos`, `steam`, `talos`, and `truenas`. Existing
+`kde`, `omarchy`, `reactos`, `steam`, `talos`, `truenas`, and the
+additional homelab marks other than `coreos` (from font-logos). Existing
 colored marks share their [source artwork with the installer](../../installer/icons/README.md).
 Marks remain subject to their respective owners' trademark policies.
 

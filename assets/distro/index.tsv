@@ -87,7 +87,7 @@
 86	tromjaro	archlinux	family	tromjaro
 87	aurora	fedora	family	aurora
 88	vanilla	vanilla	logo	vanilla
-89	smartos	tux	generic	smartos
+89	smartos	illumos	family	smartos
 90	openmandriva	tux	generic	openmandriva
 91	archcraft	archcraft	logo	archcraft
 92	vendefoul	devuan	family	vendefoul
@@ -114,7 +114,7 @@
 113	ml4w	archlinux	family	ml4w
 114	emmabuntus	debian	family	emmabuntus,emmabunts
 115	calamaroos	gentoo	family	calamaroos
-116	umbrelos	debian	family	umbrelos
+116	umbrelos	umbrel	logo	umbrelos,umbrel
 117	bunsenlabs	debian	family	bunsenlabs
 118	netbsd	netbsd	logo	netbsd
 119	ubuntustudio	ubuntu	family	ubuntustudio
@@ -146,7 +146,7 @@
 145	abora	nixos	family	abora
 146	elegance	archlinux	family	elegance
 147	whonix	debian	family	whonix
-148	haos	tux	generic	haos
+148	haos	homeassistant	logo	haos,homeassistant,hassos
 149	calam	archlinux	family	calam
 150	dietpi	debian	family	dietpi
 151	noid	voidlinux	family	noid
@@ -154,7 +154,7 @@
 153	pardus	debian	family	pardus
 154	startos	debian	family	startos
 155	ezarcher	archlinux	family	ezarcher
-156	flatcar	gentoo	family	flatcar
+156	flatcar	coreos	family	flatcar
 157	austrumi	slackware	family	austrumi
 158	afagos	voidlinux	family	afagos
 159	stormos	archlinux	family	stormos
@@ -183,7 +183,7 @@
 182	gparted	debian	family	gparted
 183	hardenedbsd	freebsd	family	hardenedbsd
 184	nethydra	debian	family	nethydra
-185	unraid	tux	generic	unraid
+185	unraid	unraid	logo	unraid
 186	zenclora	debian	family	zenclora
 187	asmi	debian	family	asmi
 188	enux	tux	generic	enux
@@ -219,7 +219,7 @@
 218	t2	tux	generic	t2,t2linux
 219	canaima	debian	family	canaima
 220	nutyx	tux	generic	nutyx
-221	openmediavault	debian	family	openmediavault
+221	openmediavault	openmediavault	logo	openmediavault,omv
 222	aosc	aosc	logo	aosc
 223	abeiros	voidlinux	family	abeiros
 224	lfs	tux	generic	lfs
@@ -262,7 +262,7 @@
 261	debianedu	debian	family	debianedu
 262	ipfire	tux	generic	ipfire
 263	nawaos	debian	family	nawaos
-264	opnsense	freebsd	family	opnsense
+264	opnsense	opnsense	logo	opnsense
 265	peropesis	tux	generic	peropesis
 266	deblinux	debian	family	deblinux
 267	lcos	devuan	family	lcos
@@ -412,3 +412,15 @@
 -	parabola	parabola	logo	parabola
 -	postmarketos	postmarketos	logo	postmarketos
 -	sabayon	sabayon	logo	sabayon
+-	pfsense	pfsense	logo	pfsense,netgatepfsense
+-	freenas	freenas	logo	freenas
+-	vyos-router	debian	family	vyosrouter
+-	xcp-ng	tux	generic	xcpng,xenserver,citrixhypervisor
+-	vmware-esxi	vmware	family	vmware,esxi,vsphere,vmvisor
+-	yunohost	yunohost	logo	yunohost
+-	nutanix	nutanix	family	nutanix,ahv
+-	synology	synology	family	synology,diskstationmanager
+-	qnap	qnap	family	qnap,qutshero
+-	harvester	rancher	family	harvester,rancher
+-	routeros	mikrotik	family	routeros,mikrotik
+-	fedora-coreos	coreos	logo	fedoracoreos,coreos
