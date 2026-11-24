@@ -34,7 +34,7 @@ def checksums(url):
 def resolve(source):
     if "sha256" in source:
         filename, digest = source["filename"], source["sha256"]
-        if not re.fullmatch(r"[A-Za-z0-9._+-]+", filename) or not re.fullmatch(r"[a-fA-F0-9]{64}", digest):
+        if not re.fullmatch(r"[A-Za-z0-9._+ -]+", filename) or not re.fullmatch(r"[a-fA-F0-9]{64}", digest):
             raise ValueError(f"Invalid pinned image: {source['name']}")
         return image_entry(source, filename, digest, source["checksum_url"])
 

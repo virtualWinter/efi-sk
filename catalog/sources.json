@@ -791,5 +791,590 @@
     "sha256": "57a50e3a1bf7641ec00eea0659964b57cd2face5077935df764dda1355b4467d",
     "checksum_url": "https://dietpi.com/downloads/images/DietPi_NativePC-BIOS-x86_64-Trixie.img.xz.sha256",
     "boot_status": "download-only"
+  },
+  {
+    "distro": "zorin",
+    "name": "Zorin OS 17.3 Core 64-bit r2",
+    "category": "desktop",
+    "base_url": "https://distro.ibiblio.org/zorinos/17/",
+    "filename": "Zorin-OS-17.3-Core-64-bit-r2.iso",
+    "sha256": "c1510d1e16ec50c884faeb4e32326ba8d2e38d2cf22698b649168011d00220f6",
+    "checksum_url": "https://distro.ibiblio.org/zorinos/17/SHA256SUMS.txt"
+  },
+  {
+    "distro": "bazzite",
+    "name": "Bazzite stable amd64",
+    "category": "desktop",
+    "base_url": "https://download.bazzite.gg/",
+    "filename": "bazzite-stable-amd64.iso",
+    "sha256": "9c8d06cd8e57f2274678edeb14b4b13a79b8117c70571a65199919a66305b5c7",
+    "checksum_url": "https://download.bazzite.gg/bazzite-stable-amd64.iso-CHECKSUM"
+  },
+  {
+    "distro": "bazzite",
+    "name": "Bazzite NVIDIA Open stable amd64",
+    "category": "desktop",
+    "base_url": "https://download.bazzite.gg/",
+    "filename": "bazzite-nvidia-open-stable-amd64.iso",
+    "sha256": "85e701c0f53189b0fa32797ffe8144202dcaa8db6c7692fd4677f615537b24b8",
+    "checksum_url": "https://download.bazzite.gg/bazzite-nvidia-open-stable-amd64.iso-CHECKSUM"
+  },
+  {
+    "distro": "elementary",
+    "name": "elementary OS 8.1 stable amd64",
+    "category": "desktop",
+    "base_url": "https://ams3.dl.elementary.io/download/MTc3NTY1MjA1Nw==/",
+    "filename": "elementaryos-8.1-stable.20260219rc.iso",
+    "sha256": "bda93040d08c05911fb159f8150bf8f4ef2db6567ef6e2acd197cb6f395d3446",
+    "checksum_url": "https://elementary.io/docs/installation#verify-your-download"
+  },
+  {
+    "distro": "void",
+    "name": "Void Linux x86_64 base (glibc)",
+    "category": "live",
+    "base_url": "https://repo-default.voidlinux.org/live/current/",
+    "filename": "void-live-x86_64-20250202-base.iso",
+    "sha256": "0f7439f500740f62dd18972cae448cec7d8a85032c7eb8f1bf946100d9a92161",
+    "checksum_url": "https://repo-default.voidlinux.org/live/current/sha256sum.txt"
+  },
+  {
+    "distro": "alpine",
+    "name": "Alpine Linux 3.24.4 Standard x86_64",
+    "category": "live",
+    "base_url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86_64/",
+    "filename": "alpine-standard-3.24.4-x86_64.iso",
+    "sha256": "92e3e4e4c6b8e265a889278de2a633c0f1456ca52820952666ecb395c3d23582",
+    "checksum_url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86_64/alpine-standard-3.24.4-x86_64.iso.sha256"
+  },
+  {
+    "distro": "tuxedo",
+    "name": "TUXEDO OS current x86_64",
+    "category": "desktop",
+    "base_url": "https://os.tuxedocomputers.com/",
+    "filename": "TUXEDO-OS_current.iso",
+    "sha256": "25d5db9daceea96d332fea826f166890615abfd5f93b943019330e911bd19f26",
+    "checksum_url": "https://os.tuxedocomputers.com/checksums/TUXEDO-OS_current.iso.sha256"
+  },
+  {
+    "distro": "zimaos",
+    "name": "ZimaOS 1.7.1 x86_64 Installer ISO",
+    "category": "appliance",
+    "base_url": "https://github.com/IceWhaleTech/ZimaOS/releases/download/1.7.1/",
+    "filename": "zimaos-x86_64-1.7.1_installer.iso",
+    "sha256": "41ba9c6b3b9b6609f4ad30a8402b2b153036680fd5d2a9475057c846275e3372",
+    "checksum_url": "https://github.com/IceWhaleTech/ZimaOS/releases/expanded_assets/1.7.1"
+  },
+  {
+    "distro": "lite",
+    "name": "Linux Lite 8.2",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/linux-lite/files/8.2/",
+    "filename": "linux-lite-8.2-64bit.iso",
+    "sha256": "c0967038ec23522648285d306021829bf4602327a137ecb1bdc3d4be4026e9b0",
+    "checksum_url": "https://www.linuxliteos.com/download.php"
+  },
+  {
+    "distro": "sparky",
+    "name": "SparkyLinux 8.4 LXQt amd64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/sparkylinux/files/lxqt/",
+    "filename": "sparkylinux-8.4-x86_64-lxqt.iso",
+    "checksum_file": "sparkylinux-8.4-x86_64-lxqt.iso.allsums.txt"
+  },
+  {
+    "distro": "tails",
+    "name": "Tails 7.18 amd64 ISO",
+    "category": "live",
+    "base_url": "https://download.tails.net/tails/stable/tails-amd64-7.18/",
+    "filename": "tails-amd64-7.18.iso",
+    "sha256": "b356e8c630a01e14b58b018cda46c01f5c8e55cb8786830090826be94ee6ae96",
+    "checksum_url": "https://tails.net/install/v2/Tails/amd64/stable/latest.json"
+  },
+  {
+    "distro": "parrot",
+    "name": "Parrot Security 7.1 amd64",
+    "category": "live",
+    "base_url": "https://deb.parrot.sh/parrot/iso/7.1/",
+    "filename": "Parrot-security-7.1_amd64.iso",
+    "sha256": "fbed8991a65fe15d848c7a388aad5f180c2a4d0e530f954f655c8177d95db1cb",
+    "checksum_url": "https://deb.parrot.sh/parrot/iso/7.1/signed-hashes.txt"
+  },
+  {
+    "distro": "devuan",
+    "name": "Devuan Daedalus 5.0.1 amd64 netinstall",
+    "category": "installer",
+    "base_url": "https://files.devuan.org/devuan_daedalus/installer-iso/",
+    "filename": "devuan_daedalus_5.0.1_amd64_netinstall.iso",
+    "sha256": "722af7905595d9a1417f48f783d43dd40fe7da7a2e1d7998a8ea47df2d26941b",
+    "checksum_url": "https://files.devuan.org/devuan_daedalus/installer-iso/SHA256SUMS.txt"
+  },
+  {
+    "distro": "synex",
+    "name": "Synex COSMIC 13 u14",
+    "category": "desktop",
+    "base_url": "https://repo.synex.ar/iso/stable/cosmic/",
+    "filename": "synex-cosmic-13-u14-amd64.hybrid.iso",
+    "sha256": "d32d5e0ecf273b6b61a0bf5b152e1fa34e8a638f733c950f3b792cdd549c3b1f",
+    "checksum_url": "https://repo.synex.ar/iso/stable/cosmic/synex-cosmic-13-u14-amd64.hybrid.iso.sha256sum"
+  },
+  {
+    "distro": "synex",
+    "name": "Synex Server 13 r8",
+    "category": "server",
+    "base_url": "https://repo.synex.ar/iso/stable/server/",
+    "filename": "synex-server-13-r8-amd64.hybrid.iso",
+    "sha256": "8f65cf8c425c7c54f6e1ae981259c5b304648f5285977d478c7e724ca9580b28",
+    "checksum_url": "https://repo.synex.ar/iso/stable/server/synex-server-13-r8-amd64.hybrid.iso.sha256sum"
+  },
+  {
+    "distro": "dragonos",
+    "name": "DragonOS Resolute R2.2",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/dragonos-focal/files/",
+    "filename": "DragonOS_Resolute_R2.2.iso",
+    "sha256": "59898fa7f2faec1fa951fa401c462d921f886f2a21561bfecc4b759269d0d5ec",
+    "checksum_url": "https://sourceforge.net/projects/dragonos-focal/files/DragonOS_Resolute_R2.2.iso.sha256/download"
+  },
+  {
+    "distro": "talos",
+    "name": "Talos Linux v1.14.7 metal amd64 ISO",
+    "category": "server",
+    "base_url": "https://github.com/siderolabs/talos/releases/download/v1.14.7/",
+    "filename": "metal-amd64.iso",
+    "sha256": "8f426aa9fca789a434b24bb64714cb53e8aa5b08d70e9c645554cac24972db4f",
+    "checksum_url": "https://github.com/siderolabs/talos/releases/download/v1.14.7/sha256sum.txt"
+  },
+  {
+    "distro": "tromjaro",
+    "name": "TROMjaro 2026.10.31",
+    "category": "desktop",
+    "base_url": "https://archive.org/download/TROM-Jaro-OS/",
+    "filename": "TROMjaro 2026.10.31.iso",
+    "sha256": "7ddf57e5bfe10cad857d921bc796c103c85fd0f3345c4eb7c34c3502d15ac29c",
+    "checksum_url": "https://files.trom.tf/s/CA4SDJAw8QKxTnT/download"
+  },
+  {
+    "distro": "bunsenlabs",
+    "name": "BunsenLabs Carbon amd64 hybrid ISO",
+    "category": "desktop",
+    "base_url": "https://ddl.bunsenlabs.org/ddl/",
+    "filename": "carbon-1-260211-amd64.hybrid.iso",
+    "sha256": "cb9c64554b0c5ac00ce2a81c1c502954621309cac320345590066c1fa4ed1fd7",
+    "checksum_url": "https://ddl.bunsenlabs.org/ddl/release.sha256.txt"
+  },
+  {
+    "distro": "midnightbsd",
+    "name": "MidnightBSD 4.0.9 amd64 disc1 ISO",
+    "category": "desktop",
+    "base_url": "https://discovery.midnightbsd.org/ftp/releases/amd64/ISO-IMAGES/4.0.9/",
+    "filename": "MidnightBSD-4.0.9--amd64-disc1.iso",
+    "sha256": "7e0bee661443a0559a02b3c654f5475296616a059d34571e8715cc8fa2c6677b",
+    "checksum_url": "https://discovery.midnightbsd.org/ftp/releases/amd64/ISO-IMAGES/4.0.9/CHECKSUM.SHA256"
+  },
+  {
+    "distro": "chimera",
+    "name": "Chimera Linux x86_64 live base ISO",
+    "category": "desktop",
+    "base_url": "https://repo.chimera-linux.org/live/latest/",
+    "filename": "chimera-linux-x86_64-LIVE-20261103-base.iso",
+    "sha256": "869abe5ac1f2384fe14f06b16673e85ff020a92f8e9d6ec9694d33f4707b2a11",
+    "checksum_url": "https://repo.chimera-linux.org/live/latest/sha256sums.txt"
+  },
+  {
+    "distro": "umbrelos",
+    "name": "umbrelOS amd64 image",
+    "category": "appliance",
+    "base_url": "https://download.umbrel.com/release/2.0.1/",
+    "filename": "umbrelos-amd64.img.xz",
+    "sha256": "7be2aee3cc07ea06031a6682f1eec4b253481445bdfa2e29c15273d16c0afd78",
+    "checksum_url": "https://download.umbrel.com/release/2.0.1/SHA256SUMS",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "emmabuntus",
+    "name": "Emmabunt\u00fcs DE6 Core amd64 1.03",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/emmabuntus/files/Emmabuntus_DE6/Images/1.03/",
+    "filename": "emmabuntus-de6-core-amd64-13.7-1.03.iso",
+    "sha256": "48655233f33a5a71301cfc4935c6b77622b2a4d043485c48061397e1111465c3",
+    "checksum_url": "https://sourceforge.net/projects/emmabuntus/files/Emmabuntus_DE6/Images/1.03/emmabuntus-de6-core-amd64-13.7-1.03.iso.sum.txt/download"
+  },
+  {
+    "distro": "emmabuntus",
+    "name": "Emmabunt\u00fcs DE6 Full amd64 1.03",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/emmabuntus/files/Emmabuntus_DE6/Images/1.03/",
+    "filename": "emmabuntus-de6-full-amd64-13.7-1.03.iso",
+    "sha256": "635975e203069931dba8b25ad1314657df7865eec55bacb834888378a05a81cf",
+    "checksum_url": "https://sourceforge.net/projects/emmabuntus/files/Emmabuntus_DE6/Images/1.03/emmabuntus-de6-full-amd64-13.7-1.03.iso.sum.txt/download"
+  },
+  {
+    "distro": "calamaroos",
+    "name": "Calam Arch Installer 2026-11 amd64 ISO",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/blue-arch-installer/files/arch-installer/",
+    "filename": "Calam-Arch-Installer-2026-11.iso",
+    "sha256": "4d977d4f0eae6def1852769c741eea50dc28c6133ecb083b4ccf6372a703c499",
+    "checksum_url": "https://sourceforge.net/projects/blue-arch-installer/files/arch-installer/Calam-Arch-Installer-2026-11.iso/download"
+  },
+  {
+    "distro": "q83",
+    "name": "Linux Q83 Chopin 12.14 live full amd64 hybrid ISO",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/linux-q83/files/",
+    "filename": "q83-chopin-12.14-live-full-amd64.hybrid.iso",
+    "sha256": "7330181065e6571bb94e33de5f148cbe71fc8d4c877ae210c7b78f895772e823",
+    "checksum_url": "https://sourceforge.net/projects/linux-q83/files/q83-chopin-12.14-live-full-amd64.hybrid.iso/download"
+  },
+  {
+    "distro": "q83",
+    "name": "Linux Q83 Kopernik 13.18 Cinnamon desktop amd64 live hybrid ISO",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/linux-q83/files/",
+    "filename": "q83-kopernik-13.18-live-cinnamon-desktop-amd64.hybrid.iso",
+    "sha256": "89cdf0a744d0a378fa428ed5823be1f300bb78145b01ebb846539ee0049e1a87",
+    "checksum_url": "https://sourceforge.net/projects/linux-q83/files/q83-kopernik-13.18-live-cinnamon-desktop-amd64.hybrid.iso/download"
+  },
+  {
+    "distro": "q83",
+    "name": "Linux Q83 Kopernik 13.18 COSMIC desktop amd64 live hybrid ISO",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/linux-q83/files/",
+    "filename": "q83-kopernik-13.18-live-cosmic-desktop-amd64.hybrid.iso",
+    "sha256": "929771ef79dedd494bf1c800e9d4b2969f5db901184ad454f34c68fab82f73af",
+    "checksum_url": "https://sourceforge.net/projects/linux-q83/files/q83-kopernik-13.18-live-cosmic-desktop-amd64.hybrid.iso/download"
+  },
+  {
+    "distro": "expirion",
+    "name": "Expirion Testing 7.0 Xfce amd64 ISO",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/expirion-linux/files/",
+    "filename": "Expirion-Testing-7.0-Xfce-261101.iso",
+    "sha256": "18751d16d1a42b62bc6207a5384360e35305ec6cbc01a5b7c207b414f97ea984",
+    "checksum_url": "https://sourceforge.net/projects/expirion-linux/files/Expirion-Testing-7.0-Xfce-261101.iso/download"
+  },
+  {
+    "distro": "ventoy",
+    "name": "Ventoy 1.1.18 LiveCD",
+    "category": "live",
+    "base_url": "https://github.com/ventoy/Ventoy/releases/download/v1.1.18/",
+    "filename": "ventoy-1.1.18-livecd.iso",
+    "sha256": "ee3917bd5a9973c0b2f8f3ef85048bf68ae089ec88f5561ad78b6ad308b51ab5",
+    "checksum_url": "https://github.com/ventoy/Ventoy/releases/download/v1.1.18/sha256.txt"
+  },
+  {
+    "distro": "solydxk",
+    "name": "SolydX 13 x86_64 (202610)",
+    "category": "desktop",
+    "base_url": "https://downloads.solydxk.com/solydx/",
+    "filename": "solydx_13_64_202610.iso",
+    "sha256": "34c28f7660caf4ce2d3e6e49bfb134c7c66610a2d552e79df493e7c5e2979cab",
+    "checksum_url": "https://downloads.solydxk.com/hashes.asc"
+  },
+  {
+    "distro": "solydxk",
+    "name": "SolydK 13 x86_64 (202610)",
+    "category": "desktop",
+    "base_url": "https://downloads.solydxk.com/solydk/",
+    "filename": "solydk_13_64_202610.iso",
+    "sha256": "426e455e941486abf16b15fcdd21a9bc6c6b6af344c9f8a16eb4d726c5216b59",
+    "checksum_url": "https://downloads.solydxk.com/hashes.asc"
+  },
+  {
+    "distro": "gparted",
+    "name": "GParted Live 1.8.1-6 amd64",
+    "category": "live",
+    "base_url": "https://downloads.sourceforge.net/gparted/",
+    "filename": "gparted-live-1.8.1-6-amd64.iso",
+    "sha256": "d789c38779f0d6f7026c12f44c2c52a04f66e28a1aea7d51f3045ad1bbf28411",
+    "checksum_url": "https://gparted.org/gparted-live/stable/CHECKSUMS.TXT"
+  },
+  {
+    "distro": "univention",
+    "name": "Univention Corporate Server 5.2-3 amd64",
+    "category": "server",
+    "base_url": "https://updates.software-univention.de/download/ucs-cds/ucs5.2-3/",
+    "filename": "UCS_5.2-3-amd64.iso",
+    "sha256": "ef9c735fc391f226fa5078e0d54d0da05ce9ecf9b370ac1debf72ac1b54156fb",
+    "checksum_url": "https://updates.software-univention.de/download/ucs-cds/ucs5.2-3/UCS_5.2-3-amd64.iso.sha256"
+  },
+  {
+    "distro": "siduction",
+    "name": "siduction 2026.1.0 KDE amd64",
+    "category": "desktop",
+    "base_url": "https://isobuilds.siduction.org/kde/",
+    "filename": "siduction-2026.1.0-Big_Crime-kde-amd64-202610181233.iso",
+    "sha256": "787ed5878517cfc3a35b875aa5a99b60a6c5b20bf5fc0cd420e840c0343197bd",
+    "checksum_url": "https://isobuilds.siduction.org/kde/siduction-2026.1.0-Big_Crime-kde-amd64-202610181233.iso.sha256"
+  },
+  {
+    "distro": "openmediavault",
+    "name": "openmediavault 8.3.1 amd64",
+    "category": "appliance",
+    "base_url": "https://sourceforge.net/projects/openmediavault/files/iso/8.3.1/",
+    "filename": "openmediavault_8.3.1-amd64.iso",
+    "sha256": "5ada7dea09dbb10365b6f245515e71c79c5398d8f8f1acda675ee6d8b572d2e5",
+    "checksum_url": "https://sourceforge.net/projects/openmediavault/files/iso/8.3.1/openmediavault_8.3.1-amd64.iso.sha256/download"
+  },
+  {
+    "distro": "t2",
+    "name": "T2 SDE 26.6 x86-64 Desktop (Glibc/GCC nocona)",
+    "category": "live",
+    "base_url": "https://dl.t2sde.org/binary/2026/",
+    "filename": "t2-26.6-x86-64-desktop-glibc-gcc-nocona.iso",
+    "checksum_file": "t2-26.6-x86-64-desktop-glibc-gcc-nocona.sha"
+  },
+  {
+    "distro": "athena",
+    "name": "Athena OS Rolling x86_64",
+    "category": "desktop",
+    "base_url": "https://hub.athenaos.org/iso/",
+    "filename": "athenaos-live-x86_64.iso",
+    "sha256": "8a03b958f63e68a41a6bc89bf105757a101e2dbdce3a4143e453ad24dc277df9",
+    "checksum_url": "https://athenaos.org/en/getting-started/download/"
+  },
+  {
+    "distro": "kolibri",
+    "name": "KolibriOS 0.7.7.0-9261-g8d5545ae en_US (ISO)",
+    "category": "live",
+    "base_url": "https://builds.kolibrios.org/ci/0.7.7.0-9261-g8d5545ae/en_US/",
+    "filename": "kolibrios-0.7.7.0-9261-g8d5545ae-en_US.iso",
+    "sha256": "6e35d0d0936f662a9e962942f7ec5552cb236ee2d0846dc8bfa1378d63b8f7d4",
+    "checksum_url": "https://builds.kolibrios.org/ci/0.7.7.0-9261-g8d5545ae/en_US/sha256sums.txt",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "ludora",
+    "name": "Ludora 45.1 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/ludora/files/ludora45/",
+    "filename": "ludora45.1-x86_64.iso",
+    "sha256": "7d90a1e0695f3171771e5ae214a97041f2ffb04289ba97837c87232507b50a4a",
+    "checksum_url": "https://sourceforge.net/projects/ludora/files/ludora45/ludora45.1-x86_64.iso/download"
+  },
+  {
+    "distro": "nawaos",
+    "name": "NawaOS Gaming 2.2.0",
+    "category": "desktop",
+    "base_url": "https://nawaos.com/",
+    "filename": "NawaOS-Gaming-2.2.0.iso",
+    "sha256": "553430db1ed1f4b67b7ee013d4708a2f398ec7a6431ac4d0c6e481b8cf1c7d4b",
+    "checksum_url": "https://nawaos.com/"
+  },
+  {
+    "distro": "mauna",
+    "name": "Mauna Linux 25.3 MATE amd64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/maunalinux/files/ISO/25.3/",
+    "filename": "MaunaLinux-25.3-MATE-amd64.iso",
+    "sha256": "32780707657404961d5da476eea2a44de7a31d4111eb79ebfe1b6bb32da1ae78",
+    "checksum_url": "https://sourceforge.net/projects/maunalinux/files/ISO/25.3/MaunaLinux-25.3-MATE-amd64.iso/download"
+  },
+  {
+    "distro": "archman",
+    "name": "Archman Linux Xfce 2026-10-01",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/archman-os/files/stable-iso/2026-10/xfce/",
+    "filename": "Archman_Xfce_20261001.iso",
+    "sha256": "ce1430a04e58f2617b9236cc1e4a0c24261d891420401b965b6ced077dac210c",
+    "checksum_url": "https://sourceforge.net/projects/archman-os/files/stable-iso/2026-10/xfce/Archman_Xfce_20261001.iso/download"
+  },
+  {
+    "distro": "vincent",
+    "name": "Vincent OS 1.2 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/vincent-os/files/",
+    "filename": "vincentOS-1.2-x86_64.iso",
+    "sha256": "84a30044dd16fec73314aa627086c3fc247f783252ea909b24a1b3ef316216ae",
+    "checksum_url": "https://sourceforge.net/projects/vincent-os/files/vincentOS-1.2-x86_64.iso/download"
+  },
+  {
+    "distro": "kumander",
+    "name": "Kumander Linux 3.0 RC2 amd64",
+    "category": "desktop",
+    "base_url": "https://dl.kumander.org/",
+    "filename": "kumander-linux-3.0-rc2-live-amd64.iso",
+    "sha256": "a837f60f4469d76dac9fdf1afc8f854aec47088fc5731cae5466803d8cae88be",
+    "checksum_url": "https://www.kumander.org/downloads"
+  },
+  {
+    "distro": "refracta",
+    "name": "Refracta 12.4 Xfce amd64",
+    "category": "live",
+    "base_url": "https://get.refracta.org/files/daedalus/",
+    "filename": "refracta_12.4_xfce_amd64-20250911_1218.iso",
+    "checksum_file": "SHA256SUMS_12.4.txt"
+  },
+  {
+    "distro": "xxri",
+    "name": "XXRI OS Lite 2.7 64-bit",
+    "category": "live",
+    "base_url": "https://sourceforge.net/projects/xxri-os-lite/files/XXRI-OS-Lite-2.7/",
+    "filename": "XXRI-Lite-2.7-64bit.iso",
+    "sha256": "02096b4b0c2d3816e9ee4e0a853e2d272d2549887811dceb48ff7f196c65f571",
+    "checksum_url": "https://xxri.flows.best/download"
+  },
+  {
+    "distro": "capivaraos",
+    "name": "CapivaraOS Marsh 2.0.0 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/capivaraos/files/CapivaraOS-Marsh/2.0.0/",
+    "filename": "CapivaraOS-Marsh-2.0.0-x86_64.iso",
+    "sha256": "79666af3bee34b6ad9477c3e4f49aee5e0d621931b80163bb88e30dc2b03dd22",
+    "checksum_url": "https://capivaraos.org/en/download.html"
+  },
+  {
+    "distro": "capivaraos",
+    "name": "CapivaraOS Pup 2.0.0 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/capivaraos/files/CapivaraOS-Pup/2.0.0/",
+    "filename": "CapivaraOS-Pup-2.0.0-x86_64.iso",
+    "sha256": "13acef6ce12cb0120f5cdb8890ef2d3a5f7607e324516611afe4cfb4a481209f",
+    "checksum_url": "https://capivaraos.org/en/download.html"
+  },
+  {
+    "distro": "capivaraos",
+    "name": "CapivaraOS Snout 2.0.0 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/capivaraos/files/CapivaraOS-Snout/2.0.0/",
+    "filename": "CapivaraOS-Snout-2.0.0-x86_64.iso",
+    "sha256": "8e25df502c4a22b6ac898fde9347aa03c47a28220a2bcdd83dc1981e5e212bd1",
+    "checksum_url": "https://capivaraos.org/en/download.html"
+  },
+  {
+    "distro": "catos",
+    "name": "CatOS 2026.11.12 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/catos/files/",
+    "filename": "catos-2026.11.12-x86_64.iso",
+    "sha256": "cac97535ad7af96297b0e31f64236e8b6027c38f97179c688584800a1edb8256",
+    "checksum_url": "https://catos.info/en/docs/download"
+  },
+  {
+    "distro": "catos",
+    "name": "CatOS 2026.11.12 NVIDIA x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/catos/files/",
+    "filename": "catos-for-nvidia-2026.11.12-x86_64.iso",
+    "sha256": "1a6aec3dc365be7d7a86f7a338810b49063dc53602972cacb54465ace0502254",
+    "checksum_url": "https://catos.info/en/docs/download"
+  },
+  {
+    "distro": "cloudlinux",
+    "name": "CloudLinux 9.9 x86_64 DVD",
+    "category": "server",
+    "base_url": "https://repo.cloudlinux.com/cloudlinux/9/iso/x86_64/",
+    "filename": "CloudLinux-9.9-x86_64-dvd.iso",
+    "checksum_file": "CHECKSUM"
+  },
+  {
+    "distro": "ruscalinux",
+    "name": "RuscaLinux 1.99.2 amd64 hybrid",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/ruscalinux/files/1.99.2/",
+    "filename": "ruscalinux-1.99.2-amd64.hybrid.iso",
+    "sha256": "f8619047bab0147ce44e5bd3c7e01255cb5c2d0402847bd9aae35849651d97a3",
+    "checksum_url": "https://ruscalinux.org/download.html"
+  },
+  {
+    "distro": "openeuler",
+    "name": "openEuler 24.03 LTS SP4 x86_64 DVD",
+    "category": "server",
+    "base_url": "https://repo.openeuler.org/openEuler-24.03-LTS-SP4/ISO/x86_64/",
+    "filename": "openEuler-24.03-LTS-SP4-x86_64-dvd.iso",
+    "checksum_file": "openEuler-24.03-LTS-SP4-x86_64-dvd.iso.sha256sum"
+  },
+  {
+    "distro": "anubitux",
+    "name": "AnuBitux 3.5.6 amd64",
+    "category": "live",
+    "base_url": "https://downloads.anubitux.org/",
+    "filename": "AnuBitux-3.5.6-amd64.iso",
+    "sha256": "a75c0946675348602f566f55652b883d3d5f70d7ffece3b4ed64ebf2149c5151",
+    "checksum_url": "https://anubitux.org/download-anubitux/"
+  },
+  {
+    "distro": "remnux",
+    "name": "REMnux Noble amd64 VMware OVA",
+    "category": "appliance",
+    "base_url": "https://download.remnux.org/202610b/",
+    "filename": "remnux-noble-amd64.ova",
+    "sha256": "060acb0087c7ae6d138d7a994f5a1daf957fe3f9d0fdf72012b2c43e88876ef9",
+    "checksum_url": "https://docs.remnux.org/install-distro/get-virtual-appliance",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "yunohost",
+    "name": "YunoHost 12 (Bookworm, amd64)",
+    "category": "server",
+    "base_url": "https://repo.yunohost.org/images/",
+    "filename": "yunohost-bookworm-12.0-amd64-stable.iso",
+    "sha256": "a27af2d4e81626cbecd3d954c0e4fd54393f6bfc5590460ce11ed9c454a2a773",
+    "checksum_url": "yunohost-bookworm-12.0-amd64-stable.iso.sha256sum"
+  },
+  {
+    "distro": "ctlos",
+    "name": "Ctlos Linux v2.5.0",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/ctlos/files/v2.5.0/",
+    "filename": "ctlos_v2.5.0_20260419.iso",
+    "sha256": "479e46ee4a826f0bec10694048c934c53ec457dd35014720860630e7bfe8b3e7",
+    "checksum_url": "ctlos_v2.5.0_20260419.iso.sha256/download"
+  },
+  {
+    "distro": "postmarketos",
+    "name": "Nura v26.06 (generic-x86_64, GNOME, LTS)",
+    "category": "desktop",
+    "base_url": "https://images.nura.eco/bpo/v26.06/generic-x86_64/gnome/20261120-0210/",
+    "filename": "20261120-0210-nura-v26.06-gnome-generic-x86_64-lts.img.xz",
+    "sha256": "935e9e1921887d1119303bee0cc59f00dd73e0fc3e6c5b2a09fe07704003c822",
+    "boot_status": "download-only",
+    "checksum_url": "20261120-0210-nura-v26.06-gnome-generic-x86_64-lts.img.xz.sha256"
+  },
+  {
+    "distro": "lakka",
+    "name": "Lakka Generic.x86_64 6.1",
+    "category": "appliance",
+    "base_url": "https://le.builds.lakka.tv/Generic.x86_64/",
+    "filename": "Lakka-Generic.x86_64-6.1.img.gz",
+    "sha256": "44bfccddd5a1d7efa95e52b8be0306a96fffd30a66511cc5e171970d2b5dfa4f",
+    "checksum_url": "https://le.builds.lakka.tv/Generic.x86_64/Lakka-Generic.x86_64-6.1.img.gz.sha256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "ditana",
+    "name": "Ditana 0.9.4 Beta x86_64",
+    "category": "desktop",
+    "base_url": "https://ditana.org/downloads/",
+    "filename": "Ditana-0.9.4-Beta-x86_64.iso",
+    "sha256": "f09412729b27a6efd7154abd86895b9d0e28842f37c2eb7af7a92053dcc91edc",
+    "checksum_url": "Ditana-0.9.4-Beta-x86_64.iso.sha256"
+  },
+  {
+    "distro": "vipnix",
+    "name": "Vipnix LiveCD x86_64 20260623",
+    "category": "live",
+    "base_url": "https://sourceforge.net/projects/vipnix-repo/files/",
+    "filename": "vipnix-livecd-x86_64-20260623-1236.iso",
+    "sha256": "5a7dfd9e9c0f38545ef039cdf8a9de7d49cf6648c1f2f4a2d4b9b6842365c2f9",
+    "checksum_url": "https://sourceforge.net/projects/vipnix-repo/files/vipnix-livecd-x86_64-20260623-1236.iso.sha256/download"
+  },
+  {
+    "distro": "rebornos",
+    "name": "RebornOS 2026.01.22 x86_64",
+    "category": "desktop",
+    "base_url": "https://cdn.soulharsh007.dev/RebornOS-ISO/",
+    "filename": "rebornos_iso-2026.01.22-x86_64.iso",
+    "sha256": "8042bbd81b0f6ad30b0ad328f4c8c7480fbbfa6dbe0f6924b35c726fa4f99b40",
+    "checksum_url": "https://downloads.rebornos.org/"
+  },
+  {
+    "distro": "neptune",
+    "name": "Neptune 9.1 amd64",
+    "category": "desktop",
+    "base_url": "https://download.neptuneos.com/download/",
+    "filename": "Neptune9-20260314.iso",
+    "sha256": "530d07aec3f9b3fcd13ffee5da7a679a36a693547c82aa2c614670a40f686f47",
+    "checksum_url": "https://neptuneos.com/en/download.html"
   }
 ]
