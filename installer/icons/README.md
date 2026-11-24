@@ -5,6 +5,8 @@ The original SVGs and [CC0 license](LICENSE.simple-icons) are included. The PNGs
 are tinted 48×48 renders for the dark installer. The marks remain subject to
 their owners’ trademark policies.
 
+The OPNsense PNG uses the [Simple Icons 16.38.1 source](../../assets/distro/sources/opnsense.svg).
+
 The firmware uses 18×18 RGBA renders of the same marks. To regenerate one
 from the repository root:
 

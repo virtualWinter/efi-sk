@@ -13,13 +13,27 @@ qmetaobject::qrc!(register_iso_icons,
     "icons" as "iso-icons" {
         "debian.png", "opensuse.png", "fedora.png", "ubuntu.png",
         "archlinux.png", "rockylinux.png", "almalinux.png",
-        "systemrescue.png", "kalilinux.png", "proxmox.png",
+        "systemrescue.png", "kalilinux.png", "proxmox.png", "opnsense.png",
         "memory-stick.png", "terminal.png", "key-round.png", "network.png",
         "file-search.png", "hard-drive.png", "clipboard-check.png",
     }
 );
 
 const ISOS: &[(&str, &str, &str, &str, &str)] = &[
+    (
+        "VyOS rolling · Experimental",
+        "https://github.com/vyos/vyos-nightly-build/releases/download/2026.11.22-0018-rolling/vyos-2026.11.22-0018-rolling-generic-amd64.iso",
+        "sha256:9c7915e8c113ed371e23115610d9d1d6e642e466844eed10cd74ed2c207e8123",
+        "",
+        "debian",
+    ),
+    (
+        "OPNsense 26.7 DVD · Download only",
+        "https://pkg.opnsense.org/releases/mirror/OPNsense-26.7-dvd-amd64.iso.bz2",
+        "sha256:95cafedda6d5b22ce832e249dc2309110fbee19f813ad78cf28bb3d387186bfb",
+        "",
+        "opnsense",
+    ),
     (
         "Proxmox VE 9.2",
         "https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso",
