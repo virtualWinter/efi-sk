@@ -206,49 +206,75 @@ QQC2.ApplicationWindow {
                             }
                         }
                     }
-                    GridLayout {
+                    Flickable {
+                        id: toolsView
                         Layout.fillWidth: true
-                        columns: 2
-                        rowSpacing: 5
-                        columnSpacing: 12
-                        Repeater {
-                            id: toolList
-                            model: installer.tool_names.split("\n")
-                            delegate: QQC2.CheckBox {
-                                id: toolCheck
-                                required property string modelData
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 1
-                                Layout.minimumWidth: 0
-                                implicitHeight: 32
-                                topPadding: 0
-                                bottomPadding: 0
-                                text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
-                                checked: true
-                                contentItem: RowLayout {
-                                    spacing: 6
-                                    Item {
-                                        Layout.preferredWidth: toolCheck.indicator.width + 2
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 0
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        contentWidth: width
+                        contentHeight: toolRows.height
+                        QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
+                        Column {
+                            id: toolRows
+                            width: toolsView.width - 14
+                            spacing: 1
+                            Repeater {
+                                id: toolList
+                                model: installer.tool_names.split("\n")
+                                delegate: QQC2.CheckBox {
+                                    id: toolCheck
+                                    required property string modelData
+                                    width: toolRows.width
+                                    height: 44
+                                    padding: 8
+                                    text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
+                                    checked: true
+                                    background: Rectangle {
+                                        radius: 7
+                                        color: toolCheck.checked || toolCheck.hovered ? "#262626" : "transparent"
+                                        border.color: toolCheck.checked || toolCheck.visualFocus ? "#737373" : "transparent"
                                     }
-                                    Image {
-                                        readonly property var icons: ({
-                                                "Memtest86+": "memory-stick",
-                                                "EFI Shell": "terminal",
-                                                "KeyTool": "key-round",
-                                                "iPXE": "network",
-                                                "ACPIdump": "file-search",
-                                                "GPT fdisk": "hard-drive",
-                                                "UEFI SCT": "clipboard-check"
-                                            })
-                                        source: "qrc:/iso-icons/" + (icons[toolCheck.text] || "hard-drive") + ".png"
-                                        Layout.preferredWidth: 15
-                                        Layout.preferredHeight: 15
-                                        fillMode: Image.PreserveAspectFit
+                                    indicator: Rectangle {
+                                        width: 28
+                                        height: 28
+                                        x: 45
+                                        y: (toolCheck.height - height) / 2
+                                        color: toolCheck.checked ? "#171717" : "transparent"
+                                        border.color: "#2e2e2e"
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: toolCheck.checked ? "✓" : ""
+                                            color: "#fafafa"
+                                            font.pixelSize: 22
+                                        }
                                     }
-                                    QQC2.Label {
-                                        text: toolCheck.text
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
+                                    contentItem: RowLayout {
+                                        spacing: 8
+                                        Image {
+                                            readonly property var icons: ({
+                                                    "Memtest86+": "memory-stick",
+                                                    "EFI Shell": "terminal",
+                                                    "KeyTool": "key-round",
+                                                    "iPXE": "network",
+                                                    "ACPIdump": "file-search",
+                                                    "GPT fdisk": "hard-drive",
+                                                    "UEFI SCT": "clipboard-check"
+                                                })
+                                            source: "qrc:/iso-icons/" + (icons[toolCheck.text] || "hard-drive") + ".png"
+                                            Layout.preferredWidth: 20
+                                            Layout.preferredHeight: 20
+                                            fillMode: Image.PreserveAspectFit
+                                        }
+                                        Item {
+                                            Layout.preferredWidth: 39
+                                        }
+                                        QQC2.Label {
+                                            text: toolCheck.text
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
                                     }
                                 }
                             }
@@ -256,9 +282,6 @@ QQC2.ApplicationWindow {
                     }
                     Muted {
                         text: "UEFI SCT also installs EFI Shell."
-                    }
-                    Item {
-                        Layout.fillHeight: true
                     }
                 }
             }
