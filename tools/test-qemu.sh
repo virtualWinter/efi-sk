@@ -41,10 +41,10 @@ if [[ -z "$firmware" ]]; then
 fi
 [[ -r "$firmware" ]] || die 'OVMF not found; set OVMF_FIRMWARE to a non-Secure-Boot firmware file.'
 
-cache=build/qemu-cache
+cache=${QEMU_CACHE_DIR:-build/qemu-cache}
 mkdir -p "$cache"
 exec 9>"$cache/lock"
-flock -x 9
+flock -nx 9 || die 'A test is using this cache. Close that VM or set QEMU_CACHE_DIR to run another.'
 tools/build-efi.sh
 work=$(mktemp -d build/qemu.XXXXXXXX)
 trap 'rm -rf -- "$work"' EXIT

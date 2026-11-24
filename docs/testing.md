@@ -21,9 +21,11 @@ lists [supported ISOs](profiles.md) in its boot menu. The script does not
 need root or write to physical drives. When the ISO files, companions,
 or bundled tools change, it rebuilds the image; otherwise it only
 updates `BOOTX64.EFI` on the cached EFI partition. QEMU runs with
-`-snapshot`, so guest writes don't affect the cache. Runs share a lock
-and wait for an existing test VM to exit. Delete `build/qemu-cache/`
-when no test is running to reclaim its space.
+`-snapshot`, so guest writes don't affect the cache. A second run using
+the same cache exits with a message rather than waiting. Set
+`QEMU_CACHE_DIR` to a different directory under `build/` to run tests
+concurrently. Delete a cache directory when no test is using it to
+reclaim its space.
 
 The test image includes all bundled tools by default, even if `isos/` is
 empty. UEFI SCT needs `bsdtar` (`libarchive-tools` on Debian/Ubuntu,
