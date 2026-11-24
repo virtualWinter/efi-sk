@@ -17,7 +17,7 @@ distribution's Kirigami 6 QML package (often named `kirigami2-dev` or
 On Linux, downloads use `curl` and `sha256sum`. USB creation requires
 `pkexec`, util-linux, udev, `mkfs.fat`, and `mkfs.ext4`.
 
-To use the latest published picker and EFI tools, install `bsdtar` and run:
+To use the latest published picker and EFI tools, run:
 
 ```sh
 ISO_BOOT_PICKER_GITHUB_REPO=OWNER/REPO tools/run-installer.sh
@@ -28,6 +28,11 @@ Replace `OWNER/REPO` with the GitHub repository that published the
 checksums before requesting administrator privileges. The repository can
 also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
+The **Optional EFI tools** checklist defaults to all tools. Deselect any you
+don't want, or use **Deselect all tools** to install only the picker and your
+images. Release mode downloads only the picker and selected tools; local mode
+copies those files from the local build and `vendor/`. Selecting UEFI SCT also
+includes the EFI Shell and requires `bsdtar`.
 Release-mode ISO downloads are stored under
 `${XDG_DATA_HOME:-$HOME/.local/share}/iso-boot-picker/isos`. Set
 `ISO_BOOT_PICKER_ISO_DIR` to override that location.

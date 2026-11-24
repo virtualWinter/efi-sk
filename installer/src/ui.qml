@@ -105,6 +105,34 @@ Kirigami.ApplicationWindow {
 
                 Kirigami.Card {
                     Layout.fillWidth: true
+                    banner.title: "Optional EFI tools"
+                    contentItem: ColumnLayout {
+                        QQC2.Label {
+                            text: "Choose which tools to install. The boot picker is always included."
+                            Layout.fillWidth: true
+                            wrapMode: Text.Wrap
+                        }
+                        QQC2.Button {
+                            text: "Deselect all tools"
+                            onClicked: {
+                                for (let i = 0; i < toolList.count; ++i)
+                                    (toolList.itemAt(i) as QQC2.CheckBox).checked = false
+                            }
+                        }
+                        Repeater {
+                            id: toolList
+                            model: installer.tool_names.split("\n")
+                            delegate: QQC2.CheckBox {
+                                required property string modelData
+                                text: modelData
+                                checked: true
+                            }
+                        }
+                    }
+                }
+
+                Kirigami.Card {
+                    Layout.fillWidth: true
                     banner.title: "USB drive"
                     banner.titleIcon: "drive-removable-media"
                     contentItem: ColumnLayout {
@@ -160,8 +188,15 @@ Kirigami.ApplicationWindow {
     Kirigami.PromptDialog {
         id: eraseDialog
         title: "Erase USB drive?"
-        subtitle: diskBox.currentText + "\n\nAll selected images will be copied. Existing data will be permanently erased."
+        subtitle: diskBox.currentText + "\n\nSelected images and tools will be installed. Existing data will be permanently erased."
         standardButtons: QQC2.Dialog.Cancel | QQC2.Dialog.Ok
-        onAccepted: installer.create_usb(window.selectedIsoIndexes, diskBox.currentIndex)
+        onAccepted: {
+            let excluded = []
+            for (let i = 0; i < toolList.count; ++i) {
+                if (!(toolList.itemAt(i) as QQC2.CheckBox).checked)
+                    excluded.push(i)
+            }
+            installer.create_usb(window.selectedIsoIndexes, diskBox.currentIndex, excluded.join(","))
+        }
     }
 }

@@ -5,18 +5,45 @@ use std::{
     process::{Command, Stdio},
 };
 
-pub const ASSETS: &[(&str, &str)] = &[
-    ("BOOTX64.EFI", ""),
-    ("memtest86plus.efi", "memtest86plus"),
-    ("shell.efi", "edk2-shell"),
-    ("KeyTool.efi", "keytool"),
-    ("ipxe.efi", "ipxe"),
-    ("acpidump.efi", "acpidump"),
-    ("gdisk_x64.efi", "gpt-fdisk"),
-    ("sct-x64.7z", "uefi-sct"),
+pub type Asset = (&'static str, &'static str, &'static str);
+const PICKER: Asset = ("BOOTX64.EFI", "", "ISO Boot Picker");
+const SHELL: Asset = ("shell.efi", "edk2-shell", "EFI Shell");
+const SCT: Asset = ("sct-x64.7z", "uefi-sct", "UEFI SCT (includes EFI Shell)");
+pub const TOOLS: &[Asset] = &[
+    ("memtest86plus.efi", "memtest86plus", "Memtest86+"),
+    SHELL,
+    ("KeyTool.efi", "keytool", "KeyTool"),
+    ("ipxe.efi", "ipxe", "iPXE"),
+    ("acpidump.efi", "acpidump", "ACPIdump"),
+    ("gdisk_x64.efi", "gpt-fdisk", "GPT fdisk"),
+    SCT,
 ];
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+pub fn selected_assets(excluded: &str) -> Result<Vec<Asset>> {
+    let mut included = vec![true; TOOLS.len()];
+    if !excluded.is_empty() {
+        for index in excluded.split(',') {
+            let index = index.parse::<usize>()?;
+            *included
+                .get_mut(index)
+                .ok_or("Invalid EFI tool selection")? = false;
+        }
+    }
+    let mut assets = vec![PICKER];
+    assets.extend(
+        TOOLS
+            .iter()
+            .copied()
+            .zip(included)
+            .filter_map(|(tool, include)| include.then_some(tool)),
+    );
+    if assets.contains(&SCT) && !assets.contains(&SHELL) {
+        assets.push(SHELL);
+    }
+    Ok(assets)
+}
 
 pub struct Temp(pub PathBuf);
 
@@ -48,7 +75,7 @@ fn run(command: &mut Command) -> Result<()> {
     output(command).map(drop)
 }
 
-pub fn download(repo: &str, dir: &Path) -> Result<()> {
+pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
     let valid = |part: &str| {
         !part.is_empty()
             && part != "."
@@ -89,15 +116,17 @@ pub fn download(repo: &str, dir: &Path) -> Result<()> {
     };
     fetch("SHA256SUMS")?;
     let sums = fs::read_to_string(dir.join("SHA256SUMS"))?;
-    for (name, _) in ASSETS {
+    for (name, _, _) in assets {
         let mut matches = sums.lines().filter_map(|line| {
             let (hash, file) = line.split_once("  ")?;
             (file == *name && hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit()))
                 .then_some(hash)
         });
-        let expected = matches.next().ok_or("Missing release checksum")?;
+        let expected = matches
+            .next()
+            .ok_or_else(|| format!("Missing release checksum: {name}"))?;
         if matches.next().is_some() {
-            return Err("Duplicate release checksum".into());
+            return Err(format!("Duplicate release checksum: {name}").into());
         }
         fetch(name)?;
         let actual = output(Command::new("sha256sum").arg(dir.join(name)))?;
@@ -127,9 +156,11 @@ pub fn sequence(disk: &Path) -> Result<String> {
 pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     use std::os::unix::fs::FileTypeExt;
 
-    let [disk, expected_sequence, dir, images @ ..] = args else {
+    let [disk, expected_sequence, dir, excluded, images @ ..] = args else {
         return Err("Missing USB writer arguments".into());
     };
+    let assets = selected_assets(excluded.to_str().ok_or("Invalid EFI tool selection")?)?;
+    let include_sct = assets.contains(&SCT);
     let disk = fs::canonicalize(disk)?;
     let dir = Path::new(dir);
     if images.is_empty()
@@ -163,7 +194,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     if capacity < total.saturating_add(768 * 1024 * 1024) {
         return Err("Not enough space on the USB drive".into());
     }
-    for (asset, _) in ASSETS {
+    for (asset, _, _) in &assets {
         if !fs::metadata(dir.join(asset))?.is_file() {
             return Err(format!("Missing asset: {asset}").into());
         }
@@ -176,8 +207,10 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
         "mkfs.ext4",
         "mount",
         "umount",
-        "bsdtar",
-    ] {
+    ]
+    .into_iter()
+    .chain(include_sct.then_some("bsdtar"))
+    {
         if !["/usr/sbin", "/usr/bin", "/sbin", "/bin"]
             .iter()
             .any(|p| Path::new(p).join(name).is_file())
@@ -185,9 +218,9 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
             return Err(format!("Missing utility: {name}").into());
         }
     }
-    run(Command::new("bsdtar")
-        .arg("-tf")
-        .arg(dir.join("sct-x64.7z")))?;
+    if include_sct {
+        run(Command::new("bsdtar").arg("-tf").arg(dir.join(SCT.0)))?;
+    }
     if sequence(&disk)?.trim() != expected_sequence.to_string_lossy() {
         return Err("The USB drive changed".into());
     }
@@ -230,14 +263,16 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     let iso = data.dir.0.join("iso");
     fs::create_dir_all(&boot)?;
     fs::create_dir(&iso)?;
-    for (asset, _) in &ASSETS[..ASSETS.len() - 1] {
+    for (asset, _, _) in assets.into_iter().filter(|asset| *asset != SCT) {
         fs::copy(dir.join(asset), boot.join(asset))?;
     }
-    run(Command::new("bsdtar")
-        .args(["-xf"])
-        .arg(dir.join("sct-x64.7z"))
-        .arg("-C")
-        .arg(&efi.dir.0))?;
+    if include_sct {
+        run(Command::new("bsdtar")
+            .args(["-xf"])
+            .arg(dir.join(SCT.0))
+            .arg("-C")
+            .arg(&efi.dir.0))?;
+    }
     for image in images {
         let path = Path::new(image);
         fs::copy(
@@ -276,5 +311,30 @@ impl Drop for Mount {
         if self.mounted {
             let _: io::Result<_> = Command::new("umount").arg("--").arg(&self.dir.0).status();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn defaults_include_every_tool_and_empty_selection_keeps_picker() {
+        assert_eq!(selected_assets("").unwrap().len(), TOOLS.len() + 1);
+        assert_eq!(selected_assets("0,1,2,3,4,5,6").unwrap(), [PICKER]);
+    }
+
+    #[test]
+    fn sct_requires_shell() {
+        assert_eq!(
+            selected_assets("0,1,2,3,4,5").unwrap(),
+            [PICKER, SCT, SHELL]
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_exclusions() {
+        assert!(selected_assets("999").is_err());
+        assert!(selected_assets("invalid").is_err());
     }
 }

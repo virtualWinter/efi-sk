@@ -102,13 +102,16 @@ struct Installer {
     status: qmetaobject::qt_property!(QString; NOTIFY status_changed),
     status_changed: qmetaobject::qt_signal!(),
     iso_names: qmetaobject::qt_property!(QString),
+    tool_names: qmetaobject::qt_property!(QString),
     iso_icons: qmetaobject::qt_property!(QString),
     iso_paths: qmetaobject::qt_property!(QString),
     devices: qmetaobject::qt_property!(QString; NOTIFY devices_changed),
     devices_changed: qmetaobject::qt_signal!(),
     refresh: qmetaobject::qt_method!(fn(&mut self)),
     download_iso: qmetaobject::qt_method!(fn(&mut self, index: i32)),
-    create_usb: qmetaobject::qt_method!(fn(&mut self, iso_indices: QString, disk_index: i32)),
+    create_usb: qmetaobject::qt_method!(
+        fn(&mut self, iso_indices: QString, disk_index: i32, excluded_tools: QString)
+    ),
 }
 
 impl Installer {
@@ -191,7 +194,7 @@ impl Installer {
         }
     }
 
-    fn create_usb(&mut self, iso_indices: QString, disk_index: i32) {
+    fn create_usb(&mut self, iso_indices: QString, disk_index: i32, excluded_tools: QString) {
         let device_list = self.devices.to_string();
         let selected = device_list
             .lines()
@@ -222,7 +225,7 @@ impl Installer {
             }
             images.push(iso);
         }
-        let result = self.prepare_usb(&disk, &images);
+        let result = self.prepare_usb(&disk, &images, &excluded_tools.to_string());
         self.set_status(match result {
             Ok(()) => "USB created successfully".to_owned(),
             Err(error) => format!("USB creation failed: {error}"),
@@ -233,7 +236,9 @@ impl Installer {
         &mut self,
         disk: &str,
         images: &[PathBuf],
+        excluded_tools: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let assets = usb::selected_assets(excluded_tools)?;
         let sequence = usb::sequence(Path::new(disk))?;
         let stage = usb::Temp::new()?;
         let result = (|| {
@@ -242,14 +247,14 @@ impl Installer {
                 .or_else(|| option_env!("ISO_BOOT_PICKER_GITHUB_REPO").map(str::to_owned))
             {
                 self.set_status("Downloading and verifying EFI binaries…");
-                usb::download(&repo, &stage.0)?;
+                usb::download(&repo, &stage.0, &assets)?;
             } else {
                 let root = project_root();
                 let mut picker = root.join("build/BOOTX64.EFI");
                 if !picker.is_file() {
                     picker = root.join("build/x86_64-unknown-uefi/release/iso-boot-picker.efi");
                 }
-                for (name, vendor) in usb::ASSETS {
+                for &(name, vendor, _) in &assets {
                     let source = if vendor.is_empty() {
                         picker.clone()
                     } else {
@@ -264,6 +269,7 @@ impl Installer {
                 .arg(std::env::current_exe()?)
                 .args(["--write-usb", disk, sequence.trim()])
                 .arg(&stage.0)
+                .arg(excluded_tools)
                 .args(
                     images
                         .iter()
@@ -281,9 +287,9 @@ impl Installer {
             }
             Ok(())
         })();
-        for name in usb::ASSETS
+        for name in assets
             .iter()
-            .map(|(name, _)| *name)
+            .map(|(name, _, _)| *name)
             .chain(["SHA256SUMS"])
         {
             let _ = fs::remove_file(stage.0.join(name));
@@ -367,6 +373,12 @@ fn main() {
         status: "Ready".into(),
         iso_names: names.into(),
         iso_icons: icons.into(),
+        tool_names: usb::TOOLS
+            .iter()
+            .map(|tool| tool.2)
+            .collect::<Vec<_>>()
+            .join("\n")
+            .into(),
         ..Default::default()
     });
     engine.set_object_property("installer".into(), unsafe {
