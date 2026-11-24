@@ -3,6 +3,7 @@ name: Release UEFI picker
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,6 +26,7 @@ jobs:
           cd dist
           sha256sum *.efi *.EFI *.7z > SHA256SUMS
       - name: Publish GitHub release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes dist/*
