@@ -103,6 +103,14 @@ impl Iso {
         self.file.metadata().len()
     }
 
+    pub(super) fn directory_location(&mut self, path: &str) -> Result<(u64, usize), Status> {
+        let dir = self.lookup(path)?;
+        if !dir.directory || dir.length > MAX_DIRECTORY {
+            return Err(Status::UNSUPPORTED);
+        }
+        Ok((dir.offset, dir.length))
+    }
+
     pub(super) fn read_image(&mut self, offset: u64, bytes: &mut [u8]) -> Result<(), Status> {
         read_at(&mut self.file, offset, bytes)
     }

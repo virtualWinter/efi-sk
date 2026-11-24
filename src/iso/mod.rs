@@ -1,4 +1,5 @@
 pub mod artwork;
+mod bsd;
 mod debian;
 pub mod discovery;
 mod efi;

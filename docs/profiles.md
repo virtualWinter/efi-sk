@@ -49,8 +49,11 @@ OpenWrt are not handled.
   have not been verified.
 - **OPNsense DVD (download only):** the installer catalog verifies the
   upstream `.iso.bz2`. The firmware can try its EFI loader on the
-  decompressed ISO, but there is no FreeBSD media handoff yet. Do not
-  assume the live system can mount its root filesystem from the picker.
+  decompressed ISO. For `OPNSENSE_INSTALL` media, an experimental
+  read-only overlay asks the FreeBSD loader to preload the ISO as a
+  memory disk. It leaves the USB file unchanged but requires enough
+  RAM for the whole ISO plus the installer. Do not assume root mounting
+  works until the installation environment has been verified.
 
 ### Replacing compatibility profiles
 

@@ -22,6 +22,7 @@ use uefi_raw::{
 use super::filesystem::Iso;
 
 const SECTOR: u64 = 2048;
+const READ_WINDOW: usize = 128 * 1024;
 const ISO_DEVICE: uefi::Guid = uefi::guid!("bff95fa8-312a-43bf-823e-c862b96c64d5");
 
 pub fn detect(iso: &mut Iso) -> bool {
@@ -122,12 +123,49 @@ fn efi_catalog(catalog: &[u8; SECTOR as usize], mut is_fat: impl FnMut(u32) -> b
 struct Optical {
     protocol: BlockIoProtocol,
     media: BlockIoMedia,
-    iso: RefCell<Iso>,
+    source: RefCell<OpticalSource>,
+    overlay: Vec<super::bsd::Overlay>,
+}
+
+struct OpticalSource {
+    iso: Iso,
+    cache: Vec<u8>,
+    offset: u64,
+    valid: usize,
+}
+
+impl OpticalSource {
+    fn read(&mut self, start: u64, target: &mut [u8]) -> Result<(), Status> {
+        let aligned = start / READ_WINDOW as u64 * READ_WINDOW as u64;
+        let index = (start - aligned) as usize;
+        if self.cache.is_empty() || target.len() > READ_WINDOW - index {
+            return self.iso.read_image(start, target);
+        }
+        if self.offset != aligned || self.valid < index + target.len() {
+            self.valid = 0;
+            let count = (self.iso.image_len() - aligned).min(READ_WINDOW as u64) as usize;
+            self.iso.read_image(aligned, &mut self.cache[..count])?;
+            self.offset = aligned;
+            self.valid = count;
+        }
+        let slice = self.cache[..self.valid]
+            .get(index..index + target.len())
+            .ok_or(Status::DEVICE_ERROR)?;
+        target.copy_from_slice(slice);
+        Ok(())
+    }
 }
 
 pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
     if !detect(&mut iso) {
         return Err(Status::UNSUPPORTED);
+    }
+    let overlay = super::bsd::media_overlay(&mut iso)?;
+    // FreeBSD's loader preloads raw modules in small reads. Read ahead on
+    // this path so that USB transfers aren't dominated by per-read overhead.
+    let mut cache = Vec::new();
+    if !overlay.is_empty() && cache.try_reserve_exact(READ_WINDOW).is_ok() {
+        cache.resize(READ_WINDOW, 0);
     }
     let mut optical = Box::new(Optical {
         protocol: BlockIoProtocol {
@@ -152,7 +190,13 @@ pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
             logical_blocks_per_physical_block: 0,
             optimal_transfer_length_granularity: 0,
         },
-        iso: RefCell::new(iso),
+        source: RefCell::new(OpticalSource {
+            iso,
+            cache,
+            offset: 0,
+            valid: 0,
+        }),
+        overlay,
     });
     optical.protocol.media = ptr::from_ref(&optical.media);
     let mut path = Vec::new();
@@ -248,7 +292,7 @@ unsafe extern "efiapi" fn read_blocks(
     {
         return Status::INVALID_PARAMETER;
     }
-    let Ok(mut iso) = optical.iso.try_borrow_mut() else {
+    let Ok(mut source) = optical.source.try_borrow_mut() else {
         return Status::NOT_READY;
     };
     // UEFI supplies a writable buffer. Initialize it before creating a slice.
@@ -257,9 +301,20 @@ unsafe extern "efiapi" fn read_blocks(
         p.write_bytes(0, len);
         slice::from_raw_parts_mut(p, len)
     };
-    iso.read_image(lba * SECTOR, target)
-        .err()
-        .unwrap_or(Status::SUCCESS)
+    let start = lba * SECTOR;
+    if let Err(status) = source.read(start, target) {
+        return status;
+    }
+    for (offset, sector) in &optical.overlay {
+        if let Some(index) = offset
+            .checked_sub(start)
+            .and_then(|i| usize::try_from(i).ok())
+            && let Some(dest) = target.get_mut(index..index.saturating_add(SECTOR as usize))
+        {
+            dest.copy_from_slice(sector);
+        }
+    }
+    Status::SUCCESS
 }
 
 fn launch_registered(parent: Handle, ram_path: &DevicePath) -> Result<(), Status> {
