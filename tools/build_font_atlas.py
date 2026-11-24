@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate the EFI menu's Geist glyphs with Pillow."""
 
+import argparse
 from pathlib import Path
 import struct
 
@@ -15,9 +16,9 @@ FACES = [
 RECORD = struct.Struct("<IHbbBB")
 
 
-def build_atlas(name, font_weight, size, tracking):
+def build_atlas(font_dir, name, font_weight, size, tracking):
     font = ImageFont.truetype(
-        ASSETS / f"Geist-{font_weight}.ttf", size, layout_engine=ImageFont.Layout.BASIC
+        font_dir / f"Geist-{font_weight}.ttf", size, layout_engine=ImageFont.Layout.BASIC
     )
     records = bytearray()
     pixels = bytearray()
@@ -31,5 +32,12 @@ def build_atlas(name, font_weight, size, tracking):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("font_dir", type=Path, help="directory containing the Geist static TTFs")
+    font_dir = parser.parse_args().font_dir
+    for _, weight, _, _ in FACES:
+        font = font_dir / f"Geist-{weight}.ttf"
+        if not font.is_file():
+            parser.error(f"missing font: {font}")
     for face in FACES:
-        build_atlas(*face)
+        build_atlas(font_dir, *face)

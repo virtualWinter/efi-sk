@@ -8,7 +8,9 @@ files or external dependencies.
 - [GEOM module for OPNsense](../vendor/opnsense-geom/README.md): BSD
   license, embedded in the firmware.
 
-- [Geist fonts and generated glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
+- [Geist glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
+  The original TTFs are not bundled; see the [build guide](build.md#font)
+  for the upstream release and regeneration instructions.
 - [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the
   [bundled license](../assets/lucide/LICENSE).
 - [Installer and firmware distro icons](../installer/icons/README.md): Simple Icons,

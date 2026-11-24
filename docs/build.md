@@ -52,8 +52,14 @@ A fresh checkout does not contain a prebuilt picker.
 
 ## Font
 
-The graphical menu embeds Geist from Vercel's v1.9.2 release as
-pre-rendered glyphs under the SIL Open Font License in
-`assets/OFL-Geist.txt`. The font sources and atlases are in `assets/`.
-To regenerate the atlases, run `python3 tools/build_font_atlas.py` with
-Pillow installed on the host.
+The graphical menu embeds pre-rendered glyphs from
+[Geist v1.9.2](https://github.com/vercel/geist-font/releases/tag/v1.9.2).
+The glyph atlases and [SIL Open Font License](../assets/OFL-Geist.txt)
+are checked in; the TTFs are not needed for a normal build.
+
+To regenerate the atlases, install Pillow and extract `Geist-Regular.ttf`
+and `Geist-SemiBold.ttf` from the upstream release into a local directory:
+
+```sh
+python3 tools/build_font_atlas.py /path/to/static-fonts
+```
