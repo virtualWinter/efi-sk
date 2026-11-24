@@ -14,6 +14,8 @@ qmetaobject::qrc!(register_iso_icons,
         "debian.png", "opensuse.png", "fedora.png", "ubuntu.png",
         "archlinux.png", "rockylinux.png", "almalinux.png",
         "systemrescue.png", "kalilinux.png",
+        "memory-stick.png", "terminal.png", "key-round.png", "network.png",
+        "file-search.png", "hard-drive.png", "clipboard-check.png",
     }
 );
 

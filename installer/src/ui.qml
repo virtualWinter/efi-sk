@@ -173,8 +173,8 @@ QQC2.ApplicationWindow {
             Section {
                 title: "Optional EFI tools"
                 Layout.fillHeight: true
-                Layout.preferredWidth: 300
-                Layout.minimumWidth: 300
+                Layout.preferredWidth: 330
+                Layout.minimumWidth: 330
                 contentItem: ColumnLayout {
                     spacing: 6
                     RowLayout {
@@ -213,6 +213,7 @@ QQC2.ApplicationWindow {
                             id: toolList
                             model: installer.tool_names.split("\n")
                             delegate: QQC2.CheckBox {
+                                id: toolCheck
                                 required property string modelData
                                 Layout.fillWidth: true
                                 Layout.preferredWidth: 1
@@ -222,6 +223,32 @@ QQC2.ApplicationWindow {
                                 bottomPadding: 0
                                 text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
                                 checked: true
+                                contentItem: RowLayout {
+                                    spacing: 5
+                                    Item {
+                                        Layout.preferredWidth: toolCheck.indicator.width + 6
+                                    }
+                                    Image {
+                                        readonly property var icons: ({
+                                                "Memtest86+": "memory-stick",
+                                                "EFI Shell": "terminal",
+                                                "KeyTool": "key-round",
+                                                "iPXE": "network",
+                                                "ACPIdump": "file-search",
+                                                "GPT fdisk": "hard-drive",
+                                                "UEFI SCT": "clipboard-check"
+                                            })
+                                        source: "qrc:/iso-icons/" + (icons[toolCheck.text] || "hard-drive") + ".png"
+                                        Layout.preferredWidth: 15
+                                        Layout.preferredHeight: 15
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+                                    QQC2.Label {
+                                        text: toolCheck.text
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
+                                }
                             }
                         }
                     }

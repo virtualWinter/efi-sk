@@ -7,3 +7,5 @@ their owners’ trademark policies.
 
 SystemRescue uses a neutral drive glyph rendered from
 [Lucide](../../assets/lucide/hard-drive.svg) under its [license](../../assets/lucide/LICENSE).
+The EFI tools use matching [Lucide 0.468.0](https://github.com/lucide-icons/lucide/tree/0.468.0/icons)
+glyphs (not project logos), rendered at 36×36.
