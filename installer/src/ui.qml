@@ -12,7 +12,7 @@ Kirigami.ApplicationWindow {
     height: 680
     minimumWidth: 620
     minimumHeight: 560
-    title: "ISO Boot Picker"
+    title: "EFI Swiss Knife"
 
     property string selectedIsoIndexes: ""
 
@@ -27,7 +27,7 @@ Kirigami.ApplicationWindow {
     }
 
     pageStack.initialPage: Kirigami.Page {
-        title: "ISO Boot Picker"
+        title: "EFI Swiss Knife"
 
         QQC2.ScrollView {
             anchors.fill: parent

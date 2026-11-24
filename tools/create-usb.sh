@@ -13,9 +13,9 @@ done
 project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 efi="$project_dir/build/BOOTX64.EFI"
 if [[ ! -s "$efi" ]]; then
-    efi="$project_dir/build/x86_64-unknown-uefi/release/iso-boot-picker.efi"
+    efi="$project_dir/build/x86_64-unknown-uefi/release/efi-sk.efi"
 fi
-[[ -f "$efi" && -s "$efi" ]] || die 'Build ISO Boot Picker before creating the USB.'
+[[ -f "$efi" && -s "$efi" ]] || die 'Build EFI Swiss Knife before creating the USB.'
 memtest="$project_dir/vendor/memtest86plus/memtest86plus.efi"
 [[ -s "$memtest" && -r "$memtest" ]] || die 'The bundled Memtest86+ executable is missing.'
 shell="$project_dir/vendor/edk2-shell/shell.efi"

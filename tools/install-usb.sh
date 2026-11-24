@@ -24,7 +24,7 @@ read -r type transport readonly < <(lsblk -dnro TYPE,TRAN,RO -- "$disk")
 [[ -z $(lsblk -nrpo MOUNTPOINTS -- "$disk" | tr -d '[:space:]') ]] || die "unmount USB partitions first"
 
 efi="$project/build/BOOTX64.EFI"
-[[ -s $efi ]] || efi="$project/build/x86_64-unknown-uefi/release/iso-boot-picker.efi"
+[[ -s $efi ]] || efi="$project/build/x86_64-unknown-uefi/release/efi-sk.efi"
 [[ -s $efi ]] || die "build the UEFI picker first"
 for file in memtest86plus/memtest86plus.efi edk2-shell/shell.efi keytool/KeyTool.efi \
     ipxe/ipxe.efi acpidump/acpidump.efi; do

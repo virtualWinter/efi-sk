@@ -1,6 +1,6 @@
-# ISO Boot Picker Installer (experimental)
+# EFI Swiss Knife Installer (experimental)
 
-This is the desktop Qt application for preparing an ISO Boot Picker USB.
+This is the desktop Qt application for preparing an EFI Swiss Knife USB.
 It is intentionally a separate crate because the firmware picker is a
 `no_std` UEFI application.
 
@@ -20,7 +20,7 @@ On Linux, downloads use `curl` and `sha256sum`. USB creation requires
 To use the latest published picker and EFI tools, run:
 
 ```sh
-ISO_BOOT_PICKER_GITHUB_REPO=OWNER/REPO tools/run-installer.sh
+EFI_SK_GITHUB_REPO=OWNER/REPO tools/run-installer.sh
 ```
 
 Replace `OWNER/REPO` with the GitHub repository that published the
@@ -34,8 +34,8 @@ images. Release mode downloads only the picker and selected tools; local mode
 copies those files from the local build and `vendor/`. Selecting UEFI SCT also
 includes the EFI Shell and requires `bsdtar`.
 Release-mode ISO downloads are stored under
-`${XDG_DATA_HOME:-$HOME/.local/share}/iso-boot-picker/isos`. Set
-`ISO_BOOT_PICKER_ISO_DIR` to override that location.
+`${XDG_DATA_HOME:-$HOME/.local/share}/efiswissknife/isos`. Set
+`EFI_SK_ISO_DIR` to override that location.
 
 The installer binary downloads and verifies files as your regular user. It
 restarts itself through `pkexec` in a non-GUI writer mode to prepare the USB.

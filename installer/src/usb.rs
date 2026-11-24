@@ -6,7 +6,7 @@ use std::{
 };
 
 pub type Asset = (&'static str, &'static str, &'static str);
-const PICKER: Asset = ("BOOTX64.EFI", "", "ISO Boot Picker");
+const PICKER: Asset = ("BOOTX64.EFI", "", "EFI Swiss Knife");
 const SHELL: Asset = ("shell.efi", "edk2-shell", "EFI Shell");
 const SCT: Asset = ("sct-x64.7z", "uefi-sct", "UEFI SCT (includes EFI Shell)");
 pub const TOOLS: &[Asset] = &[

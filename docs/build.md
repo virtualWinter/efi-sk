@@ -46,7 +46,7 @@ rustup target add x86_64-unknown-uefi
 cargo build --locked --release --target x86_64-unknown-uefi
 ```
 
-The result is `build/x86_64-unknown-uefi/release/iso-boot-picker.efi`.
+The result is `build/x86_64-unknown-uefi/release/efi-sk.efi`.
 Copy it to the USB with the filename `BOOTX64.EFI`. The USB creation scripts
 prefer `build/BOOTX64.EFI` if present, otherwise they use the release build
 directly. A fresh checkout does not contain a prebuilt picker.

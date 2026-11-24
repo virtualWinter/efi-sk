@@ -242,9 +242,9 @@ impl Installer {
         let sequence = usb::sequence(Path::new(disk))?;
         let stage = usb::Temp::new()?;
         let result = (|| {
-            if let Some(repo) = std::env::var("ISO_BOOT_PICKER_GITHUB_REPO")
+            if let Some(repo) = std::env::var("EFI_SK_GITHUB_REPO")
                 .ok()
-                .or_else(|| option_env!("ISO_BOOT_PICKER_GITHUB_REPO").map(str::to_owned))
+                .or_else(|| option_env!("EFI_SK_GITHUB_REPO").map(str::to_owned))
             {
                 self.set_status("Downloading and verifying EFI binaries…");
                 usb::download(&repo, &stage.0, &assets)?;
@@ -252,7 +252,7 @@ impl Installer {
                 let root = project_root();
                 let mut picker = root.join("build/BOOTX64.EFI");
                 if !picker.is_file() {
-                    picker = root.join("build/x86_64-unknown-uefi/release/iso-boot-picker.efi");
+                    picker = root.join("build/x86_64-unknown-uefi/release/efi-sk.efi");
                 }
                 for &(name, vendor, _) in &assets {
                     let source = if vendor.is_empty() {
@@ -306,11 +306,11 @@ fn project_root() -> PathBuf {
 }
 
 fn iso_directory() -> PathBuf {
-    if let Some(path) = std::env::var_os("ISO_BOOT_PICKER_ISO_DIR") {
+    if let Some(path) = std::env::var_os("EFI_SK_ISO_DIR") {
         return PathBuf::from(path);
     }
-    if std::env::var_os("ISO_BOOT_PICKER_GITHUB_REPO").is_some()
-        || option_env!("ISO_BOOT_PICKER_GITHUB_REPO").is_some()
+    if std::env::var_os("EFI_SK_GITHUB_REPO").is_some()
+        || option_env!("EFI_SK_GITHUB_REPO").is_some()
     {
         if let Some(base) = std::env::var_os("XDG_DATA_HOME")
             .map(PathBuf::from)
@@ -318,7 +318,7 @@ fn iso_directory() -> PathBuf {
                 std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share"))
             })
         {
-            return base.join("iso-boot-picker/isos");
+            return base.join("efiswissknife/isos");
         }
     }
     project_root().join("isos")
