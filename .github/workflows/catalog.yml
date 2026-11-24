@@ -1,6 +1,11 @@
 name: Publish ISO catalog
 
 on:
+  push:
+    paths:
+      - '.github/workflows/catalog.yml'
+      - 'catalog/sources.json'
+      - 'tools/update-catalog.py'
   schedule:
     - cron: '23 5 * * 2'
   workflow_dispatch:
