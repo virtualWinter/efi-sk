@@ -281,5 +281,515 @@
     "filename": "systemrescue-13.03-amd64.iso",
     "sha256": "b71b98ba6b92145524cb1a72206b9888a59861ad6fb05d127faf618ca0136891",
     "checksum_url": "https://www.system-rescue.org/releases/13.03/systemrescue-13.03-amd64.iso.sha256"
+  },
+  {
+    "distro": "grml",
+    "name": "Grml Full 2026.09",
+    "category": "live",
+    "base_url": "https://download.grml.org/",
+    "filename": "grml-full-2026.09-amd64.iso",
+    "checksum_file": "https://ftp-master.grml.org/SHA256SUMS-2026.09"
+  },
+  {
+    "distro": "rescuezilla",
+    "name": "Rescuezilla 2.6.2 (Noble)",
+    "category": "live",
+    "base_url": "https://github.com/rescuezilla/rescuezilla/releases/download/2.6.2/",
+    "filename": "rescuezilla-2.6.2-64bit.noble.iso",
+    "sha256": "285db0af83213e2297490ca1cfd74ecd607c3b0a2f1d14e11a8412c0b71eea50",
+    "checksum_url": "https://github.com/rescuezilla/rescuezilla/releases/expanded_assets/2.6.2"
+  },
+  {
+    "distro": "crux",
+    "name": "CRUX 3.8",
+    "category": "installer",
+    "base_url": "https://crux.mirror.garr.it/crux-3.8/iso/",
+    "filename": "crux-3.8.iso",
+    "checksum_file": "crux-3.8.sha256"
+  },
+  {
+    "distro": "caine",
+    "name": "CAINE 14.0",
+    "category": "live",
+    "base_url": "https://www.caine-live.net/Downloads/",
+    "filename": "caine14.0.iso",
+    "checksum_file": "../page5/caine14.0.iso.sha256.txt"
+  },
+  {
+    "distro": "pentoo",
+    "name": "Pentoo Full 2026.0 daily (2026-11-22)",
+    "category": "live",
+    "base_url": "https://ftp.acc.umu.se/mirror/pentoo.ch/daily-autobuilds/Pentoo_Full_amd64_hardened/",
+    "filename": "pentoo-full-amd64-hardened-2026.0_p20261122.iso",
+    "checksum_file": "pentoo-full-amd64-hardened-2026.0_p20261122.iso.sha256"
+  },
+  {
+    "distro": "bsdrp",
+    "name": "BSD Router Project 2.3 full disk image",
+    "category": "router",
+    "base_url": "https://downloads.sourceforge.net/project/bsdrp/BSD_Router_Project/2.3/amd64/",
+    "filename": "BSDRP-2.3-full-amd64.img.xz",
+    "checksum_file": "BSDRP-2.3-full-amd64.img.xz.sha256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "libreelec",
+    "name": "LibreELEC Generic 12.2.1 disk image",
+    "category": "installer",
+    "base_url": "https://releases.libreelec.tv/",
+    "filename": "LibreELEC-Generic.x86_64-12.2.1.img.gz",
+    "checksum_file": "LibreELEC-Generic.x86_64-12.2.1.img.gz.sha256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "xcp-ng",
+    "name": "XCP-ng 8.3 (2026-08-06)",
+    "category": "virtualization",
+    "base_url": "https://updates.xcp-ng.org/isos/8.3/",
+    "filename": "xcp-ng-8.3.0-20260806.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "freenas",
+    "name": "FreeNAS 11.3-U5 (archive)",
+    "category": "server",
+    "base_url": "https://download.freenas.org/11.3/STABLE/U5/x64/",
+    "filename": "FreeNAS-11.3-U5.iso",
+    "sha256": "ba0c4a8d66d03da537db839a58cae686f2deaced787fa2f964f6f63c7ba21890",
+    "checksum_url": "https://download.freenas.org/11.3/STABLE/U5/x64/FreeNAS-11.3-U5.iso.sha256"
+  },
+  {
+    "distro": "fedora-coreos",
+    "name": "Fedora CoreOS 45.20261030.3.1 Live",
+    "category": "live",
+    "base_url": "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/45.20261030.3.1/x86_64/",
+    "filename": "fedora-coreos-45.20261030.3.1-live-iso.x86_64.iso",
+    "sha256": "89172c8f99eb3a9f699027d68077918c107b0fd24999404553267170bea2d844",
+    "checksum_url": "https://builds.coreos.fedoraproject.org/streams/stable.json"
+  },
+  {
+    "distro": "pfsense",
+    "name": "pfSense CE 2.7.2 DVD (archive)",
+    "category": "router",
+    "base_url": "https://atxfiles.netgate.com/mirror/downloads/",
+    "filename": "pfSense-CE-2.7.2-RELEASE-amd64.iso.gz",
+    "checksum_file": "pfSense-CE-2.7.2-RELEASE-amd64.iso.gz.sha256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "routeros",
+    "name": "MikroTik RouterOS CHR 7.24.7 raw VM disk",
+    "category": "router",
+    "base_url": "https://download.mikrotik.com/routeros/7.24.7/",
+    "filename": "chr-7.24.7.img.zip",
+    "checksum_file": "chr-7.24.7.img.zip.sha256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "ubuntusway",
+    "name": "Ubuntu Sway Remix 26.04",
+    "category": "desktop",
+    "base_url": "https://downloads.ubuntusway.com/stable/26.04/amd64/",
+    "filename": "ubuntusway-26.04-desktop-amd64.iso",
+    "sha256": "d343072089d61e795c7d8b3b2b8d1a572bdba959a19e8ecbf254b374f85717e3",
+    "checksum_url": "https://downloads.ubuntusway.com/stable/26.04/amd64/ubuntusway-26.04-desktop-amd64.sha256.txt"
+  },
+  {
+    "distro": "securityonion",
+    "name": "Security Onion 3.4.0",
+    "category": "server",
+    "base_url": "https://download.securityonion.net/file/securityonion/",
+    "filename": "securityonion-3.4.0-20261102.iso",
+    "sha256": "dfc4c87668836852a328ec7a0b755c8c1511ff0e43d423dee23047a95f676d99",
+    "checksum_url": "https://raw.githubusercontent.com/Security-Onion-Solutions/securityonion/3/main/DOWNLOAD_AND_VERIFY_ISO.md"
+  },
+  {
+    "distro": "trisquel",
+    "name": "Trisquel 12.0",
+    "category": "desktop",
+    "base_url": "https://cdimage.trisquel.info/trisquel-images/",
+    "filename": "trisquel_12.0_amd64.iso",
+    "checksum_file": "trisquel_12.0_amd64.iso.sha256"
+  },
+  {
+    "distro": "ubuntubudgie",
+    "name": "Ubuntu Budgie 26.04 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntu-budgie/releases/26.04/release/",
+    "filename_pattern": "ubuntu-budgie-26\\.04(?:\\.\\d+)?-desktop-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "blueonyx",
+    "name": "BlueOnyx 5212R Netboot",
+    "category": "server",
+    "base_url": "https://mirror.a573.net/pub/BlueOnyx/ISO/",
+    "filename": "BlueOnyx-5212R-Netboot-20260527.iso",
+    "sha256": "d842d6f6483ea6e7f1880d54f6451b96b4e1906f1c867712406b352b295bba62",
+    "checksum_url": "https://mirror.a573.net/pub/BlueOnyx/ISO/BlueOnyx-5212R-Netboot-20260527.iso.sha256"
+  },
+  {
+    "distro": "openindiana",
+    "name": "OpenIndiana Hipster GUI 2026.10",
+    "category": "desktop",
+    "base_url": "https://mirror.math.princeton.edu/pub/openindiana-iso/hipster/20261030/",
+    "filename": "OI-hipster-gui-20261030.iso",
+    "checksum_file": "OI-hipster-gui-20261030.iso.sha256sum"
+  },
+  {
+    "distro": "clonezilla",
+    "name": "Clonezilla Live 3.3.3-37",
+    "category": "live",
+    "base_url": "https://downloads.sourceforge.net/project/clonezilla/clonezilla_live_stable/3.3.3-37/",
+    "filename": "clonezilla-live-3.3.3-37-amd64.iso",
+    "sha256": "3079458d926a37d3533e5d5caeb61b6e49c2dc69e2c97e0332ef37986bb3414f",
+    "checksum_url": "https://clonezilla.org/downloads/stable/data/CHECKSUMS.TXT"
+  },
+  {
+    "distro": "armbian",
+    "name": "Armbian 26.8.14 UEFI x86 Trixie Minimal",
+    "category": "installer",
+    "base_url": "https://github.com/armbian/sdk/releases/download/40661165687/",
+    "filename": "Armbian_26.8.14_Uefi-x86_trixie_cloud_6.18.59-sdk_minimal.iso",
+    "checksum_file": "Armbian_26.8.14_Uefi-x86_trixie_cloud_6.18.59-sdk_minimal.iso.sha"
+  },
+  {
+    "distro": "sculpt",
+    "name": "Sculpt OS 26.10",
+    "category": "live",
+    "base_url": "https://genode.org/files/sculpt/",
+    "filename": "sculpt-26-10.img",
+    "sha256": "d4b8a81f3d927623fd2aef668abbcdc6502ca078d82e4d330f7a8e7509150a16",
+    "checksum_url": "https://www.genode.org/download/sculpt",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "shredos",
+    "name": "ShredOS 0.43.1",
+    "category": "live",
+    "base_url": "https://github.com/PartialVolume/shredos.x86_64/releases/download/v2025.11_32_x86-64_0.43.1/",
+    "filename": "shredos-2025.11_32_x86-64_v0.43.1_20261010.iso",
+    "sha256": "d0ffb8d7b346289db93094dbf1d2a64692b7f7cb179cc1ca76b74fdffbac1414",
+    "checksum_url": "https://api.github.com/repos/PartialVolume/shredos.x86_64/releases/tags/v2025.11_32_x86-64_0.43.1"
+  },
+  {
+    "distro": "backbox",
+    "name": "BackBox Linux 10",
+    "category": "desktop",
+    "base_url": "https://backbox.mirror.garr.it/",
+    "filename": "backbox-10-desktop-amd64.iso",
+    "sha256": "466f6ad7ab17d97d80c1eb6ae8d3d4e6ad2fcac01b4f2cebac6639b02c97d1d2",
+    "checksum_url": "https://linux.backbox.org/download/"
+  },
+  {
+    "distro": "slax",
+    "name": "Slax 2026.11",
+    "category": "live",
+    "base_url": "https://ftp.fi.muni.cz/pub/linux/slax/Slax-2026/",
+    "filename": "slax-2026.11-64bit-6.iso",
+    "checksum_file": "slax-2026.11-64bit-6.iso.sha256sum.txt"
+  },
+  {
+    "distro": "toaruos",
+    "name": "ToaruOS 2.3.2",
+    "category": "live",
+    "base_url": "https://github.com/klange/toaruos/releases/download/v2.3.2/",
+    "filename": "image.iso",
+    "sha256": "b1dc51bd48f2b4613237185c9acb1a9beb13ab6acdd2e01d9722f77343e4c9ea",
+    "checksum_url": "https://api.github.com/repos/klange/toaruos/releases/tags/v2.3.2",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "debianedu",
+    "name": "Debian Edu 13",
+    "category": "installer",
+    "base_url": "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/",
+    "filename_pattern": "debian-edu-13\\.\\d+\\.\\d+-amd64-netinst\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "netrunner",
+    "name": "Netrunner 26",
+    "category": "desktop",
+    "base_url": "https://pub.netrunner.com/",
+    "filename": "netrunner-26-64-bit.iso",
+    "sha256": "cf417c0dcbd14581b004ebcfe1dee2c2804dbff33cb36359bb69e7a81463feaa",
+    "checksum_url": "https://netrunner.com/download/"
+  },
+  {
+    "distro": "omnios",
+    "name": "OmniOS r151060",
+    "category": "server",
+    "base_url": "https://downloads.omnios.org/media/stable/",
+    "filename": "omnios-r151060.iso",
+    "sha256": "ddb82557a580fbd295d5d2f59742517458c2cb73f36b5bff74b3d1c65158a311",
+    "checksum_url": "https://downloads.omnios.org/media/stable/omnios-r151060.iso.sha256"
+  },
+  {
+    "distro": "fuguita",
+    "name": "FuguIta 8.0 LiveDVD",
+    "category": "live",
+    "base_url": "https://de.dl.fuguita.org/LiveDVD/",
+    "filename": "FuguIta-8.0-amd64-202611191.iso.gz",
+    "checksum_file": "SHA256",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "cachyos",
+    "name": "CachyOS Desktop 261123",
+    "category": "desktop",
+    "base_url": "https://mirror.cachyos.org/ISO/desktop/261123/",
+    "filename": "cachyos-desktop-linux-261123.iso",
+    "sha256": "bb9d4c4091ef6445e78f1a67052d9d3f22bdff2608f3b2e226bac99bb0b708ec",
+    "checksum_url": "https://mirror.cachyos.org/ISO/desktop/261123/cachyos-desktop-linux-261123.iso.sha256"
+  },
+  {
+    "distro": "mint",
+    "name": "Linux Mint 22.3 Cinnamon 64-bit",
+    "category": "desktop",
+    "base_url": "https://mirrors.edge.kernel.org/linuxmint/stable/22.3/",
+    "filename": "linuxmint-22.3-cinnamon-64bit.iso",
+    "sha256": "a081ab202cfda17f6924128dbd2de8b63518ac0531bcfe3f1a1b88097c459bd4",
+    "checksum_url": "https://mirrors.edge.kernel.org/linuxmint/stable/22.3/sha256sum.txt"
+  },
+  {
+    "distro": "mx",
+    "name": "MX 25.3 Xfce x64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/mx-linux/files/Final/Xfce/",
+    "filename": "MX-25.3_Xfce_x64.iso",
+    "sha256": "25b5ce20caeee1b0e50507291df5ac8a8211b1b9999d8dd7416da9b66ed9fbf9",
+    "checksum_url": "https://sourceforge.net/projects/mx-linux/files/Final/Xfce/MX-25.3_Xfce_x64.iso.sha256/download"
+  },
+  {
+    "distro": "popos",
+    "name": "Pop!_OS 24.04 LTS amd64 Intel",
+    "category": "desktop",
+    "base_url": "https://iso.pop-os.org/24.04/amd64/intel/20/",
+    "filename": "pop-os_24.04_amd64_intel_20.iso",
+    "sha256": "a0ef3842ab710db4f4407cf3499560b59dddbbcd59bee17beab7b0e99dc22b4c",
+    "checksum_url": "https://iso.pop-os.org/24.04/amd64/intel/20/SHA256SUMS"
+  },
+  {
+    "distro": "fedora",
+    "name": "Fedora Workstation 45 Live x86_64",
+    "category": "desktop",
+    "base_url": "https://download.fedoraproject.org/pub/fedora/linux/releases/45/Workstation/x86_64/iso/",
+    "filename": "Fedora-Workstation-Live-45-1.4.x86_64.iso",
+    "sha256": "68338c6bfe4f0d64151f2e47efe9f44a8855ad05b460e56b844fb3fa2c9a3beb",
+    "checksum_url": "https://dl.fedoraproject.org/pub/fedora/linux/releases/45/Workstation/x86_64/iso/Fedora-Workstation-45-1.4-x86_64-CHECKSUM"
+  },
+  {
+    "distro": "manjaro",
+    "name": "Manjaro KDE 26.1.0",
+    "category": "desktop",
+    "base_url": "https://download.manjaro.org/kde/26.1.0/",
+    "filename": "manjaro-kde-26.1.0-260812-linux71.iso",
+    "sha256": "711b64362abe0b45348dc33bd4a2c654641e069b50ae9ae37c01771da880aa99",
+    "checksum_url": "https://download.manjaro.org/kde/26.1.0/manjaro-kde-26.1.0-260812-linux71.iso.sha256"
+  },
+  {
+    "distro": "anduin",
+    "name": "AnduinOS 1.4.2 en_US",
+    "category": "desktop",
+    "base_url": "https://download.anduinos.com/1.4/1.4.2/",
+    "filename": "AnduinOS-1.4.2-en_US.iso",
+    "sha256": "6f232c72d508d5e154f391676c331c28863019b462d06cf68343a96478d2190e",
+    "checksum_url": "https://download.anduinos.com/1.4/1.4.2/AnduinOS-1.4.2-en_US.sha256"
+  },
+  {
+    "distro": "omarchy",
+    "name": "Omarchy 4.5.0 x86_64",
+    "category": "desktop",
+    "base_url": "https://iso.omarchy.org/",
+    "filename": "omarchy-4.5.0-x86.iso",
+    "sha256": "5d6288bc57f96f6231719830457582c846a2291985201c36a9a7d1216978b00f",
+    "checksum_url": "https://iso.omarchy.org/omarchy-4.5.0-x86.iso.sha256"
+  },
+  {
+    "distro": "nobara",
+    "name": "Nobara 44 Official 2026-10-13",
+    "category": "desktop",
+    "base_url": "https://nobara-images.nobaraproject.org/",
+    "filename": "Nobara-44-Official-2026-10-13.iso",
+    "sha256": "1eedf22cbfdd245b0ad08120b9bf4123910eff42ca9fede054542f99356ea995",
+    "checksum_url": "https://nobara-images.nobaraproject.org/Nobara-44-Official-2026-10-13.iso.sha256sum"
+  },
+  {
+    "distro": "antix",
+    "name": "antiX 26.1 x64 full",
+    "category": "live",
+    "base_url": "https://sourceforge.net/projects/antix-linux/files/Final/antiX-26.1/",
+    "filename": "antiX-26.1_x64-full.iso",
+    "sha256": "293381af0b7c48399abe015da8f67d41fd34372b73c4aafcf53747fbaed22371",
+    "checksum_url": "https://sourceforge.net/projects/antix-linux/files/Final/antiX-26.1/antiX-26.1_x64-full.iso.sha256/download"
+  },
+  {
+    "distro": "nixos",
+    "name": "NixOS 25.11 graphical x86_64 Linux",
+    "category": "desktop",
+    "base_url": "https://channels.nixos.org/nixos-25.11/",
+    "filename": "latest-nixos-graphical-x86_64-linux.iso",
+    "sha256": "0da5f2442d7e5484a2752179f5de38af0969ac5fddb4f927790a9e493581acab",
+    "checksum_url": "https://channels.nixos.org/nixos-25.11/latest-nixos-graphical-x86_64-linux.iso.sha256"
+  },
+  {
+    "distro": "artix",
+    "name": "Artix base openrc 20261102 x86_64",
+    "category": "installer",
+    "base_url": "https://download.artixlinux.org/iso/",
+    "filename": "artix-base-openrc-20261102-x86_64.iso",
+    "sha256": "073d206b69c92cb3cb12848dce9886873fc868137b6cc2d9a724f4e14121dbc8",
+    "checksum_url": "https://download.artixlinux.org/iso/sha256sums"
+  },
+  {
+    "distro": "centos",
+    "name": "CentOS Stream 10 x86_64 DVD",
+    "category": "installer",
+    "base_url": "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/",
+    "checksum_file": "SHA256SUM",
+    "filename_pattern": "CentOS-Stream-10-\\d+\\.\\d+-x86_64-dvd1\\.iso"
+  },
+  {
+    "distro": "gentoo",
+    "name": "Gentoo amd64 Minimal Installation CD (20261122T164601Z)",
+    "category": "installer",
+    "base_url": "https://distfiles.gentoo.org/releases/amd64/autobuilds/current-install-amd64-minimal/",
+    "filename": "install-amd64-minimal-20261122T164601Z.iso",
+    "sha256": "545ca28607ee452df170130f304d4aded502056cf32490e417dcd85ff101407c",
+    "checksum_url": "https://distfiles.gentoo.org/releases/amd64/autobuilds/current-install-amd64-minimal/install-amd64-minimal-20261122T164601Z.iso.sha256"
+  },
+  {
+    "distro": "deepin",
+    "name": "deepin 25.3.0 amd64",
+    "category": "desktop",
+    "base_url": "https://cdimage.deepin.com/releases/25.3.0/amd64/",
+    "filename": "deepin-desktop-community-25.3.0-amd64.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "kaos",
+    "name": "KaOS 2026.11 x86_64",
+    "category": "desktop",
+    "base_url": "https://mirror.math.princeton.edu/pub/kaoslinux/",
+    "filename": "KaOS-2026.11-x86_64.iso",
+    "checksum_file": "KaOS-2026.11-x86_64.sha256sum"
+  },
+  {
+    "distro": "ghostbsd",
+    "name": "GhostBSD 26.3.R15.1p6 MATE",
+    "category": "desktop",
+    "base_url": "https://download.ghostbsd.org/releases/amd64/26.3.R15.1p6/",
+    "filename": "GhostBSD-26.3.R15.1p6.iso",
+    "checksum_file": "GhostBSD-26.3.R15.1p6.iso.sha256"
+  },
+  {
+    "distro": "openmandriva",
+    "name": "OpenMandriva Lx 6.0 Plasma6 x11 x86_64",
+    "category": "desktop",
+    "base_url": "https://mirror.accum.se/mirror/openmandriva.org/release_current/6.0/",
+    "filename": "openmandriva-6.0-plasma6-x11.x86_64.iso",
+    "checksum_file": "sha256sums"
+  },
+  {
+    "distro": "archcraft",
+    "name": "Archcraft 2026.08.01 x86_64",
+    "category": "desktop",
+    "base_url": "https://sourceforge.net/projects/archcraft/files/v26.08/",
+    "filename": "archcraft-2026.08.01-x86_64.iso",
+    "sha256": "fb6c2f1b9c6c6659ff7bf1281213f2b3a1930356711d7f5197de1ed3d86349db",
+    "checksum_url": "https://sourceforge.net/projects/archcraft/files/v26.08/archcraft-2026.08.01-x86_64.iso.sha256sum/download"
+  },
+  {
+    "distro": "qubes",
+    "name": "Qubes OS 4.2.4 x86_64",
+    "category": "desktop",
+    "base_url": "https://ftp.qubes-os.org/iso/Qubes-R4.2.4-x86_64/",
+    "filename": "Qubes-R4.2.4-x86_64.iso",
+    "sha256": "f596adc4c40f2670321de0c41e65a4b94193ca77959149c62bcc2579425fac8e",
+    "checksum_url": "https://ftp.qubes-os.org/iso/Qubes-R4.2.4-x86_64/Qubes-R4.2.4-x86_64.iso.DIGESTS"
+  },
+  {
+    "distro": "pardus",
+    "name": "Pardus 25.2 GNOME",
+    "category": "desktop",
+    "base_url": "https://indir.pardus.org.tr/ISO/Pardus25/",
+    "filename": "Pardus-25.2-GNOME-amd64.iso",
+    "sha256": "4516ff35b25f3436c57701b7d7d7b0dd7168740602b470b92e7835a90b236c7d",
+    "checksum_url": "https://indir.pardus.org.tr/ISO/Pardus25/SHA256SUMS"
+  },
+  {
+    "distro": "startos",
+    "name": "StartOS v0.4.2 x86_64 nonfree",
+    "category": "server",
+    "base_url": "https://startos-images.nyc3.cdn.digitaloceanspaces.com/v0.4.2/",
+    "filename": "startos-0.4.2-175ce3b_x86_64-nonfree.iso",
+    "sha256": "757d8c1617d71204e851ef13d9f327672a9dfcc30ae85e4aaea89fd9044c4f21",
+    "checksum_url": "https://github.com/Start9Labs/start-technologies/releases/tag/start-os%2Fv0.4.2"
+  },
+  {
+    "distro": "haiku",
+    "name": "Haiku R1/beta5 x86_64",
+    "category": "desktop",
+    "base_url": "https://mirrors.rit.edu/haiku/r1beta5/",
+    "filename": "haiku-r1beta5-x86_64-anyboot.iso",
+    "sha256": "22ae312a38e98083718b6984186e753d15806bd6ea44542144fdcef42c4dcb69",
+    "checksum_url": "https://www.haiku-os.org/get-haiku/r1beta5/"
+  },
+  {
+    "distro": "pureos",
+    "name": "PureOS 11 GNOME Live",
+    "category": "desktop",
+    "base_url": "https://storage.puri.sm/pureos/images/crimson/2026.05/gnome/",
+    "filename": "pureos-11-gnome-live-20260515_amd64.iso",
+    "sha256": "2d27e60b22ffa5a336118817dc4b24a27faa303261768d3634ea4d5ec83b6365",
+    "checksum_url": "https://storage.puri.sm/pureos/images/crimson/2026.05/gnome/pureos-11-gnome-live-20260515_amd64.checksums_sha256.txt"
+  },
+  {
+    "distro": "ubuntucinnamon",
+    "name": "Ubuntu Cinnamon 24.04.5 LTS",
+    "category": "desktop",
+    "base_url": "https://cdimage.ubuntu.com/ubuntucinnamon/releases/24.04/release/",
+    "filename": "ubuntucinnamon-24.04.5-desktop-amd64.iso",
+    "sha256": "7fef6d987a29d2a81e4edac3fc6d640ce533f1d95d82c28119baaefc9fbd4721",
+    "checksum_url": "https://cdimage.ubuntu.com/ubuntucinnamon/releases/24.04/release/SHA256SUMS"
+  },
+  {
+    "distro": "openbsd",
+    "name": "OpenBSD 7.8 amd64 install ISO",
+    "category": "installer",
+    "base_url": "https://cdn.openbsd.org/pub/OpenBSD/7.8/amd64/",
+    "filename": "install78.iso",
+    "sha256": "a228d0a1ef558b4d9ec84c698f0d3ffd13cd38c64149487cba0f1ad873be07b2",
+    "checksum_url": "https://cdn.openbsd.org/pub/OpenBSD/7.8/amd64/SHA256"
+  },
+  {
+    "distro": "truenas",
+    "name": "TrueNAS SCALE 25.10.8",
+    "category": "appliance",
+    "base_url": "https://download.sys.truenas.net/TrueNAS-SCALE-Goldeye/25.10.8/",
+    "filename": "TrueNAS-SCALE-25.10.8.iso",
+    "sha256": "af5c8cea73d6258429aa0cad4b1a30732bd85db36b1ce9ce14a55be8f419d7bc",
+    "checksum_url": "https://download.sys.truenas.net/TrueNAS-SCALE-Goldeye/25.10.8/TrueNAS-SCALE-25.10.8.iso.sha256"
+  },
+  {
+    "distro": "haos",
+    "name": "Home Assistant OS 18.2 generic-x86-64",
+    "category": "appliance",
+    "base_url": "https://github.com/home-assistant/operating-system/releases/download/18.2/",
+    "filename": "haos_generic-x86-64-18.2.img.xz",
+    "sha256": "514ba5447c663026bc12ab95b68f0c206401b480560743f7a59b074de912dc4e",
+    "checksum_url": "https://github.com/home-assistant/operating-system/releases/tag/18.2",
+    "boot_status": "download-only"
+  },
+  {
+    "distro": "dietpi",
+    "name": "DietPi Native PC BIOS x86_64 (Trixie)",
+    "category": "appliance",
+    "base_url": "https://dietpi.com/downloads/images/",
+    "filename": "DietPi_NativePC-BIOS-x86_64-Trixie.img.xz",
+    "sha256": "57a50e3a1bf7641ec00eea0659964b57cd2face5077935df764dda1355b4467d",
+    "checksum_url": "https://dietpi.com/downloads/images/DietPi_NativePC-BIOS-x86_64-Trixie.img.xz.sha256",
+    "boot_status": "download-only"
   }
 ]
