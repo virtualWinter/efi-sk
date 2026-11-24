@@ -1,16 +1,23 @@
 use alloc::{boxed::Box, vec::Vec};
-use core::{ffi::c_void, mem, ptr};
+use core::{cell::RefCell, ffi::c_void, mem, ptr, slice};
 use uefi::boot;
 use uefi::proto::device_path::build::{DevicePathBuilder, media::Vendor};
 use uefi::{Handle, Status, guid};
 use uefi_raw::Boolean;
 use uefi_raw::protocol::{device_path::DevicePathProtocol, media::LoadFile2Protocol};
 
+use crate::iso::filesystem::Iso;
+
+pub struct Payload {
+    pub prefix: Vec<u8>,
+    pub media: Option<(Iso, Vec<u8>)>,
+}
+
 #[repr(C)]
 struct Initrd {
     // The firmware passes this first field to the callback.
     protocol: LoadFile2Protocol,
-    data: Vec<u8>,
+    data: RefCell<Payload>,
 }
 
 pub struct Registration {
@@ -20,7 +27,7 @@ pub struct Registration {
 }
 
 impl Registration {
-    pub fn install(data: Vec<u8>) -> Result<Self, Status> {
+    pub fn install(data: Payload) -> Result<Self, Status> {
         let mut device_path = Vec::new();
         DevicePathBuilder::with_vec(&mut device_path)
             .push(&Vendor {
@@ -32,7 +39,7 @@ impl Registration {
 
         let initrd = Box::new(Initrd {
             protocol: LoadFile2Protocol { load_file },
-            data,
+            data: RefCell::new(data),
         });
         // Both interfaces reside in owned allocations with stable addresses.
         // Registration removes them before releasing the allocations.
@@ -109,14 +116,51 @@ unsafe extern "efiapi" fn load_file(
     }
     // SAFETY: UEFI supplies the registered interface and a writable size pointer.
     let initrd = unsafe { &*this.cast::<Initrd>() };
+    let Ok(mut data) = initrd.data.try_borrow_mut() else {
+        return Status::NOT_READY;
+    };
+    let media_len = data
+        .media
+        .as_ref()
+        .map_or(0, |(iso, _)| iso.image_len() as usize);
+    let suffix_len = data.media.as_ref().map_or(0, |(_, suffix)| suffix.len());
+    let prefix_len = data.prefix.len();
+    let Some(required) = prefix_len
+        .checked_add(media_len)
+        .and_then(|len| len.checked_add(suffix_len))
+    else {
+        return Status::BAD_BUFFER_SIZE;
+    };
     let provided = unsafe { *size };
-    unsafe { *size = initrd.data.len() };
-    if buffer.is_null() || provided < initrd.data.len() {
+    unsafe { *size = required };
+    if buffer.is_null() || provided < required {
         return Status::BUFFER_TOO_SMALL;
     }
     // SAFETY: Firmware has supplied a separate destination of at least the required size.
+    let target = buffer.cast::<u8>();
     unsafe {
-        ptr::copy_nonoverlapping(initrd.data.as_ptr(), buffer.cast(), initrd.data.len());
+        ptr::copy_nonoverlapping(data.prefix.as_ptr(), target, prefix_len);
+    }
+    if let Some((iso, suffix)) = &mut data.media {
+        for offset in (0..media_len).step_by(1024 * 1024) {
+            let count = (media_len - offset).min(1024 * 1024);
+            // Initialize memory before passing it to the safe ext4 reader.
+            let chunk = unsafe {
+                let dst = target.add(prefix_len + offset);
+                dst.write_bytes(0, count);
+                slice::from_raw_parts_mut(dst, count)
+            };
+            if let Err(status) = iso.read_image(offset as u64, chunk) {
+                return status;
+            }
+        }
+        unsafe {
+            ptr::copy_nonoverlapping(
+                suffix.as_ptr(),
+                target.add(prefix_len + media_len),
+                suffix_len,
+            );
+        }
     }
     Status::SUCCESS
 }

@@ -1,4 +1,5 @@
 mod initrd;
+pub(super) use initrd::Payload;
 
 use alloc::vec::Vec;
 use core::mem::size_of_val;
@@ -10,6 +11,23 @@ pub fn launch(
     parent: Handle,
     kernel: Vec<u8>,
     initrd: Vec<u8>,
+    command: &str,
+) -> Result<(), Status> {
+    launch_payload(
+        parent,
+        kernel,
+        Payload {
+            prefix: initrd,
+            media: None,
+        },
+        command,
+    )
+}
+
+pub(super) fn launch_payload(
+    parent: Handle,
+    kernel: Vec<u8>,
+    initrd: Payload,
     command: &str,
 ) -> Result<(), Status> {
     let options = CString16::try_from(command).map_err(|_| Status::INVALID_PARAMETER)?;

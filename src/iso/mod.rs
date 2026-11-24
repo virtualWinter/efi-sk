@@ -8,6 +8,7 @@ mod filesystem;
 mod generic;
 mod linux;
 mod os_release;
+mod proxmox;
 mod ubuntu;
 mod volume;
 
@@ -24,6 +25,7 @@ pub enum Profile {
     Ubuntu,
     Debian,
     Fedora,
+    Proxmox,
     /// An image no other profile recognises, booted through a known layout.
     Generic,
     EfiMedia,
@@ -31,11 +33,12 @@ pub enum Profile {
 
 impl Profile {
     /// Every supported profile, in detection order.
-    const ALL: [Profile; 6] = [
+    const ALL: [Profile; 7] = [
         Self::Arch,
         Self::Ubuntu,
         Self::Debian,
         Self::Fedora,
+        Self::Proxmox,
         Self::Generic,
         Self::EfiMedia,
     ];
@@ -46,6 +49,7 @@ impl Profile {
             Self::Ubuntu => ubuntu::NAME,
             Self::Debian => debian::NAME,
             Self::Fedora => fedora::NAME,
+            Self::Proxmox => "Proxmox VE (experimental)",
             Self::Generic => "Linux",
             Self::EfiMedia => "ISO EFI loader (experimental)",
         }
@@ -57,6 +61,7 @@ impl Profile {
             Self::Ubuntu => ubuntu::detect(iso, partition, path),
             Self::Debian => debian::detect(iso, partition, path),
             Self::Fedora => fedora::detect(iso, partition, path),
+            Self::Proxmox => proxmox::detect(iso),
             Self::Generic => generic::detect(iso, partition, path),
             Self::EfiMedia => efi::detect(iso),
         }
@@ -74,6 +79,7 @@ impl Profile {
             Self::Ubuntu => ubuntu::boot(iso, partition, path),
             Self::Debian => debian::boot(iso, partition, path),
             Self::Fedora => fedora::boot(iso, partition, path),
+            Self::Proxmox => Err(Status::UNSUPPORTED),
             Self::Generic => generic::boot(iso, partition, path),
             Self::EfiMedia => Err(Status::UNSUPPORTED),
         }
@@ -94,6 +100,7 @@ impl Profile {
             Self::Ubuntu => ubuntu::metadata(partition, path, need_icon),
             Self::Debian => debian::metadata(partition, path, need_icon),
             Self::Fedora => fedora::metadata(partition, path, need_icon),
+            Self::Proxmox => None,
             Self::Generic => generic::metadata(partition, path, need_icon),
             Self::EfiMedia => None,
         }
@@ -107,8 +114,10 @@ pub fn launch(parent: Handle, esp: Handle, profile: Profile, path: &str) -> Resu
         _ => Status::DEVICE_ERROR,
     })?;
     let mut image = Iso::open(file)?;
-    if matches!(profile, Profile::EfiMedia) {
-        return efi::launch(parent, image);
+    match profile {
+        Profile::EfiMedia => return efi::launch(parent, image),
+        Profile::Proxmox => return proxmox::launch(parent, image),
+        _ => {}
     }
 
     let (kernel, initrd, args) = profile.boot(&mut image, &partition, path)?;
