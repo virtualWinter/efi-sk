@@ -240,5 +240,46 @@
     "filename": "vyos-2026.11.22-0018-rolling-generic-amd64.iso",
     "sha256": "9c7915e8c113ed371e23115610d9d1d6e642e466844eed10cd74ed2c207e8123",
     "checksum_url": "https://github.com/vyos/vyos-nightly-build/releases/tag/2026.11.22-0018-rolling"
+  },
+  {
+    "distro": "alma",
+    "name": "AlmaLinux 10 Minimal",
+    "category": "installer",
+    "base_url": "https://repo.almalinux.org/almalinux/10/isos/x86_64/",
+    "filename_pattern": "AlmaLinux-10\\.\\d+-x86_64-minimal\\.iso",
+    "checksum_file": "CHECKSUM"
+  },
+  {
+    "distro": "rocky",
+    "name": "Rocky Linux 10 Minimal",
+    "category": "installer",
+    "base_url": "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/",
+    "filename_pattern": "Rocky-10\\.\\d+-x86_64-minimal\\.iso",
+    "checksum_file": "CHECKSUM"
+  },
+  {
+    "distro": "kali",
+    "name": "Kali Linux Installer",
+    "category": "installer",
+    "base_url": "https://cdimage.kali.org/current/",
+    "filename_pattern": "kali-linux-\\d{4}\\.\\d+[a-z]?-installer-amd64\\.iso",
+    "checksum_file": "SHA256SUMS"
+  },
+  {
+    "distro": "opensuse",
+    "name": "openSUSE Tumbleweed Network Installer",
+    "category": "installer",
+    "base_url": "https://download.opensuse.org/tumbleweed/iso/",
+    "filename_pattern": "openSUSE-Tumbleweed-NET-x86_64-Snapshot\\d+-Media\\.iso",
+    "checksum_file": "openSUSE-Tumbleweed-NET-x86_64-Current.iso.sha256"
+  },
+  {
+    "distro": "systemrescue",
+    "name": "SystemRescue 13.03",
+    "category": "live",
+    "base_url": "https://fastly-cdn.system-rescue.org/releases/13.03/",
+    "filename": "systemrescue-13.03-amd64.iso",
+    "sha256": "b71b98ba6b92145524cb1a72206b9888a59861ad6fb05d127faf618ca0136891",
+    "checksum_url": "https://www.system-rescue.org/releases/13.03/systemrescue-13.03-amd64.iso.sha256"
   }
 ]

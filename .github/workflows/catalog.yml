@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/catalog.yml'
       - 'catalog/sources.json'
+      - 'catalog/download-pages.json'
       - 'assets/distro/index.tsv'
       - 'tools/update-catalog.py'
   schedule:

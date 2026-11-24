@@ -28,7 +28,7 @@ To preview a refresh locally:
 python3 tools/update-catalog.py
 ```
 
-`catalog.json` has two separate lists:
+`catalog.json` has three separate lists:
 
 - `distros`: all entries in the embedded artwork index, including
   filename-independent recognition aliases and whether the artwork is
@@ -37,6 +37,11 @@ python3 tools/update-catalog.py
   distro ID. `qemu-verified` means a live boot or installer startup was
   verified, not a full installation; `layout-supported` covers a known
   layout, and `untested` or `download-only` do not claim boot support.
+- `downloads`: one entry for every artwork distro. `verified-images`
+  entries link to checksum-backed records in `images`. `reference-only`
+  entries link to a project, archive, or DistroWatch page, not a verified
+  direct download. Some old or restricted projects may not offer a
+  public image.
 
 The desktop installer still uses its built-in list. The published
 catalog does not bundle image files or verify upstream signatures.

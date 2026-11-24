@@ -85,6 +85,28 @@ def distro_index():
     return list(distros.values())
 
 
+def download_index(distros, images, pages):
+    by_distro = {}
+    for image in images:
+        by_distro.setdefault(image["distro"], []).append(image["url"])
+    downloads = []
+    for distro in distros:
+        slug = distro["id"]
+        page = pages.get(slug)
+        if page is None and distro["rank"] is not None:
+            page = f"https://distrowatch.com/{slug}"
+        if not page or not page.startswith("https://"):
+            raise ValueError(f"Missing HTTPS download reference for {slug}")
+        urls = by_distro.get(slug, [])
+        downloads.append({
+            "distro": slug,
+            "page": page,
+            "status": "verified-images" if urls else "reference-only",
+            "image_urls": urls,
+        })
+    return downloads
+
+
 if __name__ == "__main__":
     sources = json.loads((ROOT / "catalog/sources.json").read_text())
     distros = distro_index()
@@ -92,8 +114,13 @@ if __name__ == "__main__":
     for source in sources:
         if source["distro"] not in known:
             raise ValueError(f"Unknown artwork entry: {source['distro']}")
+    images = [resolve(source) for source in sources]
+    pages = json.loads((ROOT / "catalog/download-pages.json").read_text())
+    if unknown := pages.keys() - known:
+        raise ValueError(f"Download references without artwork entries: {sorted(unknown)}")
     print(json.dumps({
         "schema_version": 1,
         "distros": distros,
-        "images": [resolve(s) for s in sources],
+        "images": images,
+        "downloads": download_index(distros, images, pages),
     }, indent=2))
