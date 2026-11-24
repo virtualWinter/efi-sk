@@ -8,6 +8,8 @@ files or external dependencies.
   [bundled license](../assets/lucide/LICENSE).
 - [Installer and firmware distro icons](../installer/icons/README.md): Simple Icons,
   with [CC0 license](../installer/icons/LICENSE.simple-icons) and applicable trademark policies.
+- [Additional firmware distro artwork](../assets/distro/README.md):
+  Simple Icons and font-logos, with sources and licenses documented there.
 
 The bundled EFI tools have their own notices and upstream source information:
 [ACPIdump](../vendor/acpidump/README.md),
