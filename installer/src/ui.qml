@@ -8,10 +8,10 @@ import org.kde.kirigami as Kirigami
 QQC2.ApplicationWindow {
     id: window
     visible: true
-    width: 700
+    width: 800
     height: 570
-    minimumWidth: 580
-    minimumHeight: 510
+    minimumWidth: 720
+    minimumHeight: 540
     title: "EFI Swiss Knife"
     color: "#0a0a0a"
     font.family: Qt.fontFamilies().includes("Geist") ? "Geist" : Qt.application.font.family
@@ -77,7 +77,6 @@ QQC2.ApplicationWindow {
     }
 
     property string selectedIsoIndexes: ""
-    property int activeTab: 0
 
     function toggleIso(index, checked) {
         var values = selectedIsoIndexes ? selectedIsoIndexes.split(",") : [];
@@ -105,43 +104,20 @@ QQC2.ApplicationWindow {
             font.weight: Font.DemiBold
             Layout.fillWidth: true
         }
-        QQC2.TabBar {
-            id: sections
-            Layout.fillWidth: true
-            currentIndex: window.activeTab
-            onCurrentIndexChanged: window.activeTab = currentIndex
-            background: Rectangle {
-                color: "#171717"
-                radius: 7
-                border.color: "#2e2e2e"
-            }
-            Repeater {
-                model: ["Boot images", "EFI tools", "USB drive"]
-                delegate: QQC2.TabButton {
-                    id: tab
-                    required property string modelData
-                    text: modelData
-                    implicitHeight: 36
-                    background: Rectangle {
-                        radius: 7
-                        color: tab.checked || tab.hovered ? "#262626" : "transparent"
-                        border.color: tab.checked || tab.visualFocus ? "#737373" : "transparent"
-                    }
-                }
-            }
-        }
-
-        StackLayout {
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: window.activeTab
+            spacing: 10
 
             Section {
                 title: "Boot images"
+                Layout.fillHeight: true
+                Layout.preferredWidth: 440
+                Layout.minimumWidth: 330
                 contentItem: ColumnLayout {
                     spacing: 8
                     Muted {
-                        text: "Select one or more images. Downloaded images are resumed and verified."
+                        text: "Select images and download them before installing."
                     }
                     ListView {
                         id: imageList
@@ -171,8 +147,8 @@ QQC2.ApplicationWindow {
                                 spacing: 8
                                 Kirigami.Icon {
                                     source: installer.iso_icons.split("\n")[index]
-                                    implicitWidth: Kirigami.Units.iconSizes.medium
-                                    implicitHeight: Kirigami.Units.iconSizes.medium
+                                    implicitWidth: 20
+                                    implicitHeight: 20
                                     fallback: "application-x-iso9660-image"
                                 }
                                 QQC2.CheckBox {
@@ -198,6 +174,9 @@ QQC2.ApplicationWindow {
 
             Section {
                 title: "Optional EFI tools"
+                Layout.fillHeight: true
+                Layout.preferredWidth: 300
+                Layout.minimumWidth: 300
                 contentItem: ColumnLayout {
                     spacing: 6
                     RowLayout {
@@ -211,7 +190,7 @@ QQC2.ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.minimumWidth: 0
                             implicitHeight: 34
-                            placeholderText: "latest (or a tag, e.g. v0.1.1)"
+                            placeholderText: "latest or v0.1.1"
                             Accessible.name: "EFI release version"
                         }
                     }
@@ -238,45 +217,46 @@ QQC2.ApplicationWindow {
                             delegate: QQC2.CheckBox {
                                 required property string modelData
                                 Layout.fillWidth: true
+                                Layout.preferredWidth: 1
+                                Layout.minimumWidth: 0
                                 implicitHeight: 28
                                 topPadding: 0
                                 bottomPadding: 0
-                                text: modelData
+                                text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
                                 checked: true
                             }
                         }
+                    }
+                    Muted {
+                        text: "UEFI SCT also installs EFI Shell."
                     }
                     Item {
                         Layout.fillHeight: true
                     }
                 }
             }
+        }
 
-            Section {
-                title: "USB drive"
-                contentItem: ColumnLayout {
-                    spacing: Kirigami.Units.smallSpacing
-                    Muted {
-                        text: "Choose a writable USB drive. Its existing contents will be erased."
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        QQC2.ComboBox {
-                            id: diskBox
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            model: installer.devices ? installer.devices.split("\n") : []
-                            displayText: count === 0 ? "No USB drive detected" : currentText
-                            Accessible.name: "USB drive"
-                        }
-                        Button {
-                            text: "Refresh"
-                            onClicked: installer.refresh()
-                        }
-                    }
-                    Item {
-                        Layout.fillHeight: true
-                    }
+        Section {
+            title: "USB drive"
+            contentItem: RowLayout {
+                QQC2.ComboBox {
+                    id: diskBox
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: installer.devices ? installer.devices.split("\n") : []
+                    displayText: count === 0 ? "No USB drive detected" : currentText
+                    Accessible.name: "USB drive"
+                }
+                Button {
+                    text: "Refresh"
+                    onClicked: installer.refresh()
+                }
+                Button {
+                    text: "Create USB"
+                    primary: true
+                    enabled: diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0
+                    onClicked: eraseDialog.open()
                 }
             }
         }
@@ -287,7 +267,7 @@ QQC2.ApplicationWindow {
                 id: statusLabel
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
-                text: installer.status
+                text: (window.selectedIsoIndexes ? window.selectedIsoIndexes.split(",").length + " image(s) selected" : "No images selected") + "  ·  " + installer.status
                 color: "#a1a1a1"
                 elide: Text.ElideRight
             }
@@ -295,24 +275,6 @@ QQC2.ApplicationWindow {
                 text: "Details"
                 visible: statusLabel.truncated
                 onClicked: statusDialog.open()
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Muted {
-                text: selectedIsoIndexes ? selectedIsoIndexes.split(",").length + " image(s) selected" : "No images selected"
-            }
-            Button {
-                text: window.activeTab === 2 ? "Create USB" : "Next"
-                primary: true
-                enabled: window.activeTab !== 2 || (diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0)
-                onClicked: {
-                    if (window.activeTab === 2)
-                        eraseDialog.open();
-                    else
-                        sections.setCurrentIndex(window.activeTab + 1);
-                }
             }
         }
     }

@@ -18,7 +18,7 @@ the text console otherwise.
 
 ## Linux desktop installer
 
-![Compact Linux installer showing the boot image list and tabs for EFI tools and USB drive](docs/screenshots/installer.png)
+![Single-page Linux installer showing boot images, EFI tools, and USB drive controls](docs/screenshots/installer.png)
 
 Choose your boot images, pick an EFI release and optional tools, then select
 the USB drive. The installer verifies the EFI bundle before asking for
