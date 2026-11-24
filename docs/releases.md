@@ -4,6 +4,11 @@ Push a version tag such as `v0.1.0` to publish `BOOTX64.EFI`, the bundled
 EFI tools, and `SHA256SUMS` on GitHub Releases. The workflow builds from
 that tag's lockfile. It does not package the desktop app.
 
+The tagged source tree includes the bundled tools' [license notices and
+source information](third-party.md), including the corresponding source
+archives kept in `vendor/`. Keep the notices and source available alongside
+any redistribution of the release binaries.
+
 The ISO catalog workflow runs weekly and can be dispatched manually on
 the default branch. It reads `catalog/sources.json`, resolves each entry
 against the distributor's HTTPS SHA-256 list, and uploads `catalog.json`
