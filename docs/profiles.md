@@ -10,11 +10,12 @@
 - Debian amd64 netinst can boot directly from the ISO when it includes
   matching ext4 and loop driver packages. Older layouts can still use the
   matching Debian Installer `hd-media` kernel and initramfs.
-- Proxmox VE has an experimental drop-in profile. It loads the kernel and
+- Proxmox VE has an experimental drop-in profile as of `v0.2`. It loads the kernel and
   initramfs from the ISO and adds a small early-boot helper. The helper
   reopens the read-only USB partition by UUID and points `/proxmox.iso`
   to the original file, which the installer uses through its existing
   iPXE media path. It does not copy the ISO into memory.
+  Proxmox VE 9.2-1 was verified in QEMU through the installer license screen.
 
 Each profile expects an x86-64 Linux kernel built with the EFI stub and
 an initramfs that can reopen the ISO from ext4. The ISO reader uses
@@ -58,6 +59,9 @@ Try copying just the ISO into `iso/` first. The picker can use the netinst
 kernel and initramfs and load the storage drivers from the same ISO. For
 images that lack those driver packages in the expected layout, use the
 following companion-file method.
+
+Debian 13.8 amd64 netinst was verified in QEMU through media detection
+and successful network configuration with only the ISO on the USB.
 
 Download `vmlinuz` and `initrd.gz` from Debian's
 [amd64 hd-media directory for Debian 13 (trixie)](https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/hd-media/).

@@ -61,9 +61,9 @@ tools/run-installer.sh
 
 Run the GUI as your regular user. Creating a USB **erases the selected drive**
 and requests elevated privileges through `pkexec`. The download catalog is
-experimental. Proxmox VE and OpenWrt are **download only** and cannot be
-selected for USB installation. Proxmox VE needs its own boot profile;
-OpenWrt distributes a compressed EFI disk image, not an ISO. For other
+experimental. Proxmox VE 9.2 requires EFI Swiss Knife `v0.2` or newer.
+OpenWrt is **download only**: it distributes a compressed EFI disk
+image, not an ISO, and cannot be selected for USB installation. For other
 entries, being listed does not guarantee that the picker
 supports booting it. For the documented manual setup, see
 [Setting up the USB drive](../docs/usb.md).
