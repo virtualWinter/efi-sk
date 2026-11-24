@@ -42,13 +42,28 @@ pub fn detect(iso: &mut Iso) -> bool {
             return iso
                 .read_image(u64::from(catalog) * SECTOR, &mut sector)
                 .is_ok()
-                && efi_catalog(&sector);
+                && efi_catalog(&sector, |lba| fat_boot_image(iso, lba));
         }
     }
     false
 }
 
-fn efi_catalog(catalog: &[u8; SECTOR as usize]) -> bool {
+fn fat_boot_image(iso: &mut Iso, lba: u32) -> bool {
+    let mut header = [0; 512];
+    iso.read_image(u64::from(lba) * SECTOR, &mut header).is_ok()
+        && header[510..512] == [0x55, 0xaa]
+        && matches!(header[0], 0xeb | 0xe9)
+        && matches!(
+            u16::from_le_bytes([header[11], header[12]]),
+            512 | 1024 | 2048 | 4096
+        )
+        && header[13].is_power_of_two()
+        && (header[54..62] == *b"FAT12   "
+            || header[54..62] == *b"FAT16   "
+            || header[82..90] == *b"FAT32   ")
+}
+
+fn efi_catalog(catalog: &[u8; SECTOR as usize], mut is_fat: impl FnMut(u32) -> bool) -> bool {
     let mut entries = catalog.as_chunks::<32>().0.iter();
     let Some(validation) = entries.next() else {
         return false;
@@ -66,9 +81,21 @@ fn efi_catalog(catalog: &[u8; SECTOR as usize]) -> bool {
     {
         return false;
     }
+    // Some BSD masters label the EFI image as platform 0 (BIOS).
+    // Accept a no-emulation FAT entry as a candidate; the launch path
+    // still requires it to contain the x86-64 fallback EFI executable.
+    let mut bootable = |platform, entry: &[u8; 32]| {
+        entry[0] == 0x88
+            && (platform == 0xef
+                || (platform == 0
+                    && entry[1] == 0
+                    && is_fat(u32::from_le_bytes([
+                        entry[8], entry[9], entry[10], entry[11],
+                    ]))))
+    };
     if entries
         .next()
-        .is_some_and(|entry| validation[1] == 0xef && entry[0] == 0x88)
+        .is_some_and(|entry| bootable(validation[1], entry))
     {
         return true;
     }
@@ -80,7 +107,7 @@ fn efi_catalog(catalog: &[u8; SECTOR as usize]) -> bool {
             let Some(entry) = entries.next() else {
                 return false;
             };
-            if header[1] == 0xef && entry[0] == 0x88 {
+            if bootable(header[1], entry) {
                 return true;
             }
         }
