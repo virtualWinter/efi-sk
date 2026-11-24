@@ -2,6 +2,7 @@ mod arch;
 pub mod artwork;
 mod debian;
 pub mod discovery;
+mod efi;
 mod fedora;
 mod filesystem;
 mod generic;
@@ -25,16 +26,18 @@ pub enum Profile {
     Fedora,
     /// An image no other profile recognises, booted through a known layout.
     Generic,
+    EfiMedia,
 }
 
 impl Profile {
     /// Every supported profile, in detection order.
-    const ALL: [Profile; 5] = [
+    const ALL: [Profile; 6] = [
         Self::Arch,
         Self::Ubuntu,
         Self::Debian,
         Self::Fedora,
         Self::Generic,
+        Self::EfiMedia,
     ];
 
     fn name(self) -> &'static str {
@@ -44,6 +47,7 @@ impl Profile {
             Self::Debian => debian::NAME,
             Self::Fedora => fedora::NAME,
             Self::Generic => "Linux",
+            Self::EfiMedia => "ISO EFI loader (experimental)",
         }
     }
 
@@ -54,6 +58,7 @@ impl Profile {
             Self::Debian => debian::detect(iso, partition, path),
             Self::Fedora => fedora::detect(iso, partition, path),
             Self::Generic => generic::detect(iso, partition, path),
+            Self::EfiMedia => efi::detect(iso),
         }
     }
 
@@ -70,6 +75,7 @@ impl Profile {
             Self::Debian => debian::boot(iso, partition, path),
             Self::Fedora => fedora::boot(iso, partition, path),
             Self::Generic => generic::boot(iso, partition, path),
+            Self::EfiMedia => Err(Status::UNSUPPORTED),
         }
     }
 
@@ -89,6 +95,7 @@ impl Profile {
             Self::Debian => debian::metadata(partition, path, need_icon),
             Self::Fedora => fedora::metadata(partition, path, need_icon),
             Self::Generic => generic::metadata(partition, path, need_icon),
+            Self::EfiMedia => None,
         }
     }
 }
@@ -100,6 +107,9 @@ pub fn launch(parent: Handle, esp: Handle, profile: Profile, path: &str) -> Resu
         _ => Status::DEVICE_ERROR,
     })?;
     let mut image = Iso::open(file)?;
+    if matches!(profile, Profile::EfiMedia) {
+        return efi::launch(parent, image);
+    }
 
     let (kernel, initrd, args) = profile.boot(&mut image, &partition, path)?;
     drop(image);

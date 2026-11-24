@@ -17,6 +17,22 @@ ISO9660 directory records and inline Rock Ridge names. ISO booting is
 profile-based. Other Linux layouts and Windows installer ISOs require
 additional support.
 
+## Experimental EFI-loader fallback
+
+If no Linux profile matches, the picker checks for an EFI
+boot entry in the ISO's El Torito catalog. It shows matching images as
+**experimental EFI** entries. Selecting one loads the ISO into a UEFI
+virtual CD and tries to start `\EFI\BOOT\BOOTX64.EFI` from the firmware's
+filesystem for that image. Existing Linux profiles take precedence.
+
+This path requires firmware with the EFI RAM Disk Protocol and a driver
+that exposes the El Torito boot filesystem. Images larger than 2 GiB are
+not offered by this fallback, and loading an image requires enough free
+firmware memory for the whole file. This does not preserve access to the
+virtual CD after the OS exits UEFI boot services. Reaching an ISO's boot
+menu does not mean its installer can find its media. Proxmox and Windows
+are not yet verified, and raw disk images such as OpenWrt are not handled.
+
 ## Debian netinst
 
 Download `vmlinuz` and `initrd.gz` from Debian's

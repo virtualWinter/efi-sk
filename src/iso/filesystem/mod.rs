@@ -41,6 +41,14 @@ pub struct Iso {
 }
 
 impl Iso {
+    pub(super) fn image_len(&self) -> u64 {
+        self.file.metadata().len()
+    }
+
+    pub(super) fn read_image(&mut self, offset: u64, bytes: &mut [u8]) -> Result<(), Status> {
+        read_at(&mut self.file, offset, bytes)
+    }
+
     pub fn open(mut file: File) -> Result<Self, Status> {
         let mut descriptor = [0; SECTOR];
         for sector in 16..80 {

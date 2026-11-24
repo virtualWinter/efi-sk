@@ -47,7 +47,11 @@ pub fn add(esp: Handle, entries: &mut Vec<Entry>) {
             continue;
         };
         entries.push(Entry {
-            label: String::from(profile.name()),
+            label: if matches!(profile, Profile::EfiMedia) {
+                format!("{} (experimental EFI)", path.trim_start_matches("/iso/"))
+            } else {
+                String::from(profile.name())
+            },
             target: Target::Iso(profile, path),
             icon: None,
         });
