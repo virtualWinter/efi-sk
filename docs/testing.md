@@ -14,12 +14,16 @@ mkdir -p isos
 tools/test-qemu.sh
 ```
 
-The script builds the picker and creates a temporary GPT USB image with
+The script builds the picker and prepares a cached GPT USB image with
 the new EFI binary and all top-level `.iso` files from `isos/`, including
 any matching Debian installer companion files. The picker
 lists [supported ISOs](profiles.md) in its boot menu. The script does not
-need root or write to physical drives. It removes the test image when
-QEMU exits.
+need root or write to physical drives. When the ISO files, companions,
+or bundled tools change, it rebuilds the image; otherwise it only
+updates `BOOTX64.EFI` on the cached EFI partition. QEMU runs with
+`-snapshot`, so guest writes don't affect the cache. Runs share a lock
+and wait for an existing test VM to exit. Delete `build/qemu-cache/`
+when no test is running to reclaim its space.
 
 The test image includes all bundled tools by default, even if `isos/` is
 empty. UEFI SCT needs `bsdtar` (`libarchive-tools` on Debian/Ubuntu,
