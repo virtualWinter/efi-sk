@@ -14,7 +14,7 @@ pub(super) fn for_image(stem: &str) -> Option<&'static Icon> {
         .get(..5)
         .is_some_and(|start| start.eq_ignore_ascii_case("ARCH_"))
     {
-        return Some(include_bytes!("../../assets/distro/archlinux.rgba"));
+        return Some(include_bytes!("../../../assets/distro/archlinux.rgba"));
     }
     // Check longer aliases first so e.g. Ubuntu Studio wins over Ubuntu.
     PREFIXES.iter().find_map(|&(prefix, slot)| {

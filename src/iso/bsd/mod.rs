@@ -6,7 +6,7 @@ use uefi::{Handle, Status};
 use super::filesystem::Iso;
 
 const SECTOR: usize = 2048;
-const MODULE: &[u8] = include_bytes!("../../vendor/opnsense-geom/geom_ventoy.ko");
+const MODULE: &[u8] = include_bytes!("../../../vendor/opnsense-geom/geom_ventoy.ko");
 const GEOM_CONFIG: &[u8] = b"geom_ventoy_load=\"YES\"\ngeom_ventoy_name=\"/boot/efisk.ko\"\nhint.ventoy.0.vlnk=\"1\"\ngeom_label_load=\"YES\"\n";
 const MAGIC: [u8; 16] = [
     0x44, 0x33, 0x22, 0x11, 0x88, 0x77, 0x66, 0x55, 0xcc, 0xbb, 0xaa, 0x99, 0x00, 0xff, 0xee, 0xdd,
