@@ -84,6 +84,17 @@ pub struct Iso {
 }
 
 impl Iso {
+    pub(super) fn physical_blocks(
+        &self,
+    ) -> Result<impl Iterator<Item = Result<(Option<u64>, u64), ext4_view::Ext4Error>> + '_, Status>
+    {
+        if self.file.needs_journal_recovery() {
+            return Err(Status::NO_MAPPING);
+        }
+        self.file
+            .physical_blocks()
+            .map_err(|_| Status::DEVICE_ERROR)
+    }
     pub(super) fn name(&mut self) -> Option<String> {
         for path in [".disk/info", ".cd-info"] {
             if let Ok(mut info) = self.open_file(path) {

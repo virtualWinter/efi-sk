@@ -77,6 +77,9 @@ data_size=$(((bytes + bytes / 10 + 128 * 1024 * 1024 + 1048575) / 1048576 * 2048
         stat -Lc '%d %i %s %y %z' -- "$file"
     done
     sha256sum vendor/{memtest86plus/memtest86plus,edk2-shell/shell,keytool/KeyTool,ipxe/ipxe,acpidump/acpidump,gpt-fdisk/gdisk_x64}.efi vendor/uefi-sct/sct-x64.7z
+    if [[ -n ${OPNSENSE_GEOM_MODULE:-} ]]; then
+        sha256sum -- "$OPNSENSE_GEOM_MODULE"
+    fi
 } > "$work/manifest"
 
 build_image() {
@@ -96,6 +99,13 @@ EOF
         --offset="$esp_start" "$image" "$((esp_size / 2))" >/dev/null
     esp="$image@@$((esp_start * 512))"
     mmd -i "$esp" ::/EFI ::/EFI/BOOT
+    if [[ -n ${OPNSENSE_GEOM_MODULE:-} ]]; then
+        mcopy -i "$esp" "$OPNSENSE_GEOM_MODULE" ::/EFI/BOOT/opnsense-26.7-geom.ko
+        # The reference module matches the 16-byte ID at MBR offset 384.
+        # Stamp only this freshly generated VM image, never a host drive.
+        { printf 'EFISKMAP'; head -c 8 /dev/urandom; } |
+            dd of="$image" bs=1 seek=384 conv=notrunc status=none
+    fi
     mcopy -i "$esp" vendor/memtest86plus/memtest86plus.efi ::/EFI/BOOT/memtest86plus.efi
     mcopy -i "$esp" vendor/edk2-shell/shell.efi ::/EFI/BOOT/shell.efi
     mcopy -i "$esp" vendor/keytool/KeyTool.efi ::/EFI/BOOT/KeyTool.efi

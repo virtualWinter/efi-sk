@@ -101,7 +101,7 @@ fn versioned_live(image: &mut Iso) -> Option<[String; 2]> {
 }
 
 pub fn launch(parent: Handle, esp: Handle, path: &str) -> Result<(), Status> {
-    let partition = volume::open(esp)?;
+    let (partition, start, length) = volume::open_partition(esp)?;
     let file = partition.open(path).map_err(|error| match error {
         ext4_view::Ext4Error::NotFound => Status::NOT_FOUND,
         _ => Status::DEVICE_ERROR,
@@ -129,7 +129,7 @@ pub fn launch(parent: Handle, esp: Handle, path: &str) -> Result<(), Status> {
         }
         Boot::DebianInstaller => debian::boot(&mut image, &partition, path)?,
         Boot::ProxmoxInstaller => proxmox::boot(&mut image, &partition, path)?,
-        Boot::Efi => return efi::launch(parent, image),
+        Boot::Efi => return efi::launch(parent, esp, image, (start, length)),
     };
     drop(image);
     drop(partition);

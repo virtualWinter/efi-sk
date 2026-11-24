@@ -21,14 +21,36 @@ the pinned OPNsense source configuration. The source files retain their
 license notices. A successful build is not evidence that the module
 loads in the DVD kernel. Do not ship the output until that is verified.
 
-## Remaining integration and acceptance test
+## Test the opt-in disk-backed handoff
 
-The picker must obtain the ISO's physical extents without modifying the
-source filesystem, translate them from partition-relative offsets to the
-USB disk, and pass a bounded, read-only map identifying the correct disk
-to the preloaded GEOM module. The module must publish the ISO provider
-before FreeBSD tries to mount root. A stock module also requires checking
-its disk-identification assumptions against the EFI Swiss Knife layout.
+Place the unmodified DVD ISO on its own in a test directory and run:
+
+```sh
+ISO_DIR=/path/to/test-isos QEMU_CACHE_DIR=build/qemu-cache-geom \
+  OPNSENSE_GEOM_MODULE="$PWD/build/opnsense-geom/geom_ventoy.ko" \
+  tools/test-qemu.sh
+```
+
+To reproduce the QEMU test without a FreeBSD build host, the
+[pinned reference module](https://github.com/ventoy/Ventoy/blob/26980f9d59192657b66c57d85157f44a08b24cc6/Unix/ventoy_unix/FreeBSD/geom_ventoy_ko/15.x/64/geom_ventoy.ko.xz)
+has compressed SHA-256
+`392ac5d2a3dab6d410ecc5a95608a559e4fefd396a3b96dfedc27c32a3e0bce5`.
+Verify it, decompress it with `xz -d`, then point `OPNSENSE_GEOM_MODULE`
+at the `.ko`. Only provide a module you trust to run in the guest kernel.
+
+The helper stamps an identity on the **temporary virtual USB disk only**
+and stages the module on its EFI partition. The picker collects physical
+blocks from a clean ext4 filesystem, merges adjacent ranges, and embeds
+the bounded map in the module. Sparse blocks map to a verified zero-filled
+area in the virtual disk's partition gap. The picker exposes the module
+through the virtual CD without modifying the original ISO. This is opt-in and is not
+installed on physical USB drives by the desktop installer.
+
+In QEMU, the pinned Ventoy revision's prebuilt FreeBSD 15.x module
+mounted the OPNsense 26.7 DVD root and reached interface assignment
+without a separate CD/DVD or a RAM copy of the ISO. The prebuilt module
+is not bundled. A full installation and physical USB boot have not been
+tested.
 
 The acceptance test is an unmodified OPNsense 26.7 DVD ISO copied into
 `iso/` on a QEMU USB disk, with no separately attached optical media.

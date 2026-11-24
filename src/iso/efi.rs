@@ -125,6 +125,7 @@ struct Optical {
     media: BlockIoMedia,
     source: RefCell<OpticalSource>,
     overlay: Vec<super::bsd::Overlay>,
+    module: Vec<u8>,
 }
 
 struct OpticalSource {
@@ -156,15 +157,24 @@ impl OpticalSource {
     }
 }
 
-pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
+pub fn launch(
+    parent: Handle,
+    esp: Handle,
+    mut iso: Iso,
+    partition: (u64, u64),
+) -> Result<(), Status> {
     if !detect(&mut iso) {
         return Err(Status::UNSUPPORTED);
     }
-    let overlay = super::bsd::media_overlay(&mut iso)?;
+    let handoff = super::bsd::media_overlay(esp, &mut iso, partition)?;
+    let media_len = iso
+        .image_len()
+        .checked_add(handoff.module.len() as u64)
+        .ok_or(Status::BAD_BUFFER_SIZE)?;
     // FreeBSD's loader preloads raw modules in small reads. Read ahead on
     // this path so that USB transfers aren't dominated by per-read overhead.
     let mut cache = Vec::new();
-    if !overlay.is_empty() && cache.try_reserve_exact(READ_WINDOW).is_ok() {
+    if !handoff.overlays.is_empty() && cache.try_reserve_exact(READ_WINDOW).is_ok() {
         cache.resize(READ_WINDOW, 0);
     }
     let mut optical = Box::new(Optical {
@@ -185,7 +195,7 @@ pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
             write_caching: false.into(),
             block_size: SECTOR as u32,
             io_align: 1,
-            last_block: iso.image_len() / SECTOR - 1,
+            last_block: media_len / SECTOR - 1,
             lowest_aligned_lba: 0,
             logical_blocks_per_physical_block: 0,
             optimal_transfer_length_granularity: 0,
@@ -196,7 +206,8 @@ pub fn launch(parent: Handle, mut iso: Iso) -> Result<(), Status> {
             offset: 0,
             valid: 0,
         }),
-        overlay,
+        overlay: handoff.overlays,
+        module: handoff.module,
     });
     optical.protocol.media = ptr::from_ref(&optical.media);
     let mut path = Vec::new();
@@ -302,8 +313,19 @@ unsafe extern "efiapi" fn read_blocks(
         slice::from_raw_parts_mut(p, len)
     };
     let start = lba * SECTOR;
-    if let Err(status) = source.read(start, target) {
+    let image_len = source.iso.image_len();
+    let iso_bytes = image_len.saturating_sub(start).min(len as u64) as usize;
+    if iso_bytes > 0
+        && let Err(status) = source.read(start, &mut target[..iso_bytes])
+    {
         return status;
+    }
+    if iso_bytes < len {
+        let offset = start.saturating_sub(image_len) as usize;
+        let Some(data) = optic_module_slice(optical, offset, len - iso_bytes) else {
+            return Status::DEVICE_ERROR;
+        };
+        target[iso_bytes..].copy_from_slice(data);
     }
     for (offset, sector) in &optical.overlay {
         if let Some(index) = offset
@@ -315,6 +337,10 @@ unsafe extern "efiapi" fn read_blocks(
         }
     }
     Status::SUCCESS
+}
+
+fn optic_module_slice(optical: &Optical, offset: usize, size: usize) -> Option<&[u8]> {
+    optical.module.get(offset..offset.checked_add(size)?)
 }
 
 fn launch_registered(parent: Handle, ram_path: &DevicePath) -> Result<(), Status> {
