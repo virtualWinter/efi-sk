@@ -39,6 +39,17 @@ services. Reaching an ISO's boot menu does not mean its installer can
 find its media. Windows is not yet verified, and raw disk images such as
 OpenWrt are not handled.
 
+### Router images
+
+- **VyOS rolling (experimental):** the picker can match the kernel and
+  initramfs under `live/` by their shared version suffix. It passes the
+  original ISO path to Debian live-boot and preserves the normal VyOS
+  live boot options.
+- **OPNsense DVD (download only):** the installer catalog verifies the
+  upstream `.iso.bz2`. The firmware can try its EFI loader on the
+  decompressed ISO, but there is no FreeBSD media handoff yet. Do not
+  assume the live system can mount its root filesystem from the picker.
+
 ### Replacing compatibility profiles
 
 The intended next layer hands off the USB partition UUID and ISO path to

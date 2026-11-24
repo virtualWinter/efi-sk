@@ -51,6 +51,7 @@ const LAYOUTS: &[LinuxLayout] = &[
 
 enum Boot {
     Linux(&'static LinuxLayout),
+    VersionedLive(String, String),
     DebianInstaller,
     ProxmoxInstaller,
     Efi,
@@ -72,7 +73,30 @@ fn detect(image: &mut Iso, partition: &Ext4, path: &str) -> Option<Boot> {
     }) {
         return Some(Boot::Linux(layout));
     }
+    if let Some([kernel, initrd]) = versioned_live(image) {
+        return Some(Boot::VersionedLive(kernel, initrd));
+    }
     efi::detect(image).then_some(Boot::Efi)
+}
+
+fn versioned_live(image: &mut Iso) -> Option<[String; 2]> {
+    image.open_file("live/filesystem.squashfs").ok()?;
+    let mut entries = image.read_dir("live").ok()?;
+    entries.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
+    for (name, _) in entries {
+        let Some(version) = name.strip_prefix("vmlinuz-") else {
+            continue;
+        };
+        if version.is_empty() {
+            continue;
+        }
+        let kernel = format!("live/{name}");
+        let initrd = format!("live/initrd.img-{version}");
+        if image.has_boot_file(&kernel) && image.has_boot_file(&initrd) {
+            return Some([kernel, initrd]);
+        }
+    }
+    None
 }
 
 pub fn launch(parent: Handle, esp: Handle, path: &str) -> Result<(), Status> {
@@ -82,17 +106,30 @@ pub fn launch(parent: Handle, esp: Handle, path: &str) -> Result<(), Status> {
         _ => Status::DEVICE_ERROR,
     })?;
     let mut image = Iso::open(file)?;
-    let (kernel, initrd, args) =
-        match detect(&mut image, &partition, path).ok_or(Status::UNSUPPORTED)? {
-            Boot::Linux(layout) => (
-                image.read_boot_file(layout.kernel)?,
-                image.read_boot_file(layout.initrd)?,
-                (layout.args)(path, partition.uuid()),
-            ),
-            Boot::DebianInstaller => debian::boot(&mut image, &partition, path)?,
-            Boot::ProxmoxInstaller => proxmox::boot(&mut image, &partition, path)?,
-            Boot::Efi => return efi::launch(parent, image),
-        };
+    let (kernel, initrd, args) = match detect(&mut image, &partition, path)
+        .ok_or(Status::UNSUPPORTED)?
+    {
+        Boot::Linux(layout) => (
+            image.read_boot_file(layout.kernel)?,
+            image.read_boot_file(layout.initrd)?,
+            (layout.args)(path, partition.uuid()),
+        ),
+        Boot::VersionedLive(kernel, initrd) => {
+            let options = if kernel.ends_with("-vyos") {
+                " hostname=vyos username=live nopersistence noautologin nonetworking union=overlay console=ttyS0,115200 console=tty0 net.ifnames=0 biosdevname=0"
+            } else {
+                ""
+            };
+            (
+                image.read_boot_file(&kernel)?,
+                image.read_boot_file(&initrd)?,
+                format!("boot=live components findiso={path}{options}"),
+            )
+        }
+        Boot::DebianInstaller => debian::boot(&mut image, &partition, path)?,
+        Boot::ProxmoxInstaller => proxmox::boot(&mut image, &partition, path)?,
+        Boot::Efi => return efi::launch(parent, image),
+    };
     drop(image);
     drop(partition);
     linux::launch(parent, kernel, initrd, &args)
