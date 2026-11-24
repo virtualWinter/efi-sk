@@ -1,7 +1,7 @@
 use alloc::{format, string::String, vec::Vec};
 use uefi::Handle;
 
-use super::{Profile, filesystem::Iso, volume};
+use super::{Boot, artwork, detect, filesystem::Iso, volume};
 use crate::entries::{Entry, MAX_ENTRIES, Target, valid_iso_path};
 
 pub fn add(esp: Handle, entries: &mut Vec<Entry>) {
@@ -40,20 +40,20 @@ pub fn add(esp: Handle, entries: &mut Vec<Entry>) {
         let Ok(mut iso) = Iso::open(file) else {
             continue;
         };
-        let Some(profile) = Profile::ALL
-            .into_iter()
-            .find(|profile| profile.detect(&mut iso, &partition, &path))
-        else {
+        let Some(boot) = detect(&mut iso, &partition, &path) else {
             continue;
         };
+        let name = path.trim_start_matches("/iso/");
+        let icon = artwork::for_image(name);
+        let stem = name.get(..name.len() - 4).unwrap_or(name);
         entries.push(Entry {
-            label: if matches!(profile, Profile::EfiMedia) {
-                format!("{} (experimental EFI)", path.trim_start_matches("/iso/"))
+            label: if matches!(boot, Boot::Efi) {
+                format!("{stem} (EFI)")
             } else {
-                String::from(profile.name())
+                String::from(stem)
             },
-            target: Target::Iso(profile, path),
-            icon: None,
+            target: Target::Iso(path),
+            icon,
         });
         boot_count += 1;
     }

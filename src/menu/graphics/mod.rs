@@ -222,7 +222,7 @@ impl Graphics {
                 render_action_icon(canvas, x + (w - 20) / 2, center - 10, action);
                 continue;
             }
-            let logo = entry.icon.as_deref();
+            let logo = entry.icon;
             if let Some(logo) = logo {
                 canvas.icon((x + 13, center - 9), ICON_SIZE, logo);
             } else if entry.tool_detail() == Some("EDK II") {
@@ -304,7 +304,7 @@ fn render_action_icon(canvas: &mut Canvas, x: usize, y: usize, action: Action) {
 
 fn render_label(canvas: &mut Canvas, start: usize, baseline: usize, width: usize, entry: &Entry) {
     let detail = match &entry.target {
-        Target::Iso(_, path) => path.rsplit('/').next(),
+        Target::Iso(_) => None,
         _ => entry.tool_detail(),
     };
     let measure = |canvas: &Canvas, text: &str| canvas.text_width(text, Face::Regular);

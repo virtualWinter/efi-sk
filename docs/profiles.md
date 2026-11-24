@@ -1,4 +1,4 @@
-# Linux ISO profiles
+# Linux ISO boot compatibility
 
 - Arch loads the kernel and initramfs under `arch/boot/x86_64/` and
   identifies the ISO partition by its ext4 filesystem UUID.
@@ -17,7 +17,7 @@
   iPXE media path. It does not copy the ISO into memory.
   Proxmox VE 9.2-1 was verified in QEMU through the installer license screen.
 
-Each profile expects an x86-64 Linux kernel built with the EFI stub and
+Each Linux boot layout expects an x86-64 kernel built with the EFI stub and
 an initramfs that can reopen the ISO from ext4. The ISO reader uses
 ISO9660 directory records and inline Rock Ridge names. ISO booting is
 profile-based. Other Linux layouts and Windows installer ISOs require
@@ -80,16 +80,3 @@ debian-13.8.0-amd64-netinst.iso.initrd.gz
 Use `iso/` on the USB's `ISOS` partition, or `isos/` in the project for
 the QEMU test. A top-level ISO is detected automatically when both
 companion files are present.
-
-The graphical menu reads the plain Debian swirl from `pics/logo-50.jpg`
-inside the ISO and makes its white background transparent. If that fails,
-it tries `pics/openlogo-nd-50.png`, then uses a generic icon.
-
-Ubuntu artwork comes from the live system itself: the picker lists
-`casper/`, opens the largest SquashFS first and reads the Circle of
-Friends from `usr/share/pixmaps/`. If none of the known artwork files
-decode, the entry uses a generic icon.
-
-Fedora artwork comes from Anaconda's stage2 image: the picker opens
-`images/install.img` and reads `fedora-logo-icon.png` from the hicolor
-icon theme at `usr/share/icons/hicolor/`.

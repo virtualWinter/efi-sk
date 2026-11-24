@@ -13,7 +13,7 @@ qmetaobject::qrc!(register_iso_icons,
     "icons" as "iso-icons" {
         "debian.png", "opensuse.png", "fedora.png", "ubuntu.png",
         "archlinux.png", "rockylinux.png", "almalinux.png",
-        "systemrescue.png", "kalilinux.png",
+        "systemrescue.png", "kalilinux.png", "proxmox.png",
         "memory-stick.png", "terminal.png", "key-round.png", "network.png",
         "file-search.png", "hard-drive.png", "clipboard-check.png",
     }
@@ -25,7 +25,7 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso",
         "sha256:4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c",
         "",
-        "systemrescue",
+        "proxmox",
     ),
     (
         "OpenWrt 25.12.6 · Download only",

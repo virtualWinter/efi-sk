@@ -5,16 +5,9 @@ edition = "2024"
 license = "ISC"
 
 [dependencies]
-lzma-rust2 = { version = "=0.25.0", default-features = false, features = ["xz"] }
-zune-png = { version = "=0.5.2", default-features = false }
-zune-jpeg = { version = "=0.5.5", default-features = false }
 ext4-view = "=1.0.0"
 uefi-raw = "=0.17.0"
 uefi = { version = "=0.41.0", features = ["alloc", "global_allocator", "panic_handler"] }
-
-[patch.crates-io]
-# Keep desktop-only PNG SIMD code out of no_std builds.
-zune-png = { path = "vendor/zune-png" }
 
 [profile.release]
 lto = true

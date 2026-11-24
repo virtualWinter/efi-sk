@@ -123,17 +123,9 @@ Unreadable and unrecognized images are skipped.
 
 ## Automatic entries and artwork
 
-For Arch ISOs, the picker reads `usr/lib/os-release` inside the ISO's
-`arch/x86_64/airootfs.sfs`. It uses `PRETTY_NAME` or `NAME` for an automatic
-entry and loads the PNG named by `LOGO` from `usr/share/pixmaps/`. The EFI
-loader reads only the SquashFS blocks needed for those files. It accepts
-xz-compressed SquashFS 4 images and still PNGs up to 512 × 512 pixels.
-
-If the Arch artwork is unavailable or the format is unsupported, the
-picker uses a generic icon. Ubuntu entries open the SquashFS images in
-`casper/` (largest first) and read the Circle of Friends from
-`usr/share/pixmaps/` in the live system. Fedora entries open
-`images/install.img` and read the logo from the hicolor icon theme.
+The menu uses the ISO filename for its label and picks a bundled logo by
+filename prefix. Unknown names get a generic icon. Renaming an ISO can
+change its label or icon, but boot detection is based on its contents.
 
 ## Menu input
 

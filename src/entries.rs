@@ -1,9 +1,9 @@
-use alloc::{boxed::Box, string::String, vec::Vec};
+use alloc::{string::String, vec::Vec};
 use uefi::boot;
 use uefi::fs::FileSystem;
 use uefi::{CStr16, Handle, cstr16};
 
-use crate::iso::{Profile, artwork::Icon};
+use crate::iso::artwork::Icon;
 
 pub const MAX_ENTRIES: usize = 9;
 pub const SCT_INSTALLER: &str = "\\SctPackageX64\\InstallX64.efi";
@@ -78,7 +78,7 @@ pub fn add_tools(image: Handle, entries: &mut Vec<Entry>) {
 pub struct Entry {
     pub label: String,
     pub target: Target,
-    pub icon: Option<Box<Icon>>,
+    pub icon: Option<&'static Icon>,
 }
 
 impl Entry {
@@ -105,7 +105,7 @@ impl Entry {
 
 pub enum Target {
     Efi(String),
-    Iso(Profile, String),
+    Iso(String),
     Action(crate::actions::Action),
     SystemInfo,
 }

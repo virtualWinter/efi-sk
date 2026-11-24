@@ -1,14 +1,9 @@
-use alloc::{boxed::Box, format, string::String, vec, vec::Vec};
+use alloc::{format, string::String, vec::Vec};
 use ext4_view::Ext4;
 use uefi::Status;
 
-use super::{
-    artwork::{Icon, Metadata, jpeg, png},
-    filesystem::Iso,
-    linux,
-};
+use super::{filesystem::Iso, linux};
 
-pub const NAME: &str = "Debian Installer";
 pub const KERNEL: &str = "install.amd/vmlinuz";
 pub const INITRD: &str = "install.amd/initrd.gz";
 
@@ -77,13 +72,6 @@ fn module_packages(iso: &mut Iso) -> Option<[String; 2]> {
     ])
 }
 
-pub fn metadata(partition: &Ext4, path: &str, need_icon: bool) -> Option<Metadata> {
-    need_icon.then(|| Metadata {
-        label: None,
-        icon: icon(partition, path),
-    })
-}
-
 fn companion_paths(path: &str) -> [String; 2] {
     [format!("{path}.vmlinuz"), format!("{path}.initrd.gz")]
 }
@@ -119,21 +107,4 @@ fn read_companion(partition: &Ext4, path: &str) -> Result<Vec<u8>, Status> {
         remaining = &mut remaining[count..];
     }
     Ok(bytes)
-}
-
-fn icon(partition: &Ext4, path: &str) -> Option<Box<Icon>> {
-    let mut iso = Iso::open(partition.open(path).ok()?).ok()?;
-    read_logo(&mut iso, "pics/logo-50.jpg")
-        .and_then(|bytes| jpeg::decode_debian_logo(&bytes))
-        .or_else(|| png::decode_debian_logo(&read_logo(&mut iso, "pics/openlogo-nd-50.png")?))
-}
-
-fn read_logo(iso: &mut Iso, path: &str) -> Option<Vec<u8>> {
-    let mut logo = iso.open_file(path).ok()?;
-    if !(1..=128 * 1024).contains(&logo.len()) {
-        return None;
-    }
-    let mut bytes = vec![0; logo.len() as usize];
-    logo.read_at(0, &mut bytes).ok()?;
-    Some(bytes)
 }

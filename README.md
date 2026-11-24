@@ -36,8 +36,3 @@ Run `tools/build-efi.sh` to produce `build/BOOTX64.EFI`. See the
 Original code is licensed under the [ISC License](LICENSE). Bundled software,
 fonts (including [Geist](assets/OFL-Geist.txt)), and artwork remain under
 their own terms; see the [third-party notices](docs/third-party.md).
-
-Ubuntu's [Circle of Friends](https://discourse.ubuntu.com/t/ubuntu-merchandise-assets/67314)
-(registered by Canonical Ltd.) is read from the ISO's live system at boot,
-and Arch Linux artwork is subject to the
-[Arch Linux trademark policy](https://archlinux.org/art/).

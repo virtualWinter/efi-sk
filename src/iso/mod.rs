@@ -1,125 +1,98 @@
-mod arch;
 pub mod artwork;
 mod debian;
 pub mod discovery;
 mod efi;
-mod fedora;
 mod filesystem;
-mod generic;
 mod linux;
-mod os_release;
 mod proxmox;
-mod ubuntu;
 mod volume;
 
-use alloc::{string::String, vec::Vec};
-use ext4_view::Ext4;
+use alloc::{format, string::String};
+use ext4_view::{Ext4, Uuid};
 use uefi::{Handle, Status};
 
-use artwork::Metadata;
 use filesystem::Iso;
 
-#[derive(Clone, Copy)]
-pub enum Profile {
-    Arch,
-    Ubuntu,
-    Debian,
-    Fedora,
-    Proxmox,
-    /// An image no other profile recognises, booted through a known layout.
-    Generic,
-    EfiMedia,
+struct LinuxLayout {
+    kernel: &'static str,
+    initrd: &'static str,
+    marker: Option<&'static str>,
+    args: fn(&str, Uuid) -> String,
 }
 
-impl Profile {
-    /// Every supported profile, in detection order.
-    const ALL: [Profile; 7] = [
-        Self::Arch,
-        Self::Ubuntu,
-        Self::Debian,
-        Self::Fedora,
-        Self::Proxmox,
-        Self::Generic,
-        Self::EfiMedia,
-    ];
+const LAYOUTS: &[LinuxLayout] = &[
+    LinuxLayout {
+        kernel: "arch/boot/x86_64/vmlinuz-linux",
+        initrd: "arch/boot/x86_64/initramfs-linux.img",
+        marker: None,
+        args: |path, uuid| {
+            format!("archisobasedir=arch img_dev=/dev/disk/by-uuid/{uuid} img_loop={path}")
+        },
+    },
+    LinuxLayout {
+        kernel: "casper/vmlinuz",
+        initrd: "casper/initrd",
+        marker: None,
+        args: |path, _| format!("boot=casper iso-scan/filename={path}"),
+    },
+    LinuxLayout {
+        kernel: "images/pxeboot/vmlinuz",
+        initrd: "images/pxeboot/initrd.img",
+        marker: Some("images/install.img"),
+        args: |path, uuid| format!("inst.stage2=hd:UUID={uuid}:{path}"),
+    },
+    LinuxLayout {
+        kernel: "live/vmlinuz",
+        initrd: "live/initrd.img",
+        marker: None,
+        args: |path, _| format!("boot=live findiso={path}"),
+    },
+];
 
-    fn name(self) -> &'static str {
-        match self {
-            Self::Arch => arch::NAME,
-            Self::Ubuntu => ubuntu::NAME,
-            Self::Debian => debian::NAME,
-            Self::Fedora => fedora::NAME,
-            Self::Proxmox => "Proxmox VE (experimental)",
-            Self::Generic => "Linux",
-            Self::EfiMedia => "ISO EFI loader (experimental)",
-        }
-    }
-
-    fn detect(self, iso: &mut Iso, partition: &Ext4, path: &str) -> bool {
-        match self {
-            Self::Arch => arch::detect(iso, partition, path),
-            Self::Ubuntu => ubuntu::detect(iso, partition, path),
-            Self::Debian => debian::detect(iso, partition, path),
-            Self::Fedora => fedora::detect(iso, partition, path),
-            Self::Proxmox => proxmox::detect(iso),
-            Self::Generic => generic::detect(iso, partition, path),
-            Self::EfiMedia => efi::detect(iso),
-        }
-    }
-
-    /// Loads the kernel and initrd and builds the kernel command line.
-    fn boot(
-        self,
-        iso: &mut Iso,
-        partition: &Ext4,
-        path: &str,
-    ) -> Result<(Vec<u8>, Vec<u8>, String), Status> {
-        match self {
-            Self::Arch => arch::boot(iso, partition, path),
-            Self::Ubuntu => ubuntu::boot(iso, partition, path),
-            Self::Debian => debian::boot(iso, partition, path),
-            Self::Fedora => fedora::boot(iso, partition, path),
-            Self::Proxmox => proxmox::boot(iso, partition, path),
-            Self::Generic => generic::boot(iso, partition, path),
-            Self::EfiMedia => Err(Status::UNSUPPORTED),
-        }
-    }
-
-    /// Whether the entry needs to read the ISO's metadata: Arch and the
-    /// generic fallback supply a release name, the other profiles only artwork.
-    fn needs_metadata(self, need_icons: bool) -> bool {
-        match self {
-            Self::Arch | Self::Generic => true,
-            _ => need_icons,
-        }
-    }
-
-    fn metadata(self, partition: &Ext4, path: &str, need_icon: bool) -> Option<Metadata> {
-        match self {
-            Self::Arch => arch::metadata(partition, path, need_icon),
-            Self::Ubuntu => ubuntu::metadata(partition, path, need_icon),
-            Self::Debian => debian::metadata(partition, path, need_icon),
-            Self::Fedora => fedora::metadata(partition, path, need_icon),
-            Self::Proxmox => None,
-            Self::Generic => generic::metadata(partition, path, need_icon),
-            Self::EfiMedia => None,
-        }
-    }
+enum Boot {
+    Linux(&'static LinuxLayout),
+    DebianInstaller,
+    ProxmoxInstaller,
+    Efi,
 }
 
-pub fn launch(parent: Handle, esp: Handle, profile: Profile, path: &str) -> Result<(), Status> {
+fn detect(image: &mut Iso, partition: &Ext4, path: &str) -> Option<Boot> {
+    if debian::detect(image, partition, path) {
+        return Some(Boot::DebianInstaller);
+    }
+    if proxmox::detect(image) {
+        return Some(Boot::ProxmoxInstaller);
+    }
+    if let Some(layout) = LAYOUTS.iter().find(|layout| {
+        image.has_boot_file(layout.kernel)
+            && image.has_boot_file(layout.initrd)
+            && layout
+                .marker
+                .is_none_or(|marker| image.open_file(marker).is_ok())
+    }) {
+        return Some(Boot::Linux(layout));
+    }
+    efi::detect(image).then_some(Boot::Efi)
+}
+
+pub fn launch(parent: Handle, esp: Handle, path: &str) -> Result<(), Status> {
     let partition = volume::open(esp)?;
     let file = partition.open(path).map_err(|error| match error {
         ext4_view::Ext4Error::NotFound => Status::NOT_FOUND,
         _ => Status::DEVICE_ERROR,
     })?;
     let mut image = Iso::open(file)?;
-    match profile {
-        Profile::EfiMedia => return efi::launch(parent, image),
-        _ => {}
-    }
-
-    let (kernel, initrd, args) = profile.boot(&mut image, &partition, path)?;
+    let (kernel, initrd, args) =
+        match detect(&mut image, &partition, path).ok_or(Status::UNSUPPORTED)? {
+            Boot::Linux(layout) => (
+                image.read_boot_file(layout.kernel)?,
+                image.read_boot_file(layout.initrd)?,
+                (layout.args)(path, partition.uuid()),
+            ),
+            Boot::DebianInstaller => debian::boot(&mut image, &partition, path)?,
+            Boot::ProxmoxInstaller => proxmox::boot(&mut image, &partition, path)?,
+            Boot::Efi => return efi::launch(parent, image),
+        };
     drop(image);
     drop(partition);
     linux::launch(parent, kernel, initrd, &args)

@@ -6,12 +6,8 @@ files or external dependencies.
 - [Geist fonts and generated glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
 - [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the
   [bundled license](../assets/lucide/LICENSE).
-- [Installer distro icons](../installer/icons/README.md): Simple Icons,
+- [Installer and firmware distro icons](../installer/icons/README.md): Simple Icons,
   with [CC0 license](../installer/icons/LICENSE.simple-icons) and applicable trademark policies.
-- [Vendored zune-png](../vendor/zune-png/Cargo.toml): see the bundled
-  [Apache](../vendor/zune-png/LICENSE-APACHE),
-  [MIT](../vendor/zune-png/LICENSE-MIT), and
-  [Zlib](../vendor/zune-png/LICENSE-ZLIB) license texts.
 
 The bundled EFI tools have their own notices and upstream source information:
 [ACPIdump](../vendor/acpidump/README.md),

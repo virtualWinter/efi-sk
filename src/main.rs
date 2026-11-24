@@ -33,10 +33,6 @@ fn run() -> Result<(), Status> {
     entries::add_tools(image, &mut entries);
     actions::add(device, &mut entries);
 
-    let graphics_available =
-        boot::get_handle_for_protocol::<uefi::proto::console::gop::GraphicsOutput>().is_ok();
-    iso::artwork::load(device, &mut entries, graphics_available);
-
     let mut selected = 0;
     let mut last_boot = None;
     while menu::select(&entries, &mut selected, last_boot)? {
@@ -75,7 +71,7 @@ fn run() -> Result<(), Status> {
                 result
             }
             Target::Efi(path) => chainload::launch(image, device, path),
-            Target::Iso(profile, path) => iso::launch(image, device, *profile, path),
+            Target::Iso(path) => iso::launch(image, device, path),
             Target::Action(action) => action.run(),
             Target::SystemInfo => {
                 system_info::show()?;

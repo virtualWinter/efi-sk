@@ -5,6 +5,14 @@ The original SVGs and [CC0 license](LICENSE.simple-icons) are included. The PNGs
 are tinted 48×48 renders for the dark installer. The marks remain subject to
 their owners’ trademark policies.
 
+The firmware uses 18×18 RGBA renders of the same marks. To regenerate one
+from the repository root:
+
+```sh
+ffmpeg -i installer/icons/debian.png -vf scale=18:18:flags=lanczos \
+  -frames:v 1 -pix_fmt rgba -f rawvideo assets/distro/debian.rgba
+```
+
 SystemRescue uses a neutral drive glyph rendered from
 [Lucide](../../assets/lucide/hard-drive.svg) under its [license](../../assets/lucide/LICENSE).
 The EFI tools use matching [Lucide 0.468.0](https://github.com/lucide-icons/lucide/tree/0.468.0/icons)
