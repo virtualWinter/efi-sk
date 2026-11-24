@@ -121,11 +121,14 @@ QQC2.ApplicationWindow {
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
                         QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
-                        model: installer.iso_names.split("\n")
+                        model: installer.iso_names.split("\n").map((name, index) => ({
+                                    name: name,
+                                    sourceIndex: index
+                                })).sort((a, b) => a.name.localeCompare(b.name))
                         spacing: 1
                         delegate: Rectangle {
-                            required property int index
-                            required property string modelData
+                            required property var modelData
+                            readonly property int sourceIndex: modelData.sourceIndex
                             width: imageList.width - 14
                             height: 44
                             radius: 7
@@ -140,7 +143,7 @@ QQC2.ApplicationWindow {
                                 anchors.rightMargin: 6
                                 spacing: 8
                                 Image {
-                                    source: "qrc:/iso-icons/" + installer.iso_icons.split("\n")[index] + ".png"
+                                    source: "qrc:/iso-icons/" + installer.iso_icons.split("\n")[sourceIndex] + ".png"
                                     Layout.preferredWidth: 20
                                     Layout.preferredHeight: 20
                                     fillMode: Image.PreserveAspectFit
@@ -148,18 +151,18 @@ QQC2.ApplicationWindow {
                                 }
                                 QQC2.CheckBox {
                                     id: isoCheck
-                                    checked: window.selectedIsoIndexes.split(",").indexOf(String(index)) >= 0
-                                    onToggled: window.toggleIso(index, checked)
-                                    Accessible.name: "Include " + modelData
+                                    checked: window.selectedIsoIndexes.split(",").indexOf(String(sourceIndex)) >= 0
+                                    onToggled: window.toggleIso(sourceIndex, checked)
+                                    Accessible.name: "Include " + modelData.name
                                 }
                                 QQC2.Label {
-                                    text: modelData
+                                    text: modelData.name
                                     Layout.fillWidth: true
                                     elide: Text.ElideMiddle
                                 }
                                 Button {
                                     text: "Download"
-                                    onClicked: installer.download_iso(index)
+                                    onClicked: installer.download_iso(sourceIndex)
                                 }
                             }
                         }
