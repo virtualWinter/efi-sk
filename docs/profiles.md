@@ -54,6 +54,8 @@ OpenWrt are not handled.
   memory disk. It leaves the USB file unchanged but requires enough
   RAM for the whole ISO plus the installer. Do not assume root mounting
   works until the installation environment has been verified.
+  See the [disk-backed handoff notes](opnsense-handoff.md) for the
+  reference GEOM build and the remaining integration.
 
 ### Replacing compatibility profiles
 
