@@ -1,4 +1,4 @@
-name: Release UEFI picker
+name: Release EFI Swiss Knife
 
 on:
   push:
@@ -10,21 +10,42 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
-      - name: Build release artifact
+      - name: Build and package EFI tools
         run: |
           rustup target add x86_64-unknown-uefi
           tools/build-efi.sh
-          mkdir dist
-          cp build/BOOTX64.EFI dist/
-          cp vendor/{memtest86plus/memtest86plus,edk2-shell/shell,keytool/KeyTool,ipxe/ipxe,acpidump/acpidump,gpt-fdisk/gdisk_x64}.efi dist/
-          cp vendor/uefi-sct/sct-x64.7z dist/
+          mkdir -p dist build/efi-package
+          cp build/BOOTX64.EFI build/efi-package/
+          cp vendor/{memtest86plus/memtest86plus,edk2-shell/shell,keytool/KeyTool,ipxe/ipxe,acpidump/acpidump,gpt-fdisk/gdisk_x64}.efi build/efi-package/
+          cp vendor/uefi-sct/sct-x64.7z build/efi-package/
+          tar -C build/efi-package -czf dist/efi-sk-efi-x86_64.tar.gz \
+            BOOTX64.EFI acpidump.efi gdisk_x64.efi ipxe.efi KeyTool.efi \
+            memtest86plus.efi shell.efi sct-x64.7z
+      - name: Install Qt build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev qt6-declarative-dev
+      - name: Build and test installer
+        env:
+          QMAKE: /usr/bin/qmake6
+          EFI_SK_GITHUB_REPO: ${{ github.repository }}
+          CARGO_TARGET_DIR: ${{ github.workspace }}/build/installer
+        run: |
+          cargo test --locked --manifest-path installer/Cargo.toml
+          cargo build --locked --release --manifest-path installer/Cargo.toml
+      - name: Package installer and generate checksums
+        run: |
+          mkdir -p build/installer-package
+          cp build/installer/release/efi-sk-installer installer/README.md LICENSE build/installer-package/
+          tar -C build/installer-package -czf dist/efi-sk-installer-linux-x86_64.tar.gz \
+            efi-sk-installer README.md LICENSE
           cd dist
-          sha256sum *.efi *.EFI *.7z > SHA256SUMS
+          sha256sum *.tar.gz > SHA256SUMS
       - name: Publish GitHub release
         if: github.event_name == 'push' && github.ref_type == 'tag'
         env:

@@ -290,7 +290,7 @@ impl Installer {
         for name in assets
             .iter()
             .map(|(name, _, _)| *name)
-            .chain(["SHA256SUMS"])
+            .chain(["SHA256SUMS", usb::EFI_ARCHIVE])
         {
             let _ = fs::remove_file(stage.0.join(name));
         }

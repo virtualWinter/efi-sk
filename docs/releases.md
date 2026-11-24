@@ -1,15 +1,14 @@
 # Releases and ISO catalog
 
-The firmware and desktop installer have separate tags and release workflows:
+Push an `esk-*` tag to publish one GitHub release with:
 
-- `esk-0.1` (pattern `esk-*`) publishes `BOOTX64.EFI`, the bundled EFI
-  tools, and `SHA256SUMS`. Only firmware releases are marked latest, so
-  the desktop installer can find the firmware and tools.
-- `installer-v0.1` (pattern `installer-v*`) publishes the Linux x86-64
-  installer archive and `SHA256SUMS`. It does not bundle firmware or Qt.
+- `efi-sk-efi-x86_64.tar.gz`: `BOOTX64.EFI` and the bundled EFI tools.
+- `efi-sk-installer-linux-x86_64.tar.gz`: the desktop installer, without Qt.
+- `SHA256SUMS`: SHA-256 digests for both archives.
 
-Both workflows build from the tagged lockfiles. Manual runs build and
-package without publishing.
+The workflow builds from the tagged lockfiles. Manual runs build and
+package without publishing. Use the installer from the combined release:
+older installer binaries expect individually published EFI assets.
 
 The tagged source tree includes the bundled tools' [license notices and
 source information](third-party.md), including the corresponding source

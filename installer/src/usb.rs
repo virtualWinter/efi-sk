@@ -6,6 +6,7 @@ use std::{
 };
 
 pub type Asset = (&'static str, &'static str, &'static str);
+pub const EFI_ARCHIVE: &str = "efi-sk-efi-x86_64.tar.gz";
 const PICKER: Asset = ("BOOTX64.EFI", "", "EFI Swiss Knife");
 const SHELL: Asset = ("shell.efi", "edk2-shell", "EFI Shell");
 const SCT: Asset = ("sct-x64.7z", "uefi-sct", "UEFI SCT (includes EFI Shell)");
@@ -116,10 +117,14 @@ pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
     };
     fetch("SHA256SUMS")?;
     let sums = fs::read_to_string(dir.join("SHA256SUMS"))?;
-    for (name, _, _) in assets {
+    let has_archive = sums.lines().any(|line| {
+        line.split_once("  ")
+            .is_some_and(|(_, file)| file == EFI_ARCHIVE)
+    });
+    let fetch_verified = |name: &str| -> Result<()> {
         let mut matches = sums.lines().filter_map(|line| {
             let (hash, file) = line.split_once("  ")?;
-            (file == *name && hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit()))
+            (file == name && hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit()))
                 .then_some(hash)
         });
         let expected = matches
@@ -136,6 +141,37 @@ pub fn download(repo: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
             .is_some_and(|hash| hash.eq_ignore_ascii_case(expected))
         {
             return Err(format!("Checksum mismatch: {name}").into());
+        }
+        Ok(())
+    };
+    if has_archive {
+        fetch_verified(EFI_ARCHIVE)?;
+        stage_archive(dir, assets)?;
+    } else {
+        // Older firmware releases published the EFI files individually.
+        for (name, _, _) in assets {
+            fetch_verified(name)?;
+        }
+    }
+    Ok(())
+}
+
+fn stage_archive(dir: &Path, assets: &[Asset]) -> Result<()> {
+    for (name, _, _) in assets {
+        // Stream an exact member into a file we create, rather than honoring
+        // archive paths, links, ownership, or modes.
+        let result = Command::new("tar")
+            .args(["-xOzf"])
+            .arg(dir.join(EFI_ARCHIVE))
+            .args(["--", name])
+            .stdout(fs::File::create_new(dir.join(name))?)
+            .output()?;
+        if !result.status.success() || fs::metadata(dir.join(name))?.len() == 0 {
+            return Err(format!(
+                "Could not extract {name}: {}",
+                String::from_utf8_lossy(&result.stderr)
+            )
+            .into());
         }
     }
     Ok(())
@@ -336,5 +372,30 @@ mod tests {
     fn rejects_unknown_exclusions() {
         assert!(selected_assets("999").is_err());
         assert!(selected_assets("invalid").is_err());
+    }
+
+    #[test]
+    fn archive_stages_only_selected_members() -> Result<()> {
+        let dir = Temp::new()?;
+        let result = (|| {
+            fs::write(dir.0.join(PICKER.0), b"picker")?;
+            fs::write(dir.0.join(SHELL.0), b"shell")?;
+            run(Command::new("tar").current_dir(&dir.0).args([
+                "-czf",
+                EFI_ARCHIVE,
+                PICKER.0,
+                SHELL.0,
+            ]))?;
+            fs::remove_file(dir.0.join(PICKER.0))?;
+            fs::remove_file(dir.0.join(SHELL.0))?;
+            stage_archive(&dir.0, &[PICKER])?;
+            assert_eq!(fs::read(dir.0.join(PICKER.0))?, b"picker");
+            assert!(!dir.0.join(SHELL.0).exists());
+            Ok(())
+        })();
+        for name in [PICKER.0, SHELL.0, EFI_ARCHIVE] {
+            let _ = fs::remove_file(dir.0.join(name));
+        }
+        result
     }
 }

@@ -30,8 +30,9 @@ also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Deselect all tools** to install only the picker and your
-images. Release mode downloads only the picker and selected tools; local mode
-copies those files from the local build and `vendor/`. Selecting UEFI SCT also
+images. Release mode downloads and verifies the EFI archive, then extracts
+only the picker and selected tools using `tar`. Local mode copies those files
+from the local build and `vendor/`. Selecting UEFI SCT also
 includes the EFI Shell and requires `bsdtar`.
 Release-mode ISO downloads are stored under
 `${XDG_DATA_HOME:-$HOME/.local/share}/efiswissknife/isos`. Set
@@ -44,8 +45,8 @@ Neither path invokes scripts under `tools/`.
 ## Run
 
 On Ubuntu 24.04 x86-64 or a compatible Linux distribution, download the
-archive from an `installer-v*` release, verify it with
-`sha256sum -c SHA256SUMS`, and extract it. Install the Qt 6 QML runtime
+installer archive and `SHA256SUMS` from an `esk-*` release. Verify it with
+`sha256sum -c --ignore-missing SHA256SUMS` and extract it. Install the Qt 6 QML runtime
 modules and Kirigami (on Ubuntu: `qml6-module-qtquick`,
 `qml6-module-qtquick-controls`, `qml6-module-qtquick-layouts`,
 `qml6-module-qtquick-templates`, `qml6-module-qtquick-window`,
