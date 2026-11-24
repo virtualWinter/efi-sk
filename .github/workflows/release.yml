@@ -23,9 +23,10 @@ jobs:
           cp build/BOOTX64.EFI build/efi-package/
           cp vendor/{memtest86plus/memtest86plus,edk2-shell/shell,keytool/KeyTool,ipxe/ipxe,acpidump/acpidump,gpt-fdisk/gdisk_x64}.efi build/efi-package/
           cp vendor/uefi-sct/sct-x64.7z build/efi-package/
+          cp vendor/opnsense-geom/LICENSE build/efi-package/LICENSE.opnsense-geom
           tar -C build/efi-package -czf dist/efi-sk-efi-x86_64.tar.gz \
             BOOTX64.EFI acpidump.efi gdisk_x64.efi ipxe.efi KeyTool.efi \
-            memtest86plus.efi shell.efi sct-x64.7z
+            memtest86plus.efi shell.efi sct-x64.7z LICENSE.opnsense-geom
       - name: Install Qt build dependencies
         run: |
           sudo apt-get update

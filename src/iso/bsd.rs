@@ -1,13 +1,12 @@
 //! In-memory view of an OPNsense boot directory that asks loader(8) to
-//! preload its optical media as a FreeBSD memory disk.
+//! load the kernel module that reopens its optical media from USB.
 use alloc::vec::Vec;
-use uefi::{Handle, Status, boot, cstr16, fs::FileSystem};
+use uefi::{Handle, Status};
 
 use super::filesystem::Iso;
 
 const SECTOR: usize = 2048;
-const CONFIG: &[u8] =
-    b"mdroot_load=\"YES\"\nmdroot_type=\"md_image\"\nmdroot_name=\"/boot/efisk.iso\"\n";
+const MODULE: &[u8] = include_bytes!("../../vendor/opnsense-geom/geom_ventoy.ko");
 const GEOM_CONFIG: &[u8] = b"geom_ventoy_load=\"YES\"\ngeom_ventoy_name=\"/boot/efisk.ko\"\nhint.ventoy.0.vlnk=\"1\"\ngeom_label_load=\"YES\"\n";
 const MAGIC: [u8; 16] = [
     0x44, 0x33, 0x22, 0x11, 0x88, 0x77, 0x66, 0x55, 0xcc, 0xbb, 0xaa, 0x99, 0x00, 0xff, 0xee, 0xdd,
@@ -34,49 +33,31 @@ pub(super) fn media_overlay(
     {
         return Ok(Handoff::default());
     }
-    if ["boot/loader.conf.local", "boot/efisk.iso", "boot/efisk.ko"]
+    let kernel = iso.read_boot_file("boot/kernel/kernel")?;
+    const ABI: &[u8] = b"stable/26.7-n283674-12334a596709";
+    if !kernel.windows(ABI.len()).any(|part| part == ABI) {
+        return Err(Status::INCOMPATIBLE_VERSION);
+    }
+    drop(kernel);
+    if ["boot/loader.conf.local", "boot/efisk.ko"]
         .iter()
         .any(|path| iso.open_file(path).is_ok())
     {
         return Err(Status::UNSUPPORTED);
     }
-    let mut handoff = Handoff::default();
-    let mut fs = FileSystem::new(boot::open_protocol_exclusive(esp).map_err(|e| e.status())?);
-    let module_path = cstr16!("\\EFI\\BOOT\\opnsense-26.7-geom.ko");
-    if fs
-        .try_exists(module_path)
-        .map_err(|_| Status::DEVICE_ERROR)?
-    {
-        let size = fs
-            .metadata(module_path)
-            .map_err(|_| Status::DEVICE_ERROR)?
-            .file_size();
-        if !(MAP_SIZE as u64..=2 * 1024 * 1024).contains(&size) {
-            return Err(Status::BAD_BUFFER_SIZE);
-        }
-        let kernel = iso.read_boot_file("boot/kernel/kernel")?;
-        if !kernel
-            .windows(b"stable/26.7-n283674-12334a596709".len())
-            .any(|part| part == b"stable/26.7-n283674-12334a596709")
-        {
-            return Err(Status::INCOMPATIBLE_VERSION);
-        }
-        handoff.module = fs.read(module_path).map_err(|_| Status::DEVICE_ERROR)?;
-        let (disk_size, identity) = super::volume::disk_identity(esp)?;
-        fill_map(&mut handoff.module, iso, partition, disk_size, identity)?;
-    }
-    let (settings, media) = if handoff.module.is_empty() {
-        let size = u32::try_from(iso.image_len()).map_err(|_| Status::BAD_BUFFER_SIZE)?;
-        (CONFIG, record(b"EFISK.ISO;1", b"efisk.iso", 0, size))
-    } else {
-        let lba =
-            u32::try_from(iso.image_len() / SECTOR as u64).map_err(|_| Status::BAD_BUFFER_SIZE)?;
-        let size = u32::try_from(handoff.module.len()).map_err(|_| Status::BAD_BUFFER_SIZE)?;
-        handoff
-            .module
-            .resize(handoff.module.len().next_multiple_of(SECTOR), 0);
-        (GEOM_CONFIG, record(b"EFISK.KO;1", b"efisk.ko", lba, size))
+    let (disk_size, identity) = super::volume::disk_identity(esp)?;
+    let mut handoff = Handoff {
+        overlays: Vec::new(),
+        module: MODULE.to_vec(),
     };
+    fill_map(&mut handoff.module, iso, partition, disk_size, identity)?;
+    let lba =
+        u32::try_from(iso.image_len() / SECTOR as u64).map_err(|_| Status::BAD_BUFFER_SIZE)?;
+    let media = record(b"EFISK.KO;1", b"efisk.ko", lba, MODULE.len() as u32);
+    handoff
+        .module
+        .resize(MODULE.len().next_multiple_of(SECTOR), 0);
+    let settings = GEOM_CONFIG;
     let mut sector = [0; SECTOR];
     let mut config_offset = None;
     for lba in 1..16 {

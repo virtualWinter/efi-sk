@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{self, Write},
+    io::{self, Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
@@ -312,6 +312,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     if sequence(&disk)?.trim() != expected_sequence.to_string_lossy() {
         return Err("The USB drive changed".into());
     }
+    stamp_disk_identity(&disk)?;
     run(Command::new("mkfs.fat").args(["-F", "32", "-n", "PICKEREFI", "--", esp]))?;
     run(Command::new("mkfs.ext4").args(["-q", "-F", "-m", "0", "-L", "ISOS", "--", isos]))?;
     let efi = Mount::new(esp)?;
@@ -339,6 +340,23 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     }
     data.unmount()?;
     efi.unmount()?;
+    Ok(())
+}
+
+fn stamp_disk_identity(disk: &Path) -> Result<()> {
+    let mut identity = *b"EFISKMAP\0\0\0\0\0\0\0\0";
+    fs::File::open("/dev/urandom")?.read_exact(&mut identity[8..])?;
+    let mut device = fs::OpenOptions::new().write(true).open(disk)?;
+    // Sparse ISO blocks use this zero backing range, entirely before the ESP.
+    device.seek(SeekFrom::Start(128 * 1024))?;
+    for _ in 0..128 {
+        device.write_all(&[0; 4096])?;
+    }
+    // The first GPT partition begins at 1 MiB; this is the unused PMBR
+    // bootstrap area, not the disk signature or the partition entries.
+    device.seek(SeekFrom::Start(384))?;
+    device.write_all(&identity)?;
+    device.sync_all()?;
     Ok(())
 }
 
@@ -374,6 +392,30 @@ impl Drop for Mount {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn stamps_only_the_reserved_disk_ranges() -> Result<()> {
+        let dir = Temp::new()?;
+        let disk = dir.0.join("disk.img");
+        let original = vec![0x5a; 1024 * 1024 + 1];
+        fs::write(&disk, &original)?;
+        let result = (|| {
+            stamp_disk_identity(&disk)?;
+            let stamped = fs::read(&disk)?;
+            assert_eq!(&stamped[..384], &original[..384]);
+            assert_eq!(&stamped[384..392], b"EFISKMAP");
+            assert_eq!(&stamped[400..128 * 1024], &original[400..128 * 1024]);
+            assert!(
+                stamped[128 * 1024..640 * 1024]
+                    .iter()
+                    .all(|&byte| byte == 0)
+            );
+            assert_eq!(&stamped[640 * 1024..], &original[640 * 1024..]);
+            Ok(())
+        })();
+        let _ = fs::remove_file(&disk);
+        result
+    }
 
     #[test]
     fn defaults_include_every_tool_and_empty_selection_keeps_picker() {

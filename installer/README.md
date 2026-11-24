@@ -13,6 +13,7 @@ On Debian/Ubuntu, install `qt6-base-dev` and `qt6-declarative-dev`.
 
 On Linux, downloads use `curl` and `sha256sum`. USB creation requires
 `pkexec`, util-linux, udev, `mkfs.fat`, and `mkfs.ext4`.
+Downloading the OPNsense DVD also requires `bzip2`.
 
 To use the latest published picker and EFI tools, run:
 

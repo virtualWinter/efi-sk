@@ -121,6 +121,9 @@ pub(super) fn disk_identity(esp: Handle) -> Result<(u64, [u8; 16]), Status> {
         }
         let blocks = open_readonly::<BlockIO>(handle).map_err(|e| e.status())?;
         let media = blocks.media();
+        if media.block_size() != 512 {
+            return Err(Status::UNSUPPORTED);
+        }
         let size = media
             .last_block()
             .checked_add(1)

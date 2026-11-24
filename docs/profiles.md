@@ -47,15 +47,12 @@ OpenWrt are not handled.
   live boot options. The 2026.11.22 rolling ISO reached the live login
   prompt in QEMU with no companion files. Login and disk installation
   have not been verified.
-- **OPNsense DVD (download only):** the installer catalog verifies the
-  upstream `.iso.bz2`. The firmware can try its EFI loader on the
-  decompressed ISO. For `OPNSENSE_INSTALL` media, an experimental
-  read-only overlay asks the FreeBSD loader to preload the ISO as a
-  memory disk. It leaves the USB file unchanged but requires enough
-  RAM for the whole ISO plus the installer. Do not assume root mounting
-  works until the installation environment has been verified.
-  The opt-in [disk-backed GEOM handoff](opnsense-handoff.md) mounted the
-  DVD and reached early OPNsense setup in QEMU without a full RAM copy.
+- **OPNsense 26.7 DVD:** the installer verifies and decompresses the
+  upstream `.iso.bz2`. On a USB prepared by the current installer,
+  the picker automatically uses the embedded
+  [disk-backed GEOM handoff](opnsense-handoff.md). This mounts the ISO
+  directly from USB without a full RAM copy. QEMU reached live setup;
+  a full installation and physical USB boot remain untested.
 
 ### Replacing compatibility profiles
 

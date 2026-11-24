@@ -5,6 +5,8 @@ files or external dependencies.
 
 - [ext4-view](../vendor/ext4-view/README.md): MIT or Apache-2.0, with a
   local read-only physical block iterator.
+- [GEOM module for OPNsense](../vendor/opnsense-geom/README.md): BSD
+  license, embedded in the firmware.
 
 - [Geist fonts and generated glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
 - [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the

@@ -28,7 +28,7 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "debian",
     ),
     (
-        "OPNsense 26.7 DVD · Download only",
+        "OPNsense 26.7 DVD",
         "https://pkg.opnsense.org/releases/mirror/OPNsense-26.7-dvd-amd64.iso.bz2",
         "sha256:95cafedda6d5b22ce832e249dc2309110fbee19f813ad78cf28bb3d387186bfb",
         "",
@@ -296,7 +296,42 @@ impl Installer {
             self.set_status("Checksum verification failed; retry the download");
             return;
         }
-        let destination = destination_dir.join(name);
+        let destination = destination_dir.join(
+            name.strip_suffix(".iso.bz2")
+                .map_or_else(|| name.to_owned(), |stem| format!("{stem}.iso")),
+        );
+        if name.ends_with(".iso.bz2") {
+            self.set_status("Extracting verified ISO…");
+            let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
+            let out = match fs::File::create_new(&extracted) {
+                Ok(out) => out,
+                Err(error) => {
+                    self.set_status(format!("Could not stage extracted ISO: {error}"));
+                    return;
+                }
+            };
+            let result = (|| -> std::io::Result<()> {
+                let status = Command::new("bzip2")
+                    .arg("-dc")
+                    .arg("--")
+                    .arg(&partial)
+                    .stdout(out)
+                    .status()?;
+                if !status.success() {
+                    return Err(std::io::Error::other("bzip2 extraction failed"));
+                }
+                fs::rename(&extracted, &destination)?;
+                let _ = fs::remove_file(&partial);
+                Ok(())
+            })();
+            if let Err(error) = result {
+                let _ = fs::remove_file(&extracted);
+                self.set_status(format!("Could not extract ISO: {error}"));
+            } else {
+                self.set_status(format!("{label} downloaded and verified"));
+            }
+            return;
+        }
         if fs::rename(&partial, &destination).is_err() {
             self.set_status("Verified download could not be installed");
         } else {
@@ -338,7 +373,7 @@ impl Installer {
                 return;
             }
             let name = ISOS[index].1.rsplit('/').next().unwrap();
-            let iso = iso_directory().join(name);
+            let iso = iso_directory().join(name.strip_suffix(".bz2").unwrap_or(name));
             if !iso.is_file() {
                 self.set_status(format!("Download and verify {} first", ISOS[index].0));
                 return;
@@ -385,6 +420,20 @@ impl Installer {
                     };
                     fs::copy(&source, stage.0.join(name))
                         .map_err(|error| format!("{}: {error}", source.display()))?;
+                }
+            }
+            if images.iter().any(|image| {
+                image
+                    .file_name()
+                    .is_some_and(|name| name == "OPNsense-26.7-dvd-amd64.iso")
+            }) {
+                let picker = fs::read(stage.0.join("BOOTX64.EFI"))?;
+                // Older picker releases did not embed the GEOM module.
+                let marker = b"g_ventoy_map_data\0";
+                if !picker.windows(marker.len()).any(|part| part == marker) {
+                    return Err(
+                        "OPNsense requires an EFI build with the embedded GEOM module".into(),
+                    );
                 }
             }
             self.set_status(format!("Preparing {disk}…"));

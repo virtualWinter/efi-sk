@@ -1,0 +1,3 @@
+# Preserve the pinned upstream source byte for byte.
+g_ventoy.c -whitespace
+g_ventoy.h -whitespace
