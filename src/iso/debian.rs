@@ -64,12 +64,17 @@ fn module_packages(iso: &mut Iso) -> Option<[String; 2]> {
                 && (1..=4 * 1024 * 1024).contains(size)
         });
         let (name, _) = matches.next()?;
-        matches
-            .next()
-            .is_none()
-            .then(|| format!("{DIRECTORY}/{name}"))
+        matches.next().is_none().then_some(name)
     };
-    Some([package("ext4-modules-")?, package("loop-modules-")?])
+    let ext4 = package("ext4-modules-")?;
+    let loop_module = package("loop-modules-")?;
+    if ext4.strip_prefix("ext4-modules-") != loop_module.strip_prefix("loop-modules-") {
+        return None;
+    }
+    Some([
+        format!("{DIRECTORY}/{ext4}"),
+        format!("{DIRECTORY}/{loop_module}"),
+    ])
 }
 
 pub fn metadata(partition: &Ext4, path: &str, need_icon: bool) -> Option<Metadata> {

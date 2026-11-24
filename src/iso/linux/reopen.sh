@@ -1,6 +1,8 @@
 #!/bin/sh
 # Runs before the original init. The source stays mounted for the installer.
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin
+exec 3>&1
+exec >/efi-sk-reopen.log 2>&1
 
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
@@ -25,7 +27,7 @@ for node in /sys/bus/pci/devices/*/modalias; do
     read -r alias < "$node"
     modprobe -q "$alias"
 done
-for module in usb-storage uas ext4; do
+for module in sd_mod usb-storage uas ext4; do
     modprobe -q "$module"
 done
 
@@ -47,7 +49,7 @@ while [ "$attempt" -lt 15 ]; do
                     ln -s "/efi-sk-source$image" /proxmox.iso && mounted=yes
                 fi
                 if [ "$mounted" = yes ]; then
-                    echo "[EFI SK] Reopened installation media from $dev"
+                    echo "[EFI SK] Reopened installation media from $dev" >&3
                     break 2
                 fi
             fi
@@ -58,8 +60,11 @@ while [ "$attempt" -lt 15 ]; do
     sleep 1
 done
 
-[ "$mounted" = yes ] || echo "[EFI SK] Could not reopen installation media; trying native discovery"
+[ "$mounted" = yes ] || {
+    cat /efi-sk-reopen.log >&3
+    echo "[EFI SK] Could not reopen installation media; trying native discovery" >&3
+}
 umount /dev
 umount /sys
 umount /proc
-exec /init
+exec /init >&3 2>&3 3>&-
