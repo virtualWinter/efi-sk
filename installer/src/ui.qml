@@ -93,11 +93,6 @@ QQC2.ApplicationWindow {
         anchors.margins: 18
         spacing: 10
 
-        Muted {
-            text: "EFI SWISS KNIFE  /  INSTALLER"
-            font.pixelSize: 11
-            font.letterSpacing: 1.5
-        }
         QQC2.Label {
             text: "Create a bootable USB"
             font.pixelSize: 30
