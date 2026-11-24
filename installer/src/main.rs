@@ -21,6 +21,76 @@ qmetaobject::qrc!(register_iso_icons,
 
 const ISOS: &[(&str, &str, &str, &str, &str)] = &[
     (
+        "Proxmox VE 9.2 · Download only",
+        "https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso",
+        "sha256:4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c",
+        "",
+        "systemrescue",
+    ),
+    (
+        "OpenWrt 25.12.6 · Download only",
+        "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/openwrt-25.12.6-x86-64-generic-ext4-combined-efi.img.gz",
+        "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/sha256sums",
+        "openwrt-25\\.12\\.6-x86-64-generic-ext4-combined-efi\\.img\\.gz$",
+        "systemrescue",
+    ),
+    (
+        "Xubuntu 24.04 LTS",
+        "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/xubuntu-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/SHA256SUMS",
+        "xubuntu-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Lubuntu 24.04 LTS",
+        "https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/lubuntu-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/SHA256SUMS",
+        "lubuntu-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Kubuntu 24.04 LTS",
+        "https://cdimage.ubuntu.com/kubuntu/releases/24.04/release/kubuntu-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/kubuntu/releases/24.04/release/SHA256SUMS",
+        "kubuntu-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Ubuntu MATE 24.04 LTS",
+        "https://cdimage.ubuntu.com/ubuntu-mate/releases/24.04/release/ubuntu-mate-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/ubuntu-mate/releases/24.04/release/SHA256SUMS",
+        "ubuntu-mate-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Ubuntu Studio 24.04 LTS",
+        "https://cdimage.ubuntu.com/ubuntustudio/releases/24.04/release/ubuntustudio-24.04.5-dvd-amd64.iso",
+        "https://cdimage.ubuntu.com/ubuntustudio/releases/24.04/release/SHA256SUMS",
+        "ubuntustudio-24\\.04\\.5-dvd-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Ubuntu Kylin 24.04 LTS",
+        "https://cdimage.ubuntu.com/ubuntukylin/releases/24.04/release/ubuntukylin-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/ubuntukylin/releases/24.04/release/SHA256SUMS",
+        "ubuntukylin-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Ubuntu Unity 24.04 LTS",
+        "https://cdimage.ubuntu.com/ubuntu-unity/releases/24.04/release/ubuntu-unity-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/ubuntu-unity/releases/24.04/release/SHA256SUMS",
+        "ubuntu-unity-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
+        "Edubuntu 24.04 LTS",
+        "https://cdimage.ubuntu.com/edubuntu/releases/24.04/release/edubuntu-24.04.5-desktop-amd64.iso",
+        "https://cdimage.ubuntu.com/edubuntu/releases/24.04/release/SHA256SUMS",
+        "edubuntu-24\\.04\\.5-desktop-amd64\\.iso$",
+        "ubuntu",
+    ),
+    (
         "Debian Live 13.8 (standard)",
         "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-13.8.0-amd64-standard.iso",
         "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/SHA256SUMS",
@@ -168,24 +238,25 @@ impl Installer {
         }
         self.set_status("Verifying checksum…");
         let sums = directory.join(format!("{name}.sums"));
-        let fetched = Command::new("curl")
-            .args([
-                "--fail",
-                "--location",
-                "--retry",
-                "3",
-                "--silent",
-                "--show-error",
-            ])
-            .arg("--output")
-            .arg(&sums)
-            .arg(checksum_url)
-            .status();
-        let expected = Command::new("grep")
-            .args(["-E", "--"])
-            .arg(pattern)
-            .arg(&sums)
-            .output();
+        let fetched = (|| {
+            if checksum_url.starts_with("sha256:") {
+                return Ok(true);
+            }
+            Command::new("curl")
+                .args([
+                    "--fail",
+                    "--location",
+                    "--retry",
+                    "3",
+                    "--silent",
+                    "--show-error",
+                ])
+                .arg("--output")
+                .arg(&sums)
+                .arg(checksum_url)
+                .status()
+                .map(|status| status.success())
+        })();
         let actual = Command::new("sha256sum").arg(&partial).output();
         let digest = |output: std::io::Result<std::process::Output>| {
             let output = output.ok().filter(|o| o.status.success())?;
@@ -195,9 +266,18 @@ impl Installer {
                 .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
                 .map(str::to_ascii_lowercase)
         };
-        let expected = digest(expected);
-        let valid =
-            fetched.is_ok_and(|s| s.success()) && expected.is_some() && expected == digest(actual);
+        let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
+            Some(pinned.to_owned())
+        } else {
+            digest(
+                Command::new("grep")
+                    .args(["-E", "--"])
+                    .arg(pattern)
+                    .arg(&sums)
+                    .output(),
+            )
+        };
+        let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
         if !valid {
             self.set_status("Checksum verification failed; retry the download");
             return;
@@ -239,6 +319,10 @@ impl Installer {
         }
         let mut images = Vec::new();
         for index in indexes {
+            if ISOS[index].0.ends_with(" · Download only") {
+                self.set_status("A download-only image cannot be added to the picker USB");
+                return;
+            }
             let name = ISOS[index].1.rsplit('/').next().unwrap();
             let iso = iso_directory().join(name);
             if !iso.is_file() {

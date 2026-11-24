@@ -111,7 +111,7 @@ QQC2.ApplicationWindow {
                 contentItem: ColumnLayout {
                     spacing: 8
                     Muted {
-                        text: "Select images and download them before installing."
+                        text: "Download images before installing. Some are download only."
                     }
                     ListView {
                         id: imageList
@@ -151,6 +151,7 @@ QQC2.ApplicationWindow {
                                 }
                                 QQC2.CheckBox {
                                     id: isoCheck
+                                    enabled: !modelData.name.endsWith(" · Download only")
                                     checked: window.selectedIsoIndexes.split(",").indexOf(String(sourceIndex)) >= 0
                                     onToggled: window.toggleIso(sourceIndex, checked)
                                     Accessible.name: "Include " + modelData.name
@@ -159,6 +160,11 @@ QQC2.ApplicationWindow {
                                     text: modelData.name
                                     Layout.fillWidth: true
                                     elide: Text.ElideMiddle
+                                    QQC2.ToolTip.visible: isoNameHover.hovered && truncated
+                                    QQC2.ToolTip.text: text
+                                    HoverHandler {
+                                        id: isoNameHover
+                                    }
                                 }
                                 Button {
                                     text: "Download"
