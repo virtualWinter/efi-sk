@@ -35,6 +35,21 @@ install `qemu-ui-gtk` on Arch. To run headless, pass `-display none`.
 Set `ISO_DIR` to test a different directory of ISOs, or `QEMU_MEMORY`
 to change the default 4 GiB of guest RAM.
 
+### Drop-in ISO smoke test
+
+Set `ISO_DIR` to a directory containing just the checksum-verified,
+unmodified ISO. Do not attach another copy as a virtual DVD or put
+companion files beside it. Select the ISO in the picker and continue
+past language and keyboard selection where applicable. Verify that the
+installer reads its media before proceeding to disk partitioning:
+
+- **Debian netinst:** advance past media detection and loading installer
+  components, or use an installer shell to read a package from
+  `/cdrom/pool/`.
+- **Proxmox VE:** reach the installer UI after it mounts its base system.
+  `[EFI SK] Reopened installation media` alone confirms the USB handoff,
+  but not that the installer payload was readable.
+
 ## Mouse input
 
 The regular test uses installed OVMF and never builds firmware. Stock OVMF
