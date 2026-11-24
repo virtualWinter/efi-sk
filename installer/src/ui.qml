@@ -271,9 +271,70 @@ QQC2.ApplicationWindow {
                     id: diskBox
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
+                    implicitHeight: 36
+                    leftPadding: 12
+                    rightPadding: 32
                     model: installer.devices ? installer.devices.split("\n") : []
-                    displayText: count === 0 ? "No USB drive detected" : currentText
+                    currentIndex: -1
+                    onModelChanged: currentIndex = -1
+                    enabled: count > 0
+                    displayText: count === 0 ? "No USB drive detected" : currentIndex < 0 ? "Choose a USB drive…" : currentText
                     Accessible.name: "USB drive"
+                    contentItem: QQC2.Label {
+                        text: diskBox.displayText
+                        color: diskBox.currentIndex < 0 ? "#a1a1a1" : "#fafafa"
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    indicator: Text {
+                        x: diskBox.width - width - 12
+                        y: (diskBox.height - height) / 2
+                        text: diskBox.popup.visible ? "⌃" : "⌄"
+                        color: diskBox.enabled ? "#fafafa" : "#737373"
+                        font.pixelSize: 17
+                    }
+                    background: Rectangle {
+                        radius: 7
+                        color: diskBox.hovered || diskBox.popup.visible ? "#262626" : "#171717"
+                        border.color: diskBox.visualFocus || diskBox.popup.visible ? "#737373" : "#2e2e2e"
+                    }
+                    delegate: QQC2.ItemDelegate {
+                        id: driveOption
+                        required property int index
+                        required property string modelData
+                        width: ListView.view.width
+                        height: 36
+                        text: modelData
+                        highlighted: diskBox.highlightedIndex === index
+                        contentItem: QQC2.Label {
+                            text: driveOption.text
+                            color: "#fafafa"
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            radius: 5
+                            color: driveOption.highlighted || driveOption.hovered ? "#262626" : "transparent"
+                        }
+                    }
+                    popup: QQC2.Popup {
+                        y: -height - 4
+                        width: diskBox.width
+                        padding: 4
+                        height: Math.min(driveOptions.contentHeight + 2 * padding, 196)
+                        background: Rectangle {
+                            radius: 8
+                            color: "#171717"
+                            border.color: "#2e2e2e"
+                        }
+                        contentItem: ListView {
+                            id: driveOptions
+                            clip: true
+                            model: diskBox.delegateModel
+                            currentIndex: diskBox.highlightedIndex
+                            QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
+                        }
+                    }
                 }
                 Button {
                     text: "Refresh"

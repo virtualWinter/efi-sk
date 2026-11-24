@@ -221,7 +221,7 @@ impl Installer {
         let device_list = self.devices.to_string();
         let selected = device_list
             .lines()
-            .nth(disk_index.max(0) as usize)
+            .nth(usize::try_from(disk_index).unwrap_or(usize::MAX))
             .and_then(|line| line.split_whitespace().next())
             .map(str::to_owned);
         let Some(disk) = selected else {
