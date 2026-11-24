@@ -1,2 +1,4 @@
 /build/
 /isos/
+/target/
+/installer/target/
