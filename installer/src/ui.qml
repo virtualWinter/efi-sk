@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic as QQC2
 import QtQuick.Layouts
-import org.kde.kirigami as Kirigami
 
 // installer is injected by the Rust QML engine at runtime.
 // qmllint disable unqualified
@@ -140,11 +139,12 @@ QQC2.ApplicationWindow {
                                 anchors.leftMargin: 8
                                 anchors.rightMargin: 6
                                 spacing: 8
-                                Kirigami.Icon {
-                                    source: installer.iso_icons.split("\n")[index]
-                                    implicitWidth: 20
-                                    implicitHeight: 20
-                                    fallback: "application-x-iso9660-image"
+                                Image {
+                                    source: "qrc:/iso-icons/" + installer.iso_icons.split("\n")[index] + ".png"
+                                    Layout.preferredWidth: 20
+                                    Layout.preferredHeight: 20
+                                    fillMode: Image.PreserveAspectFit
+                                    smooth: true
                                 }
                                 QQC2.CheckBox {
                                     id: isoCheck

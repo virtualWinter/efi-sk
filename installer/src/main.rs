@@ -9,6 +9,14 @@ use qmetaobject::{QObject, QObjectPinned, QString, QmlEngine};
 
 mod usb;
 
+qmetaobject::qrc!(register_iso_icons,
+    "icons" as "iso-icons" {
+        "debian.png", "opensuse.png", "fedora.png", "ubuntu.png",
+        "archlinux.png", "rockylinux.png", "almalinux.png",
+        "systemrescue.png", "kalilinux.png",
+    }
+);
+
 const ISOS: &[(&str, &str, &str, &str, &str)] = &[
     (
         "Debian Live 13.8 (standard)",
@@ -64,14 +72,14 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso",
         "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt",
         "archlinux-x86_64\\.iso$",
-        "arch",
+        "archlinux",
     ),
     (
         "Rocky Linux 10 · Minimal",
         "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10.0-x86_64-minimal.iso",
         "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/CHECKSUM",
         "Rocky-10\\.0-x86_64-minimal\\.iso$",
-        "rocky",
+        "rockylinux",
     ),
     (
         "AlmaLinux 10 · Minimal",
@@ -92,7 +100,7 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "https://cdimage.kali.org/kali-2025.4/kali-linux-2025.4-installer-amd64.iso",
         "https://cdimage.kali.org/kali-2025.4/SHA256SUMS",
         "kali-linux-2025\\.4-installer-amd64\\.iso$",
-        "kali",
+        "kalilinux",
     ),
 ];
 
@@ -379,6 +387,7 @@ fn main() {
         return;
     }
     let mut engine = QmlEngine::new();
+    register_iso_icons();
     let names = ISOS
         .iter()
         .map(|entry| entry.0)

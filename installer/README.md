@@ -8,11 +8,8 @@ It is intentionally a separate crate because the firmware picker is a
 
 - Rust
 - Qt 6 development packages
-- KDE Kirigami 6
 
-On Debian/Ubuntu, install `qt6-base-dev`, `qt6-declarative-dev`, and the
-distribution's Kirigami 6 QML package (often named `kirigami2-dev` or
-`qml6-module-org-kde-kirigami`).
+On Debian/Ubuntu, install `qt6-base-dev` and `qt6-declarative-dev`.
 
 On Linux, downloads use `curl` and `sha256sum`. USB creation requires
 `pkexec`, util-linux, udev, `mkfs.fat`, and `mkfs.ext4`.
@@ -49,10 +46,10 @@ Neither path invokes scripts under `tools/`.
 On Ubuntu 24.04 x86-64 or a compatible Linux distribution, download the
 installer archive and `SHA256SUMS` from a combined release such as `v0.1.1`. Verify it with
 `sha256sum -c --ignore-missing SHA256SUMS` and extract it. Install the Qt 6 QML runtime
-modules and Kirigami (on Ubuntu: `qml6-module-qtquick`,
+modules (on Ubuntu: `qml6-module-qtquick`,
 `qml6-module-qtquick-controls`, `qml6-module-qtquick-layouts`,
 `qml6-module-qtquick-templates`, `qml6-module-qtquick-window`,
-`qml6-module-qtqml-workerscript`, and `qml6-module-org-kde-kirigami`).
+and `qml6-module-qtqml-workerscript`).
 Then run `./efi-sk-installer` from the extracted directory. The packaged
 installer is configured to download EFI assets from the latest firmware release.
 

@@ -9,7 +9,7 @@ and the bundled EFI tools together.
 | Path | Purpose |
 | --- | --- |
 | `Cargo.toml`, `src/` | `no_std` picker for x86-64 UEFI |
-| `installer/` | Linux desktop installer using Qt 6 and Kirigami |
+| `installer/` | Linux desktop installer using Qt 6 |
 | `tools/` | Build, USB creation, lint, and QEMU scripts |
 | `assets/`, `vendor/` | Firmware assets and bundled third-party components |
 | `build/`, `isos/` | Ignored build outputs and local test images |
