@@ -115,7 +115,7 @@ Kirigami.ApplicationWindow {
                             id: efiVersion
                             visible: installer.release_mode
                             Layout.fillWidth: true
-                            placeholderText: "latest (or a tag, e.g. esk-0.1.1)"
+                            placeholderText: "latest (or a tag, e.g. v0.1.1)"
                             Accessible.name: "EFI release version"
                         }
                         QQC2.Label {

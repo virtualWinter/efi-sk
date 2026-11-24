@@ -1,6 +1,6 @@
 # Releases and ISO catalog
 
-Push an `esk-*` tag to publish one GitHub release with:
+Push a version tag such as `v0.1.1` to publish one GitHub release with:
 
 - `efi-sk-efi-x86_64.tar.gz`: `BOOTX64.EFI` and the bundled EFI tools.
 - `efi-sk-installer-linux-x86_64.tar.gz`: the desktop installer, without Qt.

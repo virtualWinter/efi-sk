@@ -32,7 +32,7 @@ The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Deselect all tools** to install only the picker and your
 images. Release mode downloads and verifies the EFI archive, then extracts
 only the picker and selected tools using `tar`. Leave **EFI release version**
-blank to use the latest release, or enter an exact tag such as `esk-0.1.1`
+blank to use the latest release, or enter an exact tag such as `v0.1.1`
 to use that version instead. Local mode copies those files
 from the local build and `vendor/`. Selecting UEFI SCT also
 includes the EFI Shell and requires `bsdtar`.
@@ -47,7 +47,7 @@ Neither path invokes scripts under `tools/`.
 ## Run
 
 On Ubuntu 24.04 x86-64 or a compatible Linux distribution, download the
-installer archive and `SHA256SUMS` from an `esk-*` release. Verify it with
+installer archive and `SHA256SUMS` from a combined release such as `v0.1.1`. Verify it with
 `sha256sum -c --ignore-missing SHA256SUMS` and extract it. Install the Qt 6 QML runtime
 modules and Kirigami (on Ubuntu: `qml6-module-qtquick`,
 `qml6-module-qtquick-controls`, `qml6-module-qtquick-layouts`,

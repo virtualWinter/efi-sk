@@ -80,14 +80,18 @@ fn release_path(version: &str) -> Result<String> {
     if version.is_empty() || version == "latest" {
         return Ok("latest/download".into());
     }
-    if !version.strip_prefix("esk-").is_some_and(|suffix| {
-        !suffix.is_empty()
-            && suffix.bytes().next().is_some_and(|b| b.is_ascii_digit())
-            && suffix
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b".-_".contains(&b))
-    }) {
-        return Err("Enter latest or an EFI release tag such as esk-0.1.1".into());
+    if !version
+        .strip_prefix('v')
+        .or_else(|| version.strip_prefix("esk-"))
+        .is_some_and(|suffix| {
+            !suffix.is_empty()
+                && suffix.bytes().next().is_some_and(|b| b.is_ascii_digit())
+                && suffix
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b".-_".contains(&b))
+        })
+    {
+        return Err("Enter latest or an EFI release tag such as v0.1.1".into());
     }
     Ok(format!("download/{version}"))
 }
@@ -395,6 +399,7 @@ mod tests {
     fn validates_release_versions() -> Result<()> {
         assert_eq!(release_path("")?, "latest/download");
         assert_eq!(release_path("latest")?, "latest/download");
+        assert_eq!(release_path("v0.1.1")?, "download/v0.1.1");
         assert_eq!(release_path("esk-0.1.1")?, "download/esk-0.1.1");
         assert!(release_path("esk-1/../../other").is_err());
         assert!(release_path("installer-v0.1").is_err());
