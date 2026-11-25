@@ -50,12 +50,15 @@ jobs:
           cargo test --locked --manifest-path installer/Cargo.toml
           cargo build --locked --release --manifest-path installer/Cargo.toml
       - name: Package installer, catalog, and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p build/installer-package
           cp build/installer/release/efi-sk-installer installer/README.md LICENSE build/installer-package/
           tar -C build/installer-package -czf dist/efi-sk-installer-linux-x86_64.tar.gz \
             efi-sk-installer README.md LICENSE
-          python3 tools/update-catalog.py > dist/catalog.json
+          # The catalog workflow resolves upstream checksums before publishing.
+          gh release download iso-catalog --pattern catalog.json --dir dist
           python3 -c 'import json; c=json.load(open("dist/catalog.json")); json.dump({"schema_version": c["schema_version"], "distros": c["distros"]}, open("dist/distros.json", "w"), indent=2)'
           cd dist
           sha256sum *.tar.gz *.json > SHA256SUMS
