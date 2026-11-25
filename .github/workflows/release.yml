@@ -3,18 +3,27 @@ name: Release EFI Swiss Knife
 on:
   push:
     tags: ['v[0-9]*']
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   release:
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
       - name: Build and package EFI tools
         run: |
           rustup target add x86_64-unknown-uefi
@@ -40,16 +49,24 @@ jobs:
         run: |
           cargo test --locked --manifest-path installer/Cargo.toml
           cargo build --locked --release --manifest-path installer/Cargo.toml
-      - name: Package installer and generate checksums
+      - name: Package installer, catalog, and checksums
         run: |
           mkdir -p build/installer-package
           cp build/installer/release/efi-sk-installer installer/README.md LICENSE build/installer-package/
           tar -C build/installer-package -czf dist/efi-sk-installer-linux-x86_64.tar.gz \
             efi-sk-installer README.md LICENSE
+          python3 tools/update-catalog.py > dist/catalog.json
+          python3 -c 'import json; c=json.load(open("dist/catalog.json")); json.dump({"schema_version": c["schema_version"], "distros": c["distros"]}, open("dist/distros.json", "w"), indent=2)'
           cd dist
-          sha256sum *.tar.gz > SHA256SUMS
+          sha256sum *.tar.gz *.json > SHA256SUMS
       - name: Publish GitHub release
-        if: github.event_name == 'push' && github.ref_type == 'tag'
+        if: github.event_name == 'release' || (github.event_name == 'push' && github.ref_type == 'tag')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --latest --generate-notes dist/*
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/* --clobber
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --latest --generate-notes dist/*
+          fi

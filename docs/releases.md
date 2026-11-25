@@ -1,10 +1,12 @@
 # Releases and ISO catalog
 
-Push a version tag such as `v0.1.1` to publish one GitHub release with:
+Push a version tag such as `v0.1.1`, or publish a GitHub release for a
+`v`-prefixed tag, to build and attach:
 
 - `efi-sk-efi-x86_64.tar.gz`: `BOOTX64.EFI` and the bundled EFI tools.
 - `efi-sk-installer-linux-x86_64.tar.gz`: the desktop installer, without Qt.
-- `SHA256SUMS`: SHA-256 digests for both archives.
+- `catalog.json` and `distros.json`: the catalog and distro artwork index.
+- `SHA256SUMS`: SHA-256 digests for the archives and JSON files.
 
 The workflow builds from the tagged lockfiles. Manual runs build and
 package without publishing. Use the installer from the combined release:
