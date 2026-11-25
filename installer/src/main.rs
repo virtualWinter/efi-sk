@@ -195,6 +195,9 @@ struct Installer {
     base: qmetaobject::qt_base_class!(trait QObject),
     status: qmetaobject::qt_property!(QString; NOTIFY status_changed),
     status_changed: qmetaobject::qt_signal!(),
+    downloading: qmetaobject::qt_property!(bool; NOTIFY status_changed),
+    updates: Option<std::sync::mpsc::Receiver<String>>,
+    poll_download: qmetaobject::qt_method!(fn(&mut self)),
     iso_names: qmetaobject::qt_property!(QString),
     tool_names: qmetaobject::qt_property!(QString),
     release_mode: qmetaobject::qt_property!(bool),
@@ -231,111 +234,31 @@ impl Installer {
             self.set_status("Invalid ISO selection");
             return;
         };
-        let destination_dir = iso_directory();
-        let directory = destination_dir.join(".downloads");
-        if let Err(error) = fs::create_dir_all(&directory) {
-            self.set_status(format!("Cannot create download directory: {error}"));
+        if self.downloading {
             return;
         }
-        let name = url.rsplit('/').next().unwrap_or("image.iso");
-        let partial = directory.join(format!("{name}.part"));
-        self.set_status(format!("Downloading {label}…"));
-        let result = Command::new("curl")
-            .args(["--fail", "--location", "--retry", "3", "--continue-at", "-"])
-            .arg("--output")
-            .arg(&partial)
-            .arg(url)
-            .status();
-        if !result.is_ok_and(|status| status.success()) {
-            self.set_status("Download failed; the partial file was kept for retry");
-            return;
-        }
-        self.set_status("Verifying checksum…");
-        let sums = directory.join(format!("{name}.sums"));
-        let fetched = (|| {
-            if checksum_url.starts_with("sha256:") {
-                return Ok(true);
-            }
-            Command::new("curl")
-                .args([
-                    "--fail",
-                    "--location",
-                    "--retry",
-                    "3",
-                    "--silent",
-                    "--show-error",
-                ])
-                .arg("--output")
-                .arg(&sums)
-                .arg(checksum_url)
-                .status()
-                .map(|status| status.success())
-        })();
-        let actual = Command::new("sha256sum").arg(&partial).output();
-        let digest = |output: std::io::Result<std::process::Output>| {
-            let output = output.ok().filter(|o| o.status.success())?;
-            String::from_utf8(output.stdout)
-                .ok()?
-                .split_whitespace()
-                .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
-                .map(str::to_ascii_lowercase)
-        };
-        let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
-            Some(pinned.to_owned())
-        } else {
-            digest(
-                Command::new("grep")
-                    .args(["-E", "--"])
-                    .arg(pattern)
-                    .arg(&sums)
-                    .output(),
-            )
-        };
-        let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
-        if !valid {
-            self.set_status("Checksum verification failed; retry the download");
-            return;
-        }
-        let destination = destination_dir.join(
-            name.strip_suffix(".iso.bz2")
-                .map_or_else(|| name.to_owned(), |stem| format!("{stem}.iso")),
-        );
-        if name.ends_with(".iso.bz2") {
-            self.set_status("Extracting verified ISO…");
-            let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
-            let out = match fs::File::create_new(&extracted) {
-                Ok(out) => out,
-                Err(error) => {
-                    self.set_status(format!("Could not stage extracted ISO: {error}"));
-                    return;
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.updates = Some(rx);
+        self.downloading = true;
+        self.set_status(format!("Connecting to download {label}…"));
+        std::thread::spawn(move || {
+            fetch_iso(label, url, checksum_url, pattern, |message| {
+                let _ = tx.send(message);
+            })
+        });
+    }
+
+    fn poll_download(&mut self) {
+        while let Some(rx) = &self.updates {
+            match rx.try_recv() {
+                Ok(message) => self.set_status(message),
+                Err(std::sync::mpsc::TryRecvError::Empty) => break,
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                    self.updates = None;
+                    self.downloading = false;
+                    self.status_changed();
                 }
-            };
-            let result = (|| -> std::io::Result<()> {
-                let status = Command::new("bzip2")
-                    .arg("-dc")
-                    .arg("--")
-                    .arg(&partial)
-                    .stdout(out)
-                    .status()?;
-                if !status.success() {
-                    return Err(std::io::Error::other("bzip2 extraction failed"));
-                }
-                fs::rename(&extracted, &destination)?;
-                let _ = fs::remove_file(&partial);
-                Ok(())
-            })();
-            if let Err(error) = result {
-                let _ = fs::remove_file(&extracted);
-                self.set_status(format!("Could not extract ISO: {error}"));
-            } else {
-                self.set_status(format!("{label} downloaded and verified"));
             }
-            return;
-        }
-        if fs::rename(&partial, &destination).is_err() {
-            self.set_status("Verified download could not be installed");
-        } else {
-            self.set_status(format!("{label} downloaded and verified"));
         }
     }
 
@@ -467,6 +390,136 @@ impl Installer {
             let _ = fs::remove_file(stage.0.join(name));
         }
         result
+    }
+}
+
+fn fetch_iso(label: &str, url: &str, checksum_url: &str, pattern: &str, report: impl Fn(String)) {
+    let destination_dir = iso_directory();
+    let directory = destination_dir.join(".downloads");
+    if let Err(error) = fs::create_dir_all(&directory) {
+        report(format!("Cannot create download directory: {error}"));
+        return;
+    }
+    let name = url.rsplit('/').next().unwrap_or("image.iso");
+    let partial = directory.join(format!("{name}.part"));
+    let result = Command::new("curl")
+        .args([
+            "--silent",
+            "--show-error",
+            "--fail",
+            "--location",
+            "--retry",
+            "3",
+            "--continue-at",
+            "-",
+        ])
+        .arg("--output")
+        .arg(&partial)
+        .arg(url)
+        .spawn()
+        .and_then(|mut child| {
+            loop {
+                if let Some(status) = child.try_wait()? {
+                    break Ok(status);
+                }
+                let bytes = fs::metadata(&partial).map_or(0, |meta| meta.len());
+                report(format!(
+                    "Downloading {label} · {:.1} MiB received",
+                    bytes as f64 / 1048576.0
+                ));
+                std::thread::sleep(std::time::Duration::from_millis(500));
+            }
+        });
+    if !result.is_ok_and(|status| status.success()) {
+        report("Download failed; the partial file was kept for retry".into());
+        return;
+    }
+    report("Verifying checksum…".into());
+    let sums = directory.join(format!("{name}.sums"));
+    let fetched = (|| {
+        if checksum_url.starts_with("sha256:") {
+            return Ok(true);
+        }
+        Command::new("curl")
+            .args([
+                "--fail",
+                "--location",
+                "--retry",
+                "3",
+                "--silent",
+                "--show-error",
+            ])
+            .arg("--output")
+            .arg(&sums)
+            .arg(checksum_url)
+            .status()
+            .map(|status| status.success())
+    })();
+    let actual = Command::new("sha256sum").arg(&partial).output();
+    let digest = |output: std::io::Result<std::process::Output>| {
+        let output = output.ok().filter(|o| o.status.success())?;
+        String::from_utf8(output.stdout)
+            .ok()?
+            .split_whitespace()
+            .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
+            .map(str::to_ascii_lowercase)
+    };
+    let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
+        Some(pinned.to_owned())
+    } else {
+        digest(
+            Command::new("grep")
+                .args(["-E", "--"])
+                .arg(pattern)
+                .arg(&sums)
+                .output(),
+        )
+    };
+    let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
+    if !valid {
+        report("Checksum verification failed; retry the download".into());
+        return;
+    }
+    let destination = destination_dir.join(
+        name.strip_suffix(".iso.bz2")
+            .map_or_else(|| name.to_owned(), |stem| format!("{stem}.iso")),
+    );
+    if name.ends_with(".iso.bz2") {
+        report("Extracting verified ISO…".into());
+        let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
+        let out = match fs::File::create_new(&extracted) {
+            Ok(out) => out,
+            Err(error) => {
+                report(format!("Could not stage extracted ISO: {error}"));
+                return;
+            }
+        };
+        let result = (|| -> std::io::Result<()> {
+            let status = Command::new("bzip2")
+                .arg("-dc")
+                .arg("--")
+                .arg(&partial)
+                .stdout(out)
+                .status()?;
+            if !status.success() {
+                return Err(std::io::Error::other("bzip2 extraction failed"));
+            }
+            fs::rename(&extracted, &destination)?;
+            let _ = fs::remove_file(&partial);
+            Ok(())
+        })();
+        if let Err(error) = result {
+            let _ = fs::remove_file(&extracted);
+            report(format!("Could not extract ISO: {error}"));
+        } else {
+            report(format!("{label} downloaded and verified"));
+        }
+        return;
+    }
+    if fs::rename(&partial, &destination).is_err() {
+        report("Verified download could not be installed".into());
+    } else {
+        report(format!("{label} downloaded and verified"));
     }
 }
 

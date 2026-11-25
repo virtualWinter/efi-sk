@@ -6,6 +6,12 @@ import QtQuick.Layouts
 // qmllint disable unqualified
 QQC2.ApplicationWindow {
     id: window
+    Timer {
+        interval: 200
+        running: installer.downloading
+        repeat: true
+        onTriggered: installer.poll_download()
+    }
     visible: true
     width: 800
     height: 570
@@ -168,6 +174,7 @@ QQC2.ApplicationWindow {
                                 }
                                 Button {
                                     text: "Download"
+                                    enabled: !installer.downloading
                                     onClicked: installer.download_iso(sourceIndex)
                                 }
                             }
@@ -366,7 +373,7 @@ QQC2.ApplicationWindow {
                 Button {
                     text: "Create USB"
                     primary: true
-                    enabled: diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0
+                    enabled: !installer.downloading && diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0
                     onClicked: eraseDialog.open()
                 }
             }
