@@ -27,14 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Resolve upstream SHA-256 checksums
-        run: python3 tools/update-catalog.py > catalog.json
+        run: |
+          python3 tools/update-catalog.py > catalog.json
+          python3 -c 'import json; c=json.load(open("catalog.json")); json.dump({"schema_version": c["schema_version"], "distros": c["distros"]}, open("distros.json", "w"), indent=2)'
       - name: Publish rolling catalog
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view iso-catalog >/dev/null 2>&1; then
-            gh release upload iso-catalog catalog.json --clobber
+            gh release upload iso-catalog catalog.json distros.json --clobber
           else
             gh release create iso-catalog --target "$GITHUB_SHA" --title 'ISO catalog' \
-              --notes 'Machine-readable ISO download catalog.' --latest=false catalog.json
+              --notes 'Machine-readable ISO download catalog and distro artwork index.' --latest=false catalog.json distros.json
           fi

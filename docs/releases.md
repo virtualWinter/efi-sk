@@ -43,5 +43,8 @@ python3 tools/update-catalog.py
   direct download. Some old or restricted projects may not offer a
   public image.
 
+The same rolling release also publishes `distros.json`, containing
+`schema_version` and the `distros` list from `catalog.json`.
+
 The desktop installer still uses its built-in list. The published
 catalog does not bundle image files or verify upstream signatures.
