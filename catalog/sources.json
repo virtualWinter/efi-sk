@@ -1,5 +1,45 @@
 [
   {
+    "distro": "aosc",
+    "name": "AOSC OS Installer 20261107",
+    "category": "installer",
+    "base_url": "https://releases.aosc.io/os-amd64/installer/",
+    "filename": "aosc-os_installer_20261107_amd64.iso",
+    "checksum_file": "aosc-os_installer_20261107_amd64.iso.sha256sum"
+  },
+  {
+    "distro": "redcore",
+    "name": "Redcore Linux 2601 KDE",
+    "category": "desktop",
+    "base_url": "https://mirror.math.princeton.edu/pub/redcorelinux/amd64/iso/",
+    "filename": "Redcore.Linux.Hardened.2601.Vulpecula.KDE.amd64.iso",
+    "checksum_file": "Redcore.Linux.Hardened.2601.Vulpecula.KDE.amd64.iso.sha256sum"
+  },
+  {
+    "distro": "kdeneon",
+    "name": "KDE neon User",
+    "category": "desktop",
+    "base_url": "https://files.kde.org/neon/images/desktop/user/current/",
+    "filename": "neon-user-desk-20261025-1825.iso",
+    "checksum_file": "neon-user-desk-20261025-1825.sha256sum"
+  },
+  {
+    "distro": "garuda",
+    "name": "Garuda Linux Hyprland",
+    "category": "desktop",
+    "base_url": "https://iso.builds.garudalinux.org/iso/garuda/hyprland/260819/",
+    "filename": "garuda-hyprland-linux-garuda-260819.iso",
+    "checksum_file": "garuda-hyprland-linux-garuda-260819.iso.sha256"
+  },
+  {
+    "distro": "slackware",
+    "name": "Slackware 64 15.0 DVD",
+    "category": "installer",
+    "base_url": "https://mirrors.slackware.com/slackware/slackware-iso/slackware64-15.0-iso/",
+    "filename": "slackware64-15.0-install-dvd.iso",
+    "checksum_file": "slackware64-15.0-install-dvd.iso.sha256"
+  },
+  {
     "distro": "guixsd",
     "name": "Guix System 1.5.0 x86_64 installer",
     "category": "installer",
