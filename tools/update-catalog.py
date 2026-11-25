@@ -36,7 +36,7 @@ def resolve(source):
         filename, digest = source["filename"], source["sha256"]
         if not re.fullmatch(r"[A-Za-z0-9._+ -]+", filename) or not re.fullmatch(r"[a-fA-F0-9]{64}", digest):
             raise ValueError(f"Invalid pinned image: {source['name']}")
-        return image_entry(source, filename, digest, source["checksum_url"])
+        return image_entry(source, filename, digest, urljoin(source["base_url"], source["checksum_url"]))
 
     checksum_url = urljoin(source["base_url"], source["checksum_file"])
     pattern = source.get("filename_pattern") or re.escape(source["filename"])
