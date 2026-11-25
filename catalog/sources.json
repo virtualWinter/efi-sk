@@ -1,5 +1,22 @@
 [
   {
+    "distro": "guixsd",
+    "name": "Guix System 1.5.0 x86_64 installer",
+    "category": "installer",
+    "base_url": "https://ftp.gnu.org/gnu/guix/",
+    "filename": "guix-system-install-1.5.0.x86_64-linux.iso",
+    "sha256": "107e0a8082f03a10b15c1fb9383d2d752c1cdeda41b8db575a15550e1c2d8b4a",
+    "checksum_url": "https://yhetil.org/guix/69750642.1060106@gnu.org/t/"
+  },
+  {
+    "distro": "raspios",
+    "name": "Raspberry Pi Desktop Trixie amd64",
+    "category": "desktop",
+    "base_url": "https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2026-10-15/",
+    "filename": "2026-10-13-raspios-trixie-amd64.iso",
+    "checksum_file": "2026-10-13-raspios-trixie-amd64.iso.sha256"
+  },
+  {
     "name": "Arch Linux",
     "category": "live",
     "filename": "archlinux-x86_64.iso",
