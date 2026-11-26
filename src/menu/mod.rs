@@ -1,9 +1,9 @@
 mod graphics;
 mod pointer;
+mod text;
 
 use alloc::vec;
 
-use core::fmt::Write;
 use uefi::boot;
 use uefi::proto::console::text::{Color, Key, ScanCode};
 use uefi::{Status, system};
@@ -176,7 +176,18 @@ pub fn select(
                 prepare_console(graphics);
                 return Ok(false);
             }
-            Some(Key::Special(key)) => groups.navigate(*selected, key),
+            Some(Key::Special(key)) => {
+                let key = if graphics.is_none() && *selected >= groups.tools_end {
+                    match key {
+                        ScanCode::UP => ScanCode::LEFT,
+                        ScanCode::DOWN => ScanCode::RIGHT,
+                        other => other,
+                    }
+                } else {
+                    key
+                };
+                groups.navigate(*selected, key)
+            }
             Some(Key::Printable(key)) => {
                 let key = char::from(key);
                 if matches!(key, '\r' | '\n') {
@@ -244,58 +255,5 @@ fn render(
         }
         *graphics = None;
     }
-    render_text(entries, selected, last_boot);
-}
-
-fn render_text(entries: &[Entry], selected: usize, last_boot: Option<Result<(), Status>>) {
-    system::with_stdout(|out| {
-        let _ = out.set_color(Color::LightGray, Color::Black);
-        let _ = out.clear();
-
-        let groups = Groups::new(entries);
-        for (index, entry) in entries.iter().enumerate() {
-            if index == 0 && groups.boot > 0 {
-                let _ = writeln!(out, "  Boot images");
-            }
-            if index == groups.boot && groups.boot < groups.tools_end {
-                let _ = writeln!(out, "\n  Tools");
-            }
-            if index == groups.tools_end {
-                let _ = writeln!(out, "\n  System");
-            }
-            let number = index + 1;
-            let label = &entry.label;
-            let active = index == selected;
-            if active {
-                let _ = out.set_color(Color::Black, Color::LightGray);
-            }
-            if matches!(entry.target, Target::Action(_)) {
-                let marker = if active { '>' } else { ' ' };
-                let _ = write!(out, "  {marker} {label}");
-            } else if let Some(detail) = entry.tool_detail() {
-                let marker = if active { '>' } else { ' ' };
-                let _ = write!(out, "  {marker} {label} ({detail})");
-            } else if active {
-                let _ = write!(out, "  > {number}. {label:<60} ");
-            } else {
-                let _ = write!(out, "    {number}. {label}");
-            }
-            if active {
-                let _ = out.set_color(Color::LightGray, Color::Black);
-            }
-            let _ = writeln!(out);
-        }
-
-        match last_boot {
-            Some(Ok(())) => {
-                let _ = writeln!(out, "\n  Boot entry returned to the menu.");
-            }
-            Some(Err(status)) => {
-                let _ = out.set_color(Color::LightRed, Color::Black);
-                let _ = writeln!(out, "\n  {}", failure_message(&entries[selected], status));
-                let _ = out.set_color(Color::LightGray, Color::Black);
-            }
-            None => {}
-        }
-    });
+    text::render(entries, selected, last_boot);
 }
