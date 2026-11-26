@@ -223,10 +223,12 @@ struct Installer {
 impl Installer {
     fn set_status(&mut self, message: impl Into<QString>) {
         self.status = message.into();
+        eprintln!("[efi-sk] {}", self.status);
         self.status_changed();
     }
 
     fn refresh(&mut self) {
+        eprintln!("[efi-sk] Refreshing USB drives");
         self.devices = list_usb_disks();
         self.devices_changed();
     }
@@ -349,8 +351,13 @@ impl Installer {
             let path = image_path(url, false);
             let unchecked = image_path(url, true);
             images.push(if path.is_file() {
+                report(format!("Using local image: {}", path.display()));
                 path
             } else if skip && unchecked.is_file() {
+                report(format!(
+                    "Using unchecked local image: {}",
+                    unchecked.display()
+                ));
                 unchecked
             } else {
                 report(format!("Fetching {label}…"));
@@ -638,6 +645,12 @@ fn main() {
         }
         return;
     }
+    let skip_iso_checksum = args.iter().any(|arg| arg == "--skip-iso-checksum");
+    eprintln!(
+        "[efi-sk] Starting installer; ISO directory: {}; image checksum validation: {}",
+        iso_directory().display(),
+        if skip_iso_checksum { "off" } else { "on" }
+    );
     let mut engine = QmlEngine::new();
     register_iso_icons();
     let names = ISOS
@@ -651,7 +664,7 @@ fn main() {
         .collect::<Vec<_>>()
         .join("\n");
     let installer = RefCell::new(Installer {
-        skip_iso_checksum: args.iter().any(|arg| arg == "--skip-iso-checksum"),
+        skip_iso_checksum,
         release_mode: release_repo().is_some(),
         iso_names: names.into(),
         iso_icons: icons.into(),
