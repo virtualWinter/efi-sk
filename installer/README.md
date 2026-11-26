@@ -27,6 +27,8 @@ checksums before requesting administrator privileges. The repository can
 also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
 Leave all boot images unchecked to create a drive without downloading any ISOs.
+Otherwise, select the images you want and click **Create USB**. The installer
+reuses local images and downloads and verifies missing ones before erasing the drive.
 You can copy ISO files into the `iso/` folder on the `ISOS` partition later.
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Clear all** to install only the picker and your

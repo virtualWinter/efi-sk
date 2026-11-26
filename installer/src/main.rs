@@ -243,9 +243,13 @@ impl Installer {
         self.busy = true;
         self.set_status(format!("Connecting to download {label}…"));
         std::thread::spawn(move || {
-            fetch_iso(label, url, checksum_url, pattern, |message| {
+            let report = |message| {
                 let _ = tx.send(message);
-            })
+            };
+            match fetch_iso(label, url, checksum_url, pattern, &report) {
+                Ok(_) => report(format!("{label} downloaded and verified")),
+                Err(error) => report(error),
+            }
         });
     }
 
@@ -284,7 +288,7 @@ impl Installer {
             self.set_status("Select a USB disk first");
             return;
         };
-        let mut images = Vec::new();
+        let mut selected_images = Vec::new();
         let selection = iso_indices.to_string();
         for value in selection.split(',').filter(|_| !selection.is_empty()) {
             let Some(index) = value.parse::<usize>().ok().filter(|i| *i < ISOS.len()) else {
@@ -295,13 +299,7 @@ impl Installer {
                 self.set_status("A download-only image cannot be added to the picker USB");
                 return;
             }
-            let name = ISOS[index].1.rsplit('/').next().unwrap();
-            let iso = iso_directory().join(name.strip_suffix(".bz2").unwrap_or(name));
-            if !iso.is_file() {
-                self.set_status(format!("Download and verify {} first", ISOS[index].0));
-                return;
-            }
-            images.push(iso);
+            selected_images.push(index);
         }
         let excluded = excluded_tools.to_string();
         let version = efi_version.to_string();
@@ -314,7 +312,8 @@ impl Installer {
             let report = |message| {
                 let _ = tx.send(message);
             };
-            let result = Self::prepare_usb(&disk, &images, &excluded, version.trim(), &report);
+            let result =
+                Self::prepare_usb(&disk, &selected_images, &excluded, version.trim(), &report);
             report(match result {
                 Ok(()) => "USB created successfully".to_owned(),
                 Err(error) => format!("USB creation failed: {error}"),
@@ -324,7 +323,7 @@ impl Installer {
 
     fn prepare_usb(
         disk: &str,
-        images: &[PathBuf],
+        selected_images: &[usize],
         excluded_tools: &str,
         efi_version: &str,
         report: impl Fn(String),
@@ -333,6 +332,18 @@ impl Installer {
         use std::process::Stdio;
         let assets = usb::selected_assets(excluded_tools)?;
         let sequence = usb::sequence(Path::new(disk))?;
+        let mut images = Vec::new();
+        for &index in selected_images {
+            let (label, url, sums, pattern, _) = ISOS[index];
+            let path = image_path(url);
+            images.push(if path.is_file() {
+                path
+            } else {
+                report(format!("Fetching {label}…"));
+                fetch_iso(label, url, sums, pattern, &report)
+                    .map_err(|error| format!("{label}: {error}"))?
+            });
+        }
         let stage = usb::Temp::new()?;
         let result = (|| {
             if let Some(repo) = release_repo() {
@@ -406,14 +417,32 @@ impl Installer {
     }
 }
 
-fn fetch_iso(label: &str, url: &str, checksum_url: &str, pattern: &str, report: impl Fn(String)) {
+fn image_filename(url: &str) -> &str {
+    url.strip_suffix("/download")
+        .unwrap_or(url)
+        .rsplit('/')
+        .next()
+        .unwrap()
+}
+
+fn image_path(url: &str) -> PathBuf {
+    let name = image_filename(url);
+    iso_directory().join(name.strip_suffix(".bz2").unwrap_or(name))
+}
+
+fn fetch_iso(
+    label: &str,
+    url: &str,
+    checksum_url: &str,
+    pattern: &str,
+    report: impl Fn(String),
+) -> Result<PathBuf, String> {
     let destination_dir = iso_directory();
     let directory = destination_dir.join(".downloads");
     if let Err(error) = fs::create_dir_all(&directory) {
-        report(format!("Cannot create download directory: {error}"));
-        return;
+        return Err(format!("Cannot create download directory: {error}"));
     }
-    let name = url.rsplit('/').next().unwrap_or("image.iso");
+    let name = image_filename(url);
     let partial = directory.join(format!("{name}.part"));
     let result = Command::new("curl")
         .args([
@@ -444,8 +473,7 @@ fn fetch_iso(label: &str, url: &str, checksum_url: &str, pattern: &str, report: 
             }
         });
     if !result.is_ok_and(|status| status.success()) {
-        report("Download failed; the partial file was kept for retry".into());
-        return;
+        return Err("Download failed; the partial file was kept for retry".into());
     }
     report("Verifying checksum…".into());
     let sums = directory.join(format!("{name}.sums"));
@@ -490,21 +518,16 @@ fn fetch_iso(label: &str, url: &str, checksum_url: &str, pattern: &str, report: 
     };
     let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
     if !valid {
-        report("Checksum verification failed; retry the download".into());
-        return;
+        return Err("Checksum verification failed; retry the download".into());
     }
-    let destination = destination_dir.join(
-        name.strip_suffix(".iso.bz2")
-            .map_or_else(|| name.to_owned(), |stem| format!("{stem}.iso")),
-    );
+    let destination = image_path(url);
     if name.ends_with(".iso.bz2") {
         report("Extracting verified ISO…".into());
         let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
         let out = match fs::File::create_new(&extracted) {
             Ok(out) => out,
             Err(error) => {
-                report(format!("Could not stage extracted ISO: {error}"));
-                return;
+                return Err(format!("Could not stage extracted ISO: {error}"));
             }
         };
         let result = (|| -> std::io::Result<()> {
@@ -523,17 +546,13 @@ fn fetch_iso(label: &str, url: &str, checksum_url: &str, pattern: &str, report: 
         })();
         if let Err(error) = result {
             let _ = fs::remove_file(&extracted);
-            report(format!("Could not extract ISO: {error}"));
-        } else {
-            report(format!("{label} downloaded and verified"));
+            return Err(format!("Could not extract ISO: {error}"));
         }
-        return;
-    }
-    if fs::rename(&partial, &destination).is_err() {
-        report("Verified download could not be installed".into());
     } else {
-        report(format!("{label} downloaded and verified"));
+        fs::rename(&partial, &destination)
+            .map_err(|e| format!("Could not store verified download: {e}"))?;
     }
+    Ok(destination)
 }
 
 fn project_root() -> PathBuf {
