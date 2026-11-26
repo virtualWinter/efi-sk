@@ -216,6 +216,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     let [disk, expected_sequence, dir, excluded, images @ ..] = args else {
         return Err("Missing USB writer arguments".into());
     };
+    println!("progress: Checking USB drive…");
     let assets = selected_assets(excluded.to_str().ok_or("Invalid EFI tool selection")?)?;
     let include_sct = assets.contains(&SCT);
     let disk = fs::canonicalize(disk)?;
@@ -278,6 +279,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     if sequence(&disk)?.trim() != expected_sequence.to_string_lossy() {
         return Err("The USB drive changed".into());
     }
+    println!("progress: Partitioning USB drive…");
     let mut partition = Command::new("sfdisk")
         .args(["--wipe", "always", "--wipe-partitions", "always", "--"])
         .arg(&disk)
@@ -309,6 +311,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     if sequence(&disk)?.trim() != expected_sequence.to_string_lossy() {
         return Err("The USB drive changed".into());
     }
+    println!("progress: Formatting partitions…");
     stamp_disk_identity(&disk)?;
     run(Command::new("mkfs.fat").args(["-F", "32", "-n", "PICKEREFI", "--", esp]))?;
     run(Command::new("mkfs.ext4").args(["-q", "-F", "-m", "0", "-L", "ISOS", "--", isos]))?;
@@ -318,6 +321,7 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     let iso = data.dir.0.join("iso");
     fs::create_dir_all(&boot)?;
     fs::create_dir(&iso)?;
+    println!("progress: Installing EFI picker and tools…");
     for (asset, _, _) in assets.into_iter().filter(|asset| *asset != SCT) {
         fs::copy(dir.join(asset), boot.join(asset))?;
     }
@@ -330,11 +334,16 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     }
     for image in images {
         let path = Path::new(image);
+        println!(
+            "progress: Copying {}…",
+            path.file_name().unwrap_or_default().to_string_lossy()
+        );
         fs::copy(
             path,
             iso.join(path.file_name().ok_or("Missing ISO filename")?),
         )?;
     }
+    println!("progress: Flushing writes and unmounting…");
     data.unmount()?;
     efi.unmount()?;
     Ok(())
@@ -397,6 +406,7 @@ mod tests {
         let original = vec![0x5a; 1024 * 1024 + 1];
         fs::write(&disk, &original)?;
         let result = (|| {
+            println!("progress: Formatting partitions…");
             stamp_disk_identity(&disk)?;
             let stamped = fs::read(&disk)?;
             assert_eq!(&stamped[..384], &original[..384]);

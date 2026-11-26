@@ -195,9 +195,9 @@ struct Installer {
     base: qmetaobject::qt_base_class!(trait QObject),
     status: qmetaobject::qt_property!(QString; NOTIFY status_changed),
     status_changed: qmetaobject::qt_signal!(),
-    downloading: qmetaobject::qt_property!(bool; NOTIFY status_changed),
+    busy: qmetaobject::qt_property!(bool; NOTIFY status_changed),
     updates: Option<std::sync::mpsc::Receiver<String>>,
-    poll_download: qmetaobject::qt_method!(fn(&mut self)),
+    poll_updates: qmetaobject::qt_method!(fn(&mut self)),
     iso_names: qmetaobject::qt_property!(QString),
     tool_names: qmetaobject::qt_property!(QString),
     release_mode: qmetaobject::qt_property!(bool),
@@ -234,12 +234,12 @@ impl Installer {
             self.set_status("Invalid ISO selection");
             return;
         };
-        if self.downloading {
+        if self.busy {
             return;
         }
         let (tx, rx) = std::sync::mpsc::channel();
         self.updates = Some(rx);
-        self.downloading = true;
+        self.busy = true;
         self.set_status(format!("Connecting to download {label}…"));
         std::thread::spawn(move || {
             fetch_iso(label, url, checksum_url, pattern, |message| {
@@ -248,14 +248,14 @@ impl Installer {
         });
     }
 
-    fn poll_download(&mut self) {
+    fn poll_updates(&mut self) {
         while let Some(rx) = &self.updates {
             match rx.try_recv() {
                 Ok(message) => self.set_status(message),
                 Err(std::sync::mpsc::TryRecvError::Empty) => break,
                 Err(std::sync::mpsc::TryRecvError::Disconnected) => {
                     self.updates = None;
-                    self.downloading = false;
+                    self.busy = false;
                     self.status_changed();
                 }
             }
@@ -269,6 +269,9 @@ impl Installer {
         excluded_tools: QString,
         efi_version: QString,
     ) {
+        if self.busy {
+            return;
+        }
         let device_list = self.devices.to_string();
         let selected = device_list
             .lines()
@@ -298,31 +301,39 @@ impl Installer {
             }
             images.push(iso);
         }
-        let result = self.prepare_usb(
-            &disk,
-            &images,
-            &excluded_tools.to_string(),
-            efi_version.to_string().trim(),
-        );
-        self.set_status(match result {
-            Ok(()) => "USB created successfully".to_owned(),
-            Err(error) => format!("USB creation failed: {error}"),
+        let excluded = excluded_tools.to_string();
+        let version = efi_version.to_string();
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.updates = Some(rx);
+        self.busy = true;
+        self.set_status(format!("Preparing {disk}…"));
+        std::thread::spawn(move || {
+            let report = |message| {
+                let _ = tx.send(message);
+            };
+            let result = Self::prepare_usb(&disk, &images, &excluded, version.trim(), &report);
+            report(match result {
+                Ok(()) => "USB created successfully".to_owned(),
+                Err(error) => format!("USB creation failed: {error}"),
+            });
         });
     }
 
     fn prepare_usb(
-        &mut self,
         disk: &str,
         images: &[PathBuf],
         excluded_tools: &str,
         efi_version: &str,
+        report: impl Fn(String),
     ) -> Result<(), Box<dyn std::error::Error>> {
+        use std::io::{BufRead, BufReader};
+        use std::process::Stdio;
         let assets = usb::selected_assets(excluded_tools)?;
         let sequence = usb::sequence(Path::new(disk))?;
         let stage = usb::Temp::new()?;
         let result = (|| {
             if let Some(repo) = release_repo() {
-                self.set_status("Downloading and verifying EFI binaries…");
+                report("Downloading and verifying EFI binaries…".into());
                 usb::download(&repo, efi_version, &stage.0, &assets)?;
             } else {
                 let root = project_root();
@@ -354,8 +365,9 @@ impl Installer {
                     );
                 }
             }
-            self.set_status(format!("Preparing {disk}…"));
-            let output = Command::new("pkexec")
+            report(format!("Waiting for authorization to write {disk}…"));
+            let errors = stage.0.join("writer.stderr");
+            let mut child = Command::new("pkexec")
                 .arg(std::env::current_exe()?)
                 .args(["--write-usb", disk, sequence.trim()])
                 .arg(&stage.0)
@@ -366,22 +378,25 @@ impl Installer {
                         .map(fs::canonicalize)
                         .collect::<std::io::Result<Vec<_>>>()?,
                 )
-                .output()?;
-            if !output.status.success() {
-                return Err(format!(
-                    "{} {}",
-                    output.status,
-                    String::from_utf8_lossy(&output.stderr)
-                )
-                .into());
+                .stdout(Stdio::piped())
+                .stderr(fs::File::create_new(&errors)?)
+                .spawn()?;
+            for line in BufReader::new(child.stdout.take().unwrap()).lines() {
+                if let Some(message) = line?.strip_prefix("progress: ") {
+                    report(message.to_owned());
+                }
+            }
+            let status = child.wait()?;
+            if !status.success() {
+                return Err(format!("{status}: {}", fs::read_to_string(errors)?.trim()).into());
             }
             Ok(())
         })();
-        for name in assets
-            .iter()
-            .map(|(name, _, _)| *name)
-            .chain(["SHA256SUMS", usb::EFI_ARCHIVE])
-        {
+        for name in assets.iter().map(|(name, _, _)| *name).chain([
+            "SHA256SUMS",
+            usb::EFI_ARCHIVE,
+            "writer.stderr",
+        ]) {
             let _ = fs::remove_file(stage.0.join(name));
         }
         result

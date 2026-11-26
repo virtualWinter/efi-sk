@@ -8,9 +8,9 @@ QQC2.ApplicationWindow {
     id: window
     Timer {
         interval: 200
-        running: installer.downloading
+        running: installer.busy
         repeat: true
-        onTriggered: installer.poll_download()
+        onTriggered: installer.poll_updates()
     }
     visible: true
     width: 800
@@ -174,7 +174,7 @@ QQC2.ApplicationWindow {
                                 }
                                 Button {
                                     text: "Download"
-                                    enabled: !installer.downloading
+                                    enabled: !installer.busy
                                     onClicked: installer.download_iso(sourceIndex)
                                 }
                             }
@@ -373,7 +373,7 @@ QQC2.ApplicationWindow {
                 Button {
                     text: "Create USB"
                     primary: true
-                    enabled: !installer.downloading && diskBox.currentIndex >= 0
+                    enabled: !installer.busy && diskBox.currentIndex >= 0
                     onClicked: eraseDialog.open()
                 }
             }
@@ -382,6 +382,12 @@ QQC2.ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true
             visible: installer.status.length > 0
+            QQC2.BusyIndicator {
+                running: installer.busy
+                visible: running
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
+            }
             QQC2.Label {
                 id: statusLabel
                 Layout.fillWidth: true
