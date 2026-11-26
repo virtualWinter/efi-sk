@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls as QQC2
+import QtQuick.Templates as T
 import QtQuick.Layouts
 
 // installer is injected by the Rust QML engine at runtime.
@@ -74,7 +75,17 @@ QQC2.ApplicationWindow {
                         Layout.minimumHeight: 0
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
-                        QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
+                        QQC2.ScrollBar.vertical: T.ScrollBar {
+                            id: imageScroll
+                            implicitWidth: 14
+                            padding: 3
+                            visible: size < 1
+                            contentItem: Rectangle {
+                                radius: width / 2
+                                color: window.palette.text
+                                opacity: imageScroll.pressed ? 0.65 : 0.35
+                            }
+                        }
                         model: installer.iso_names.split("\n").map((name, index) => ({
                                     name: name,
                                     sourceIndex: index
@@ -151,18 +162,6 @@ QQC2.ApplicationWindow {
                             implicitHeight: 34
                             placeholderText: "latest or v0.1.1"
                             Accessible.name: "EFI version"
-                        }
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Item { Layout.fillWidth: true }
-                        QQC2.Button {
-                            text: "Clear all"
-                            Accessible.name: "Deselect all EFI tools"
-                            onClicked: {
-                                for (let i = 0; i < toolList.count; ++i)
-                                    (toolList.itemAt(i) as QQC2.CheckBox).checked = false;
-                            }
                         }
                     }
                     GridLayout {
