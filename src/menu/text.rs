@@ -1,5 +1,5 @@
 use super::{Entry, Groups, failure_message};
-use alloc::format;
+use alloc::{format, string::String};
 use core::fmt::Write;
 use uefi::proto::console::text::{Color, Output};
 use uefi::{Status, system};
@@ -13,13 +13,25 @@ fn line(out: &mut Output, x: usize, y: usize, width: usize, value: &str, active:
     let _ = out.set_color(colors.0, colors.1);
     let _ = out.set_cursor_position(x, y);
     // One printable ASCII character per cell; firmware glyph support varies.
-    for ch in value.chars().take(width) {
-        let _ = out.write_char(if ch.is_ascii_graphic() || ch == ' ' {
-            ch
-        } else {
-            '?'
-        });
+    let mut chars = value.chars();
+    let mut cells: String = chars
+        .by_ref()
+        .take(width)
+        .map(|ch| {
+            if ch.is_ascii_graphic() || ch == ' ' {
+                ch
+            } else {
+                '?'
+            }
+        })
+        .collect();
+    if chars.next().is_some() && width >= 3 {
+        cells.truncate(width - 3);
+        cells.push_str("...");
+    } else if active {
+        cells.extend(core::iter::repeat_n(' ', width - cells.len()));
     }
+    let _ = out.write_str(&cells);
 }
 
 pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(), Status>>) {
@@ -29,13 +41,14 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
             .ok()
             .flatten()
             .map_or((80, 25), |m| (m.columns(), m.rows()));
-        let width = cols.saturating_sub(1);
+        let margin = if cols >= 60 { 2 } else { 1 };
+        let width = cols.saturating_sub(2 * margin);
         let _ = out.set_color(Color::LightGray, Color::Black);
         let _ = out.clear();
         let _ = out.enable_cursor(false);
         let groups = Groups::new(entries);
         let ranges = groups.ranges();
-        let half = width / 2;
+        let left = width * 2 / 3;
         let split = width >= 60 && !ranges[0].is_empty() && !ranges[1].is_empty();
         let active = ranges
             .iter()
@@ -43,8 +56,9 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
             .unwrap_or(0);
         let compact = rows < 12;
         let bottom = rows.saturating_sub(2);
-        line(out, 0, 0, width, " EFI Swiss Knife ", true);
-        let system_y = bottom.saturating_sub((ranges[2].len() + 1).min(bottom / 2));
+        line(out, margin, 0, width, " EFI Swiss Knife ", true);
+        let system_y = (4 + ranges[0].len().max(ranges[1].len()))
+            .min(bottom.saturating_sub((ranges[2].len() + 1).min(bottom / 2)));
         for (group, range) in ranges.into_iter().enumerate() {
             if range.is_empty()
                 || (compact && group != active)
@@ -61,9 +75,15 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
                 (0, system_y, width, bottom)
             } else {
                 (
-                    if split && group == 1 { half + 1 } else { 0 },
+                    if split && group == 1 { left + 2 } else { 0 },
                     2,
-                    if split { half } else { width },
+                    if !split {
+                        width
+                    } else if group == 1 {
+                        width - left - 2
+                    } else {
+                        left
+                    },
                     system_y,
                 )
             };
@@ -76,14 +96,15 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
             };
             let title = if count < range.len() {
                 format!(
-                    "[ {heading} | {}-{}/{} ]",
+                    "{heading}  {}-{}/{}",
                     offset + 1,
                     (offset + count).min(range.len()),
                     range.len()
                 )
             } else {
-                format!("[ {heading} ]")
+                heading.into()
             };
+            let x = x + margin;
             line(out, x, y, w, &title, false);
             for (row, index) in range.skip(offset).take(count).enumerate() {
                 let marker = if index == selected { '>' } else { ' ' };
@@ -93,7 +114,14 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
                 } else {
                     format!("{marker} {label}")
                 };
-                line(out, x, y + row + 1, w, &text, index == selected);
+                line(
+                    out,
+                    x,
+                    y + row + 1,
+                    if group == 2 { w.min(32) } else { w },
+                    &text,
+                    index == selected,
+                );
             }
         }
         let detail = match status {
@@ -105,14 +133,14 @@ pub(super) fn render(entries: &[Entry], selected: usize, status: Option<Result<(
                 .unwrap_or("")
                 .into(),
         };
-        line(out, 0, bottom, width, &detail, false);
+        line(out, margin, bottom, width, &detail, false);
         line(
             out,
-            0,
+            margin,
             rows.saturating_sub(1),
             width,
             " Up/Down: select   Tab: section   Enter: open   Esc: exit ",
-            true,
+            false,
         );
     });
 }
