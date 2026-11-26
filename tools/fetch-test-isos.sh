@@ -26,8 +26,7 @@ for name in "${!urls[@]}"; do
         echo "$name: already in isos/"
         continue
     fi
-    # An interrupted run leaves the transfer in $name.part; a finished one
-    # whose verification failed still sits under $name.
+    # An interrupted download leaves $name.part. A checksum failure leaves $name.
     if [[ -e $name && ! -e $name.part ]]; then
         mv -- "$name" "$name.part"
     fi
@@ -37,8 +36,7 @@ if (( ${#pending[@]} == 0 )); then
     exit 0
 fi
 
-# Never re-open a transfer that already reached the remote size: curl -C -
-# would request a range past the end and the server answers 416.
+# Resuming a complete file sends a range past EOF and gets HTTP 416.
 todo=()
 for name in "${pending[@]}"; do
     remote=$(remote_size "${urls[$name]}")
