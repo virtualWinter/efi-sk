@@ -7,4 +7,8 @@ command -v cargo >/dev/null || {
     exit 1
 }
 
+if [[ -z ${TMPDIR:-} ]]; then
+    export TMPDIR="$project_dir/build/installer-tmp"
+    mkdir -p -- "$TMPDIR"
+fi
 exec cargo run --manifest-path "$project_dir/installer/Cargo.toml" -- "$@"
