@@ -19,7 +19,7 @@ bash tools/build-opnsense-geom.sh opnsense-src build/opnsense-geom
 This recipe builds Ventoy's BSD-licensed GEOM reference module against
 the pinned OPNsense source configuration. The source files retain their
 license notices. A successful build is not evidence that the module
-loads in the DVD kernel. Do not ship the output until that is verified.
+loads in the DVD kernel. Verify that the module loads before distributing it.
 
 ## Use and test the bundled handoff
 

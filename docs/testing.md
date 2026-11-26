@@ -19,7 +19,7 @@ the new EFI binary and all top-level `.iso` files from `isos/`, including
 any matching Debian installer companion files. The picker
 lists [supported ISOs](profiles.md) in its boot menu. The script does not
 need root or write to physical drives. When the ISO files, companions,
-or bundled tools change, it rebuilds the image; otherwise it only
+or bundled tools change, it rebuilds the image. Otherwise it only
 updates `BOOTX64.EFI` on the cached EFI partition. QEMU runs with
 `-snapshot`, so guest writes don't affect the cache. A second run using
 the same cache exits with a message rather than waiting. Set
@@ -58,8 +58,8 @@ installer reads its media before proceeding to disk partitioning:
 
 ## Mouse input
 
-The regular test uses installed OVMF and never builds firmware. Stock OVMF
-may lack a mouse driver; keyboard input still works.
+The regular test uses the installed OVMF firmware. Stock OVMF
+may lack a mouse driver. Keyboard input still works.
 
 For an optional mouse test, run `tools/test-qemu-mouse.sh`. Its first run
 downloads EDK II from GitHub, builds OVMF with `UsbMouseDxe`, and caches it

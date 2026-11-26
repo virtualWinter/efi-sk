@@ -3,9 +3,9 @@
 **Boot Linux ISOs and run EFI utilities from one USB drive.** EFI Swiss Knife
 is a Rust boot menu for x86-64 UEFI, with a Linux desktop installer.
 
-[Download the latest release](https://github.com/virtualWinter/efi-sk/releases/latest)
-· [Set up a USB drive](docs/usb.md)
-· [See supported ISOs](docs/profiles.md)
+- [Download the latest release](https://github.com/virtualWinter/efi-sk/releases/latest)
+- [Set up a USB drive](docs/usb.md)
+- [See supported ISOs](docs/profiles.md)
 
 ## EFI boot menu
 
@@ -35,4 +35,4 @@ Run `tools/build-efi.sh` to produce `build/BOOTX64.EFI`. See the
 
 Original code is licensed under the [ISC License](LICENSE). Bundled software,
 fonts (including [Geist](assets/OFL-Geist.txt)), and artwork remain under
-their own terms; see the [third-party notices](docs/third-party.md).
+their own terms. See the [third-party notices](docs/third-party.md).

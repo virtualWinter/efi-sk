@@ -37,7 +37,7 @@ python3 tools/update-catalog.py
   a project logo, a related project's mark, or generic.
 - `images`: specific downloads with checksums, linked to `distros` by
   distro ID. `qemu-verified` means a live boot or installer startup was
-  verified, not a full installation; `layout-supported` covers a known
+  verified. It does not cover a full installation. `layout-supported` covers a known
   layout, and `untested` or `download-only` do not claim boot support.
 - `downloads`: one entry for every artwork distro. `verified-images`
   entries link to checksum-backed records in `images`. `reference-only`

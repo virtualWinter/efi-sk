@@ -1,8 +1,6 @@
 # EFI Swiss Knife Installer (experimental)
 
-This is the desktop Qt application for preparing an EFI Swiss Knife USB.
-It is intentionally a separate crate because the firmware picker is a
-`no_std` UEFI application.
+Use the Qt installer to prepare an EFI Swiss Knife USB drive on Linux. Run it as your regular user. **Creating a USB erases the selected drive.**
 
 ## Dependencies
 
@@ -26,14 +24,19 @@ Replace `OWNER/REPO` with the GitHub repository that published the
 checksums before requesting administrator privileges. The repository can
 also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
+
+## Images and tools
+
 Leave all boot images unchecked to create a drive without downloading any ISOs.
 Otherwise, select the images you want and click **Create USB**. The installer
 reuses local images and downloads and verifies missing ones before erasing the drive.
+
 To skip checksum validation for image downloads in this session, launch
 `efi-sk-installer --skip-iso-checksum` (or `tools/run-installer.sh --skip-iso-checksum`).
 Unchecked downloads go in the ISO directory's `unchecked/` subfolder and are
 not reused in normal mode. EFI release assets are still verified.
 You can copy ISO files into the `iso/` folder on the `ISOS` partition later.
+
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Clear all** to install only the picker and your
 images. Release mode downloads and verifies the EFI archive, then extracts
@@ -68,8 +71,7 @@ To run from a source checkout:
 tools/run-installer.sh
 ```
 
-Run the GUI as your regular user. Creating a USB **erases the selected drive**
-and requests elevated privileges through `pkexec`. The download catalog is
+The download catalog is
 experimental. Proxmox VE 9.2 requires EFI Swiss Knife `v0.2` or newer.
 OpenWrt is **download only**: it distributes a compressed EFI disk
 image, not an ISO, and cannot be selected for USB installation. For other
@@ -82,7 +84,3 @@ To lint the QML with the Qt declarative tools installed:
 ```sh
 tools/lint-installer.sh
 ```
-
-The interface uses KDE Kirigami controls and layout conventions so it
-integrates with KDE Plasma themes, high-DPI settings, keyboard navigation,
-and accessibility tooling.

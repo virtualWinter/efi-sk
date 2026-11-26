@@ -41,7 +41,7 @@ its contents first.
 Use a Linux system or a live ISO such as Arch. Back up the USB and
 unmount its partitions first. Identify the USB by model, size, and
 transport with `lsblk -o NAME,SIZE,MODEL,TRAN,MOUNTPOINTS`. The commands
-below use `/dev/sdX` as a placeholder; replace it with the verified USB
+below use `/dev/sdX` as a placeholder. Replace it with the verified USB
 device, not your system disk.
 
 1. Run `sudo fdisk /dev/sdX`. Use `g` for a new GPT, then `n` twice:
@@ -54,9 +54,7 @@ device, not your system disk.
    them: `sudo mkfs.fat -F 32 /dev/sdX1` and
    `sudo mkfs.ext4 -L ISOS /dev/sdX2`.
 
-The EFI **Partition Editor (GPT fdisk)** can edit partition tables, but
-it cannot format FAT32 or ext4. `fdisk` itself also only partitions;
-the Linux `mkfs` tools do the formatting.
+GPT fdisk and `fdisk` edit the partition table. Use the Linux `mkfs` commands above to create the filesystems.
 
 ### Copy the picker and tools
 
@@ -78,7 +76,7 @@ picker. With Secure Boot enabled, the firmware must trust the shell too.
 **System Info** is built in and read-only. **Secure Boot Keys (KeyTool)**
 is also installed by the USB script. For manual setup, copy
 `vendor/keytool/KeyTool.efi` to `EFI/BOOT/KeyTool.efi`. KeyTool can change
-firmware trust databases on supported systems; back up existing keys
+firmware trust databases on supported systems. Back up existing keys
 and understand the consequences before changing anything.
 The firmware must expose the Secure Boot `SetupMode` variable, even if
 Secure Boot is off. Stock non-Secure-Boot OVMF does not expose it.
@@ -97,9 +95,9 @@ Run `acpiview -l` in **UEFI Shell** to list the firmware's ACPI tables.
 **System Info** shows the current display resolution.
 
 **Partition Editor (GPT fdisk)** is installed by default. It can rewrite
-partition tables; set `INCLUDE_GPT_FDISK=0` to skip it. For manual setup,
+partition tables. Set `INCLUDE_GPT_FDISK=0` to skip it. For manual setup,
 copy `vendor/gpt-fdisk/gdisk_x64.efi` to `EFI/BOOT/gdisk_x64.efi`.
-The upstream EFI build is older; use a disposable disk to test it.
+The upstream EFI build is older. Use a disposable disk to test it.
 
 A 64 GB USB stick is plenty for these tools. The USB script uses a
 512 MiB EFI partition and leaves the rest for ISOs.
@@ -109,7 +107,7 @@ network adapter and a boot server or URL. For manual setup, copy
 `vendor/ipxe/ipxe.efi` to `EFI/BOOT/ipxe.efi`.
 
 Press Ctrl+B in iPXE for its command prompt. `iwlist` scans on supported
-wireless adapters; otherwise use Ethernet or boot Linux for Wi-Fi.
+wireless adapters. Otherwise use Ethernet or boot Linux for Wi-Fi.
 
 **Save ACPI Report (AcpiDump)** writes `acpidump.txt` to the root of
 the picker's EFI partition. For manual setup, copy
@@ -127,7 +125,7 @@ The menu reads the image's name from its media metadata or ISO volume
 label and uses that name to pick a [bundled logo or
 fallback](../assets/distro/README.md). Images without usable name metadata
 appear as **Unknown ISO**. Renaming a file does not affect its menu
-identity, and the picker never extracts artwork from the image.
+identity. All menu artwork comes from the picker.
 
 ## Menu input
 
@@ -139,7 +137,7 @@ hyphens. The ISO itself can exceed FAT32's per-file limit.
 Safely eject the drive and select its UEFI entry in the target PC's boot
 menu. Tab cycles through Boot images, Tools, and the bottom action bar.
 Use Up/Down in a list, Left/Right in the action bar, and Enter to activate
-the selection. Number shortcuts launch boot images directly; Esc exits
+the selection. Number shortcuts launch boot images directly. Esc exits
 the loader. In the graphical menu,
 move the mouse to highlight an entry and left-click to boot it. Mouse
 input depends on the firmware exposing a UEFI pointer device.
@@ -149,7 +147,7 @@ boot option on a non-USB EFI filesystem other than the picker's own.
 It selects that option for the next boot and reboots. **Firmware setup**
 appears only if the firmware advertises that capability. **Exit to firmware**
 does the same thing as Esc. **Reboot** and **Shut down** restart or power
-off the machine. The graphical action buttons are icon-only; focus a button
+off the machine. The graphical action buttons are icon-only. Focus a button
 to see its name.
 
 The prebuilt application is unsigned. For Secure Boot, the firmware must

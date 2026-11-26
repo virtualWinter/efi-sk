@@ -9,7 +9,7 @@ files or external dependencies.
   license, embedded in the firmware.
 
 - [Geist glyph atlases](../assets/OFL-Geist.txt): SIL Open Font License.
-  The original TTFs are not bundled; see the [build guide](build.md#font)
+  The original TTFs are not bundled. See the [build guide](build.md#font)
   for the upstream release and regeneration instructions.
 - [Lucide icons and generated bitmaps](../assets/lucide/README.md): see the
   [bundled license](../assets/lucide/LICENSE).

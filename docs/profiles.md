@@ -29,8 +29,8 @@ If no Linux profile matches, the picker checks for an EFI
 boot entry in the ISO's El Torito catalog. It shows matching images as
 **experimental EFI** entries. Selecting one exposes the ISO as a
 read-only UEFI virtual CD and tries to start `\EFI\BOOT\BOOTX64.EFI` from
-its El Torito boot filesystem. Reads are served from the USB on demand;
-the firmware does not need to load the whole ISO into RAM. Existing Linux
+its El Torito boot filesystem. Reads are served from the USB on demand.
+The firmware does not need to load the whole ISO into RAM. Existing Linux
 profiles take precedence for now.
 
 This path still requires firmware drivers for El Torito and FAT. It does
@@ -51,16 +51,16 @@ OpenWrt are not handled.
   upstream `.iso.bz2`. On a USB prepared by the current installer,
   the picker automatically uses the embedded
   [disk-backed GEOM handoff](opnsense-handoff.md). This mounts the ISO
-  directly from USB without a full RAM copy. QEMU reached live setup;
-  a full installation and physical USB boot remain untested.
+  directly from USB without a full RAM copy. QEMU reached live setup.
+  A full installation and physical USB boot remain untested.
 
 ### Replacing compatibility profiles
 
 The intended next layer hands off the USB partition UUID and ISO path to
 early userspace. Linux can reopen the USB partition and expose the ISO
 through a read-only loop device. The loader must arrange for that helper
-to run; merely launching an ISO's EFI executable cannot do this for
-arbitrary installers. Where an image cannot reopen its source filesystem,
+to run. Starting the EFI executable alone does not tell the installer
+where to find its ISO. Where an image cannot reopen its source filesystem,
 an extent-based block mapping can be evaluated separately.
 
 Retire each existing profile only after its replacement boots an untouched
@@ -80,7 +80,7 @@ and successful network configuration with only the ISO on the USB.
 
 Download `vmlinuz` and `initrd.gz` from Debian's
 [amd64 hd-media directory for Debian 13 (trixie)](https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/hd-media/).
-Use the pair built for your ISO's release and kernel ABI; if using an
+Use the pair built for your ISO's release and kernel ABI. If using an
 older point release, obtain its matching installer files rather than
 mixing releases.
 

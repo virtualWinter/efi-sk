@@ -3,10 +3,10 @@
 [`index.tsv`](index.tsv) covers the first 400 entries in the
 [DistroWatch 12-month Page Hit Ranking](https://distrowatch.com/dwres.php?resource=popularity),
 snapshot 2026-11-24, plus a few additional images. The ranking is used only
-for coverage; logo recognition does not imply boot support.
+for coverage. Logo recognition does not imply boot support.
 
-`logo` uses the distro's own mark when available; `family` uses a related
-project's mark; `generic` uses a neutral Tux icon. Unknown filenames use
+`logo` uses the distro's own mark when available. `family` uses a related
+project's mark. `generic` uses a neutral Tux icon. Unknown filenames use
 the picker's generic boot-image glyph. Matching uses the name reported
 by the ISO, is case-insensitive, ignores separators, and prefers the
 longest matching alias. It does not use the on-disk filename.
@@ -21,4 +21,4 @@ colored marks share their [source artwork with the installer](../../installer/ic
 Marks remain subject to their respective owners' trademark policies.
 
 The picker embeds 18×18 RGBA renders. The build reads the checked-in
-index and assets offline; it does not scrape DistroWatch at build or boot.
+local index and assets. Building and booting do not contact DistroWatch.

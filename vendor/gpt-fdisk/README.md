@@ -7,7 +7,7 @@ This older EFI build may not work with every firmware or storage device.
 The upstream binary places its dummy PE relocation section at RVA zero,
 overlapping the image headers. `fix-pe.py` moves that section to a separate
 page for newer firmware loaders. The original signature is removed because
-it no longer matches; the executable code and GNU-EFI relocations are
+it no longer matches. The executable code and GNU-EFI relocations are
 unchanged.
 
 To reproduce the bundled binary, extract `gdisk_x64.efi` from the upstream
