@@ -29,6 +29,10 @@ installer uses local tools and requires a [local picker build](../docs/build.md)
 Leave all boot images unchecked to create a drive without downloading any ISOs.
 Otherwise, select the images you want and click **Create USB**. The installer
 reuses local images and downloads and verifies missing ones before erasing the drive.
+To skip checksum validation for image downloads in this session, launch
+`efi-sk-installer --skip-iso-checksum` (or `tools/run-installer.sh --skip-iso-checksum`).
+Unchecked downloads go in the ISO directory's `unchecked/` subfolder and are
+not reused in normal mode. EFI release assets are still verified.
 You can copy ISO files into the `iso/` folder on the `ISOS` partition later.
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Clear all** to install only the picker and your

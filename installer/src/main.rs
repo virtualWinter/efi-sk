@@ -197,6 +197,7 @@ struct Installer {
     status_changed: qmetaobject::qt_signal!(),
     busy: qmetaobject::qt_property!(bool; NOTIFY status_changed),
     installing: qmetaobject::qt_property!(bool; NOTIFY status_changed),
+    skip_iso_checksum: bool,
     updates: Option<std::sync::mpsc::Receiver<String>>,
     poll_updates: qmetaobject::qt_method!(fn(&mut self)),
     iso_names: qmetaobject::qt_property!(QString),
@@ -242,11 +243,13 @@ impl Installer {
         self.updates = Some(rx);
         self.busy = true;
         self.set_status(format!("Connecting to download {label}…"));
+        let skip = self.skip_iso_checksum;
         std::thread::spawn(move || {
             let report = |message| {
                 let _ = tx.send(message);
             };
-            match fetch_iso(label, url, checksum_url, pattern, &report) {
+            match fetch_iso(label, url, checksum_url, pattern, skip, &report) {
+                Ok(_) if skip => report(format!("{label} downloaded (checksum skipped)")),
                 Ok(_) => report(format!("{label} downloaded and verified")),
                 Err(error) => report(error),
             }
@@ -308,12 +311,19 @@ impl Installer {
         self.busy = true;
         self.installing = true;
         self.set_status(format!("Preparing {disk}…"));
+        let skip = self.skip_iso_checksum;
         std::thread::spawn(move || {
             let report = |message| {
                 let _ = tx.send(message);
             };
-            let result =
-                Self::prepare_usb(&disk, &selected_images, &excluded, version.trim(), &report);
+            let result = Self::prepare_usb(
+                &disk,
+                &selected_images,
+                &excluded,
+                version.trim(),
+                skip,
+                &report,
+            );
             report(match result {
                 Ok(()) => "USB created successfully".to_owned(),
                 Err(error) => format!("USB creation failed: {error}"),
@@ -326,6 +336,7 @@ impl Installer {
         selected_images: &[usize],
         excluded_tools: &str,
         efi_version: &str,
+        skip: bool,
         report: impl Fn(String),
     ) -> Result<(), Box<dyn std::error::Error>> {
         use std::io::{BufRead, BufReader};
@@ -335,12 +346,15 @@ impl Installer {
         let mut images = Vec::new();
         for &index in selected_images {
             let (label, url, sums, pattern, _) = ISOS[index];
-            let path = image_path(url);
+            let path = image_path(url, false);
+            let unchecked = image_path(url, true);
             images.push(if path.is_file() {
                 path
+            } else if skip && unchecked.is_file() {
+                unchecked
             } else {
                 report(format!("Fetching {label}…"));
-                fetch_iso(label, url, sums, pattern, &report)
+                fetch_iso(label, url, sums, pattern, skip, &report)
                     .map_err(|error| format!("{label}: {error}"))?
             });
         }
@@ -425,9 +439,13 @@ fn image_filename(url: &str) -> &str {
         .unwrap()
 }
 
-fn image_path(url: &str) -> PathBuf {
+fn image_path(url: &str, skip: bool) -> PathBuf {
     let name = image_filename(url);
-    iso_directory().join(name.strip_suffix(".bz2").unwrap_or(name))
+    let mut dir = iso_directory();
+    if skip {
+        dir.push("unchecked");
+    }
+    dir.join(name.strip_suffix(".bz2").unwrap_or(name))
 }
 
 fn fetch_iso(
@@ -435,10 +453,11 @@ fn fetch_iso(
     url: &str,
     checksum_url: &str,
     pattern: &str,
+    skip: bool,
     report: impl Fn(String),
 ) -> Result<PathBuf, String> {
-    let destination_dir = iso_directory();
-    let directory = destination_dir.join(".downloads");
+    let destination = image_path(url, skip);
+    let directory = destination.parent().unwrap().join(".downloads");
     if let Err(error) = fs::create_dir_all(&directory) {
         return Err(format!("Cannot create download directory: {error}"));
     }
@@ -475,54 +494,55 @@ fn fetch_iso(
     if !result.is_ok_and(|status| status.success()) {
         return Err("Download failed; the partial file was kept for retry".into());
     }
-    report("Verifying checksum…".into());
-    let sums = directory.join(format!("{name}.sums"));
-    let fetched = (|| {
-        if checksum_url.starts_with("sha256:") {
-            return Ok(true);
-        }
-        Command::new("curl")
-            .args([
-                "--fail",
-                "--location",
-                "--retry",
-                "3",
-                "--silent",
-                "--show-error",
-            ])
-            .arg("--output")
-            .arg(&sums)
-            .arg(checksum_url)
-            .status()
-            .map(|status| status.success())
-    })();
-    let actual = Command::new("sha256sum").arg(&partial).output();
-    let digest = |output: std::io::Result<std::process::Output>| {
-        let output = output.ok().filter(|o| o.status.success())?;
-        String::from_utf8(output.stdout)
-            .ok()?
-            .split_whitespace()
-            .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
-            .map(str::to_ascii_lowercase)
-    };
-    let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
-        Some(pinned.to_owned())
-    } else {
-        digest(
-            Command::new("grep")
-                .args(["-E", "--"])
-                .arg(pattern)
+    if !skip {
+        report("Verifying checksum…".into());
+        let sums = directory.join(format!("{name}.sums"));
+        let fetched = (|| {
+            if checksum_url.starts_with("sha256:") {
+                return Ok(true);
+            }
+            Command::new("curl")
+                .args([
+                    "--fail",
+                    "--location",
+                    "--retry",
+                    "3",
+                    "--silent",
+                    "--show-error",
+                ])
+                .arg("--output")
                 .arg(&sums)
-                .output(),
-        )
-    };
-    let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
-    if !valid {
-        return Err("Checksum verification failed; retry the download".into());
+                .arg(checksum_url)
+                .status()
+                .map(|status| status.success())
+        })();
+        let actual = Command::new("sha256sum").arg(&partial).output();
+        let digest = |output: std::io::Result<std::process::Output>| {
+            let output = output.ok().filter(|o| o.status.success())?;
+            String::from_utf8(output.stdout)
+                .ok()?
+                .split_whitespace()
+                .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
+                .map(str::to_ascii_lowercase)
+        };
+        let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
+            Some(pinned.to_owned())
+        } else {
+            digest(
+                Command::new("grep")
+                    .args(["-E", "--"])
+                    .arg(pattern)
+                    .arg(&sums)
+                    .output(),
+            )
+        };
+        let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
+        if !valid {
+            return Err("Checksum verification failed; retry the download".into());
+        }
     }
-    let destination = image_path(url);
     if name.ends_with(".iso.bz2") {
-        report("Extracting verified ISO…".into());
+        report("Extracting ISO…".into());
         let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
         let out = match fs::File::create_new(&extracted) {
             Ok(out) => out,
@@ -549,8 +569,7 @@ fn fetch_iso(
             return Err(format!("Could not extract ISO: {error}"));
         }
     } else {
-        fs::rename(&partial, &destination)
-            .map_err(|e| format!("Could not store verified download: {e}"))?;
+        fs::rename(&partial, &destination).map_err(|e| format!("Could not store download: {e}"))?;
     }
     Ok(destination)
 }
@@ -632,6 +651,7 @@ fn main() {
         .collect::<Vec<_>>()
         .join("\n");
     let installer = RefCell::new(Installer {
+        skip_iso_checksum: args.iter().any(|arg| arg == "--skip-iso-checksum"),
         release_mode: release_repo().is_some(),
         iso_names: names.into(),
         iso_icons: icons.into(),
