@@ -35,19 +35,23 @@ QQC2.ApplicationWindow {
     component Section: QQC2.GroupBox {
         id: section
         Layout.fillWidth: true
-        padding: 16
-        topPadding: 44
+        padding: 0
+        topPadding: 36
         label: QQC2.Label {
-            x: 16
-            y: 14
+            x: 0
+            y: 10
             text: section.title
             color: "#fafafa"
             font.weight: Font.DemiBold
         }
         background: Rectangle {
-            radius: 12
-            color: "#171717"
-            border.color: "#2e2e2e"
+            implicitHeight: 1
+            color: "transparent"
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: window.palette.mid
+            }
         }
     }
 
@@ -74,7 +78,7 @@ QQC2.ApplicationWindow {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            radius: 7
+            radius: 4
             color: button.destructive ? (button.hovered ? "#ff8588" : "#ff6467") : button.primary ? (button.hovered ? "#dedede" : "#fafafa") : button.down || button.hovered ? "#262626" : "#171717"
             border.color: button.visualFocus ? "#a1a1a1" : button.primary || button.destructive ? color : "#2e2e2e"
             border.width: button.visualFocus ? 2 : 1
@@ -100,14 +104,14 @@ QQC2.ApplicationWindow {
 
         QQC2.Label {
             text: "Create a bootable USB"
-            font.pixelSize: 30
+            font.pixelSize: 22
             font.weight: Font.DemiBold
             Layout.fillWidth: true
         }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 10
+            spacing: 20
 
             Section {
                 title: "Boot images"
@@ -136,10 +140,8 @@ QQC2.ApplicationWindow {
                             required property var modelData
                             readonly property int sourceIndex: modelData.sourceIndex
                             width: imageList.width - 14
-                            height: 44
-                            radius: 7
+                            height: 36
                             color: isoCheck.checked || rowHover.hovered ? "#262626" : "transparent"
-                            border.color: isoCheck.checked ? "#737373" : "transparent"
                             HoverHandler {
                                 id: rowHover
                             }
@@ -148,19 +150,19 @@ QQC2.ApplicationWindow {
                                 anchors.leftMargin: 8
                                 anchors.rightMargin: 6
                                 spacing: 8
-                                Image {
-                                    source: "qrc:/iso-icons/" + installer.iso_icons.split("\n")[sourceIndex] + ".png"
-                                    Layout.preferredWidth: 20
-                                    Layout.preferredHeight: 20
-                                    fillMode: Image.PreserveAspectFit
-                                    smooth: true
-                                }
                                 QQC2.CheckBox {
                                     id: isoCheck
                                     visible: !modelData.name.endsWith(": Download only")
                                     checked: window.selectedIsoIndexes.split(",").indexOf(String(sourceIndex)) >= 0
                                     onToggled: window.toggleIso(sourceIndex, checked)
                                     Accessible.name: "Include " + modelData.name
+                                }
+                                Image {
+                                    source: "qrc:/iso-icons/" + installer.iso_icons.split("\n")[sourceIndex] + ".png"
+                                    Layout.preferredWidth: 18
+                                    Layout.preferredHeight: 18
+                                    fillMode: Image.PreserveAspectFit
+                                    smooth: true
                                 }
                                 QQC2.Label {
                                     text: modelData.name
@@ -188,7 +190,7 @@ QQC2.ApplicationWindow {
                 title: "Optional EFI tools"
                 Layout.fillHeight: true
                 Layout.preferredWidth: 350
-                Layout.minimumWidth: 350
+                Layout.minimumWidth: 320
                 contentItem: ColumnLayout {
                     spacing: 12
                     RowLayout {
@@ -236,52 +238,8 @@ QQC2.ApplicationWindow {
                                 Layout.preferredWidth: 1
                                 implicitHeight: 30
                                 padding: 4
-                                rightPadding: 27
                                 text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
                                 checked: true
-                                background: Rectangle {
-                                    radius: 7
-                                    color: toolCheck.hovered ? "#262626" : "transparent"
-                                    border.color: toolCheck.visualFocus ? "#737373" : "transparent"
-                                }
-                                indicator: Rectangle {
-                                    width: 16
-                                    height: 16
-                                    radius: 4
-                                    x: toolCheck.width - width - 5
-                                    y: (toolCheck.height - height) / 2
-                                    color: toolCheck.checked ? "#e5e5e5" : "transparent"
-                                    border.color: toolCheck.checked ? "#e5e5e5" : "#737373"
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: toolCheck.checked ? "✓" : ""
-                                        color: "#171717"
-                                        font.pixelSize: 12
-                                    }
-                                }
-                                contentItem: RowLayout {
-                                    spacing: 8
-                                    Image {
-                                        readonly property var icons: ({
-                                                "Memtest86+": "memory-stick",
-                                                "EFI Shell": "terminal",
-                                                "KeyTool": "key-round",
-                                                "iPXE": "network",
-                                                "ACPIdump": "file-search",
-                                                "GPT fdisk": "hard-drive",
-                                                "UEFI SCT": "clipboard-check"
-                                            })
-                                        source: "qrc:/iso-icons/" + (icons[toolCheck.text] || "hard-drive") + ".png"
-                                        Layout.preferredWidth: 16
-                                        Layout.preferredHeight: 16
-                                        fillMode: Image.PreserveAspectFit
-                                    }
-                                    QQC2.Label {
-                                        text: toolCheck.text
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
-                                    }
-                                }
                             }
                         }
                     }
