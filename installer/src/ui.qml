@@ -40,17 +40,21 @@ QQC2.ApplicationWindow {
         selectedIsoIndexes = values.join(",");
     }
 
+    header: QQC2.ToolBar {
+        padding: 10
+        contentItem: QQC2.Label {
+            leftPadding: 6
+            text: "Create a bootable USB"
+            font.bold: true
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 18
         spacing: 10
 
-        QQC2.Label {
-            text: "Create a bootable USB"
-            font.pixelSize: 22
-            font.weight: Font.DemiBold
-            Layout.fillWidth: true
-        }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -119,6 +123,7 @@ QQC2.ApplicationWindow {
                                 }
                                 QQC2.Button {
                                     text: "Download"
+                                    icon.name: "download"
                                     visible: modelData.name.endsWith(": Download only")
                                     enabled: !installer.busy
                                     onClicked: installer.download_iso(sourceIndex)
@@ -213,10 +218,12 @@ QQC2.ApplicationWindow {
                 }
                 QQC2.Button {
                     text: "Refresh"
+                    icon.name: "view-refresh"
                     onClicked: installer.refresh()
                 }
                 QQC2.Button {
                     text: "Create USB"
+                    icon.name: "drive-removable-media"
                     highlighted: true
                     enabled: !installer.busy && diskBox.currentIndex >= 0
                     onClicked: eraseDialog.open()
@@ -304,17 +311,18 @@ QQC2.ApplicationWindow {
             Muted {
                 text: diskBox.currentText + "\n\nThis permanently erases all data on this drive, then installs the boot picker and your selected images and tools."
             }
-            RowLayout {
-                Layout.alignment: Qt.AlignRight
-                QQC2.Button {
-                    text: "Cancel"
-                    focus: true
-                    onClicked: eraseDialog.reject()
-                }
-                QQC2.Button {
-                    text: "Erase and install"
-                    onClicked: eraseDialog.accept()
-                }
+        }
+        footer: QQC2.DialogButtonBox {
+            QQC2.Button {
+                text: "Cancel"
+                icon.name: "dialog-cancel"
+                focus: true
+                QQC2.DialogButtonBox.buttonRole: QQC2.DialogButtonBox.RejectRole
+            }
+            QQC2.Button {
+                text: "Erase and install"
+                icon.name: "edit-delete"
+                QQC2.DialogButtonBox.buttonRole: QQC2.DialogButtonBox.AcceptRole
             }
         }
         onAccepted: {
