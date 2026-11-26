@@ -68,7 +68,8 @@ if [[ "${INCLUDE_UEFI_SCT:-1}" == 1 ]]; then
     esp_size=$((160 * 2048))
 fi
 data_start=$((esp_start + esp_size))
-data_size=$(((bytes + bytes / 10 + 128 * 1024 * 1024 + 1048575) / 1048576 * 2048))
+data_mib=$(((bytes + bytes / 10 + 128 * 1024 * 1024 + 1048575) / 1048576))
+data_size=$((data_mib * 2048))
 {
     printf '%s\0' 'qemu-image-v1' "$esp_size" "${INCLUDE_GPT_FDISK:-1}" "${INCLUDE_UEFI_SCT:-1}"
     sha256sum tools/test-qemu.sh

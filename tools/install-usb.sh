@@ -3,7 +3,8 @@ set -euo pipefail
 export LC_ALL=C
 
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
-disk= project=
+disk=''
+project=''
 isos_to_copy=()
 while (($#)); do
     case "$1" in

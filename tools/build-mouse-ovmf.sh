@@ -32,7 +32,9 @@ trap 'rm -rf -- "$work"' EXIT
     grep -Fq "$driver" OvmfPkg/OvmfPkgX64.dsc
     grep -Fq "$driver" OvmfPkg/OvmfPkgX64.fdf
     make -C BaseTools -j "$(nproc)"
-    source edksetup.sh
+    # The sourced script belongs to the EDK II checkout above.
+    # shellcheck source=/dev/null
+    source ./edksetup.sh
     build -a X64 -t GCC5 -b RELEASE -p OvmfPkg/OvmfPkgX64.dsc
     cp Build/OvmfX64/RELEASE_GCC5/FV/OVMF.fd "$work/OVMF.fd"
     mv -- "$work/OVMF.fd" "$firmware"

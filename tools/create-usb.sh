@@ -36,9 +36,9 @@ fi
 
 validate_disk() {
     [[ -b "$disk" && "$disk" == /dev/* ]] || die 'Select a block device.'
-    local type transport readonly mounts
-    read -r type transport readonly < <(lsblk -dnro TYPE,TRAN,RO -- "$disk") || die "Cannot inspect $disk."
-    [[ "$type" == disk && "$transport" == usb && "$readonly" == 0 ]] ||
+    local type transport read_only mounts
+    read -r type transport read_only < <(lsblk -dnro TYPE,TRAN,RO -- "$disk") || die "Cannot inspect $disk."
+    [[ "$type" == disk && "$transport" == usb && "$read_only" == 0 ]] ||
         die 'Select a writable whole USB disk.'
     mounts=$(lsblk -nr -o MOUNTPOINTS -- "$disk") || die "Cannot check mounts on $disk."
     [[ ! "$mounts" =~ [^[:space:]] ]] || die 'Unmount all partitions on this USB and disable any swap on it.'
