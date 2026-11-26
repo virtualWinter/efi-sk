@@ -50,16 +50,6 @@ QQC2.ApplicationWindow {
         selectedIsoIndexes = values.join(",");
     }
 
-    header: QQC2.ToolBar {
-        padding: 10
-        contentItem: QQC2.Label {
-            leftPadding: 6
-            text: "Create a bootable USB"
-            font.bold: true
-            verticalAlignment: Text.AlignVCenter
-        }
-    }
-
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 18
@@ -71,15 +61,12 @@ QQC2.ApplicationWindow {
             spacing: 20
 
             Section {
-                title: "Boot images"
+                title: "Boot images (optional)"
                 Layout.fillHeight: true
                 Layout.preferredWidth: 440
                 Layout.minimumWidth: 330
                 contentItem: ColumnLayout {
                     spacing: 8
-                    Muted {
-                        text: "Images are optional. The installer downloads any you select that aren’t on this computer."
-                    }
                     ListView {
                         id: imageList
                         Layout.fillWidth: true
@@ -168,9 +155,7 @@ QQC2.ApplicationWindow {
                     }
                     RowLayout {
                         Layout.fillWidth: true
-                        Muted {
-                            text: "Every USB includes the boot picker."
-                        }
+                        Item { Layout.fillWidth: true }
                         QQC2.Button {
                             text: "Clear all"
                             Accessible.name: "Deselect all EFI tools"
@@ -198,11 +183,10 @@ QQC2.ApplicationWindow {
                                 padding: 4
                                 text: modelData.startsWith("UEFI SCT") ? "UEFI SCT" : modelData
                                 checked: true
+                                QQC2.ToolTip.visible: (hovered || visualFocus) && text === "UEFI SCT"
+                                QQC2.ToolTip.text: "Also installs EFI Shell."
                             }
                         }
-                    }
-                    Muted {
-                        text: "Selecting UEFI SCT also adds EFI Shell."
                     }
                     Item {
                         Layout.fillHeight: true
