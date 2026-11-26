@@ -58,5 +58,8 @@ cp "$project/vendor/acpidump/acpidump.efi" "$work/efi/EFI/BOOT/"
 for iso in "${isos_to_copy[@]}"; do
     cp "$iso" "$work/isos/iso/"
 done
+if [[ ${SUDO_UID:-} =~ ^[0-9]+$ && ${SUDO_GID:-} =~ ^[0-9]+$ ]]; then
+    chown -R -- "$SUDO_UID:$SUDO_GID" "$work/isos/iso"
+fi
 sync
 printf 'USB prepared successfully\n'

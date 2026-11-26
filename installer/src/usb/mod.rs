@@ -217,6 +217,10 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
         return Err("Missing USB writer arguments".into());
     };
     println!("progress: Checking USB drive…");
+    let uid: u32 = std::env::var("PKEXEC_UID")?.parse()?;
+    let gid: u32 = output(Command::new("id").arg("-g").arg(uid.to_string()))?
+        .trim()
+        .parse()?;
     let assets = selected_assets(excluded.to_str().ok_or("Invalid EFI tool selection")?)?;
     let include_sct = assets.contains(&SCT);
     let disk = fs::canonicalize(disk)?;
@@ -338,11 +342,11 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
             "progress: Copying {}…",
             path.file_name().unwrap_or_default().to_string_lossy()
         );
-        fs::copy(
-            path,
-            iso.join(path.file_name().ok_or("Missing ISO filename")?),
-        )?;
+        let destination = iso.join(path.file_name().ok_or("Missing ISO filename")?);
+        fs::copy(path, &destination)?;
+        std::os::unix::fs::chown(destination, Some(uid), Some(gid))?;
     }
+    std::os::unix::fs::chown(&iso, Some(uid), Some(gid))?;
     println!("progress: Flushing writes and unmounting…");
     data.unmount()?;
     efi.unmount()?;
