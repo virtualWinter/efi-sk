@@ -45,7 +45,12 @@ cache=${QEMU_CACHE_DIR:-build/qemu-cache}
 mkdir -p "$cache"
 exec 9>"$cache/lock"
 flock -nx 9 || die 'A test is using this cache. Close that VM or set QEMU_CACHE_DIR to run another.'
-tools/build-efi.sh
+if [[ ${1:-} == --text ]]; then
+    shift
+    tools/build-efi.sh --features text-mode
+else
+    tools/build-efi.sh
+fi
 work=$(mktemp -d build/qemu.XXXXXXXX)
 trap 'rm -rf -- "$work"' EXIT
 trap 'exit 130' INT

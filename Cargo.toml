@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 license = "ISC"
 
+[features]
+text-mode = []
+
 [dependencies]
 ext4-view = "=1.0.0"
 uefi-raw = "=0.17.0"

@@ -96,7 +96,11 @@ pub fn select(
     mut last_boot: Option<Result<(), Status>>,
 ) -> Result<bool, Status> {
     let groups = Groups::new(entries);
-    let mut graphics = graphics::Graphics::open(groups);
+    let mut graphics = if cfg!(feature = "text-mode") {
+        None
+    } else {
+        graphics::Graphics::open(groups)
+    };
     let key_event =
         system::with_stdin(|input| input.wait_for_key_event()).map_err(|error| error.status())?;
     render(&mut graphics, entries, *selected, last_boot);
