@@ -250,7 +250,7 @@ impl Installer {
             let report = |message| {
                 let _ = tx.send(message);
             };
-            match fetch_iso(label, url, checksum_url, pattern, skip, &report) {
+            match fetch_iso(label, url, checksum_url, pattern, skip, report) {
                 Ok(_) if skip => report(format!("{label} downloaded (checksum skipped)")),
                 Ok(_) => report(format!("{label} downloaded and verified")),
                 Err(error) => report(error),
@@ -324,7 +324,7 @@ impl Installer {
                 &excluded,
                 version.trim(),
                 skip,
-                &report,
+                report,
             );
             report(match result {
                 Ok(()) => "USB created successfully".to_owned(),
@@ -598,15 +598,14 @@ fn iso_directory() -> PathBuf {
     if let Some(path) = std::env::var_os("EFI_SK_ISO_DIR") {
         return PathBuf::from(path);
     }
-    if release_repo().is_some() {
-        if let Some(base) = std::env::var_os("XDG_DATA_HOME")
+    if release_repo().is_some()
+        && let Some(base) = std::env::var_os("XDG_DATA_HOME")
             .map(PathBuf::from)
             .or_else(|| {
                 std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share"))
             })
-        {
-            return base.join("efiswissknife/isos");
-        }
+    {
+        return base.join("efiswissknife/isos");
     }
     project_root().join("isos")
 }
