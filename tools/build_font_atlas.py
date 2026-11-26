@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("font_dir", type=Path, help="directory containing the Geist static TTFs")
     font_dir = parser.parse_args().font_dir
-    for _, weight, _, _ in FACES:
+    for _name, weight, _size, _tracking in FACES:
         font = font_dir / f"Geist-{weight}.ttf"
         if not font.is_file():
             parser.error(f"missing font: {font}")

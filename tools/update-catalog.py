@@ -5,6 +5,7 @@ import json
 import re
 from functools import lru_cache
 from pathlib import Path
+from typing import TypedDict
 from urllib.parse import urljoin
 from urllib.request import urlopen
 
@@ -68,8 +69,16 @@ def image_entry(source, filename, digest, checksum_url):
     }
 
 
-def distro_index():
-    distros = {}
+class Distro(TypedDict):
+    id: str
+    rank: int | None
+    icon: str
+    artwork: str
+    aliases: list[str]
+
+
+def distro_index() -> list[Distro]:
+    distros: dict[str, Distro] = {}
     for line in (ROOT / "assets/distro/index.tsv").read_text().splitlines():
         if line.startswith("#"):
             continue
@@ -86,7 +95,7 @@ def distro_index():
 
 
 def download_index(distros, images, pages):
-    by_distro = {}
+    by_distro: dict[str, list[str]] = {}
     for image in images:
         by_distro.setdefault(image["distro"], []).append(image["url"])
     downloads = []
