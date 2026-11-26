@@ -18,8 +18,18 @@ QQC2.ApplicationWindow {
     minimumWidth: 730
     minimumHeight: 550
     title: "EFI Swiss Knife"
-    component Section: QQC2.GroupBox {
+    component Section: QQC2.Control {
+        id: section
+        property string title
         Layout.fillWidth: true
+        topPadding: heading.implicitHeight + 8
+
+        QQC2.Label {
+            id: heading
+            text: section.title
+            font.bold: true
+            Accessible.role: Accessible.Heading
+        }
     }
 
     component Muted: QQC2.Label {
