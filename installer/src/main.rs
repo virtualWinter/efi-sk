@@ -663,6 +663,7 @@ fn main() {
         .collect::<Vec<_>>()
         .join("\n");
     let installer = RefCell::new(Installer {
+        devices: list_usb_disks(),
         skip_iso_checksum,
         release_mode: release_repo().is_some(),
         iso_names: names.into(),
