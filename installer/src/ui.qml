@@ -381,7 +381,7 @@ QQC2.ApplicationWindow {
 
         RowLayout {
             Layout.fillWidth: true
-            visible: installer.status.length > 0
+            visible: installer.status.length > 0 && !installer.installing
             QQC2.BusyIndicator {
                 running: installer.busy
                 visible: running
@@ -401,6 +401,39 @@ QQC2.ApplicationWindow {
                 visible: statusLabel.truncated
                 onClicked: statusDialog.open()
             }
+        }
+    }
+    QQC2.Dialog {
+        id: installProgress
+        anchors.centerIn: parent
+        width: Math.min(window.width - 48, 440)
+        padding: 24
+        modal: true
+        dim: true
+        focus: true
+        visible: installer.installing
+        closePolicy: QQC2.Popup.NoAutoClose
+        title: "Installing to USB"
+        background: Rectangle {
+            radius: 12
+            color: "#171717"
+            border.color: "#404040"
+        }
+        QQC2.Overlay.modal: Rectangle { color: "#99000000" }
+        contentItem: ColumnLayout {
+            spacing: 16
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: installer.status
+                wrapMode: Text.WrapAnywhere
+            }
+            QQC2.ProgressBar {
+                Layout.fillWidth: true
+                indeterminate: installProgress.visible
+                palette.highlight: "#fafafa"
+                Accessible.name: "USB installation progress"
+            }
+            Muted { text: "Keep the drive connected until installation finishes." }
         }
     }
     QQC2.Dialog {

@@ -196,6 +196,7 @@ struct Installer {
     status: qmetaobject::qt_property!(QString; NOTIFY status_changed),
     status_changed: qmetaobject::qt_signal!(),
     busy: qmetaobject::qt_property!(bool; NOTIFY status_changed),
+    installing: qmetaobject::qt_property!(bool; NOTIFY status_changed),
     updates: Option<std::sync::mpsc::Receiver<String>>,
     poll_updates: qmetaobject::qt_method!(fn(&mut self)),
     iso_names: qmetaobject::qt_property!(QString),
@@ -256,6 +257,7 @@ impl Installer {
                 Err(std::sync::mpsc::TryRecvError::Disconnected) => {
                     self.updates = None;
                     self.busy = false;
+                    self.installing = false;
                     self.status_changed();
                 }
             }
@@ -306,6 +308,7 @@ impl Installer {
         let (tx, rx) = std::sync::mpsc::channel();
         self.updates = Some(rx);
         self.busy = true;
+        self.installing = true;
         self.set_status(format!("Preparing {disk}…"));
         std::thread::spawn(move || {
             let report = |message| {
