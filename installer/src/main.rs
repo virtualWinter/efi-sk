@@ -681,4 +681,5 @@ fn main() {
     });
     engine.load_data(include_bytes!("ui.qml").as_slice().into());
     engine.exec();
+    drop(engine);
 }
