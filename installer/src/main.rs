@@ -21,7 +21,7 @@ qmetaobject::qrc!(register_iso_icons,
 
 const ISOS: &[(&str, &str, &str, &str, &str)] = &[
     (
-        "VyOS rolling · Experimental",
+        "VyOS rolling: Experimental",
         "https://github.com/vyos/vyos-nightly-build/releases/download/2026.11.22-0018-rolling/vyos-2026.11.22-0018-rolling-generic-amd64.iso",
         "sha256:9c7915e8c113ed371e23115610d9d1d6e642e466844eed10cd74ed2c207e8123",
         "",
@@ -42,7 +42,7 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "proxmox",
     ),
     (
-        "OpenWrt 25.12.6 · Download only",
+        "OpenWrt 25.12.6: Download only",
         "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/openwrt-25.12.6-x86-64-generic-ext4-combined-efi.img.gz",
         "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/sha256sums",
         "openwrt-25\\.12\\.6-x86-64-generic-ext4-combined-efi\\.img\\.gz$",
@@ -126,63 +126,63 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "fedora",
     ),
     (
-        "Ubuntu 24.04 LTS · Desktop",
+        "Ubuntu 24.04 LTS: Desktop",
         "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
         "https://releases.ubuntu.com/24.04.3/SHA256SUMS",
         "ubuntu-24\\.04\\.3-desktop-amd64\\.iso$",
         "ubuntu",
     ),
     (
-        "Ubuntu 24.04 LTS · Server",
+        "Ubuntu 24.04 LTS: Server",
         "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-live-server-amd64.iso",
         "https://releases.ubuntu.com/24.04.3/SHA256SUMS",
         "ubuntu-24\\.04\\.3-live-server-amd64\\.iso$",
         "ubuntu",
     ),
     (
-        "Debian 13 · Network installer",
+        "Debian 13: Network installer",
         "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso",
         "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/SHA256SUMS",
         "mini\\.iso$",
         "debian",
     ),
     (
-        "Fedora Server 45 · Network installer",
+        "Fedora Server 45: Network installer",
         "https://download.fedoraproject.org/pub/fedora/linux/releases/45/Server/x86_64/iso/Fedora-Server-netinst-x86_64-45-1.4.iso",
         "https://download.fedoraproject.org/pub/fedora/linux/releases/45/Server/x86_64/iso/Fedora-Server-45-1.4-x86_64-CHECKSUM",
         "Fedora-Server-netinst-x86_64-45-1\\.4\\.iso",
         "fedora",
     ),
     (
-        "Arch Linux · Live installer",
+        "Arch Linux: Live installer",
         "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso",
         "https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt",
         "archlinux-x86_64\\.iso$",
         "archlinux",
     ),
     (
-        "Rocky Linux 10 · Minimal",
+        "Rocky Linux 10: Minimal",
         "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10.0-x86_64-minimal.iso",
         "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/CHECKSUM",
         "Rocky-10\\.0-x86_64-minimal\\.iso$",
         "rockylinux",
     ),
     (
-        "AlmaLinux 10 · Minimal",
+        "AlmaLinux 10: Minimal",
         "https://repo.almalinux.org/almalinux/10/isos/x86_64/AlmaLinux-10.0-x86_64-minimal.iso",
         "https://repo.almalinux.org/almalinux/10/isos/x86_64/CHECKSUM",
         "AlmaLinux-10\\.0-x86_64-minimal\\.iso$",
         "almalinux",
     ),
     (
-        "SystemRescue · Rescue toolkit",
+        "SystemRescue: Rescue toolkit",
         "https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/12.01/systemrescue-12.01-amd64.iso/download",
         "https://www.system-rescue.org/downloads/SHA256SUMS",
         "systemrescue-12\\.01-amd64\\.iso$",
         "systemrescue",
     ),
     (
-        "Kali Linux · Installer",
+        "Kali Linux: Installer",
         "https://cdimage.kali.org/kali-2025.4/kali-linux-2025.4-installer-amd64.iso",
         "https://cdimage.kali.org/kali-2025.4/SHA256SUMS",
         "kali-linux-2025\\.4-installer-amd64\\.iso$",
@@ -300,7 +300,7 @@ impl Installer {
                 self.set_status("Invalid ISO selection");
                 return;
             };
-            if ISOS[index].0.ends_with(" · Download only") {
+            if ISOS[index].0.ends_with(": Download only") {
                 self.set_status("A download-only image cannot be added to the picker USB");
                 return;
             }
@@ -492,7 +492,7 @@ fn fetch_iso(
                 }
                 let bytes = fs::metadata(&partial).map_or(0, |meta| meta.len());
                 report(format!(
-                    "Downloading {label} · {:.1} MiB received",
+                    "Downloading {label}: {:.1} MiB received",
                     bytes as f64 / 1048576.0
                 ));
                 std::thread::sleep(std::time::Duration::from_millis(500));

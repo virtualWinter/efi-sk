@@ -157,7 +157,7 @@ QQC2.ApplicationWindow {
                                 }
                                 QQC2.CheckBox {
                                     id: isoCheck
-                                    visible: !modelData.name.endsWith(" · Download only")
+                                    visible: !modelData.name.endsWith(": Download only")
                                     checked: window.selectedIsoIndexes.split(",").indexOf(String(sourceIndex)) >= 0
                                     onToggled: window.toggleIso(sourceIndex, checked)
                                     Accessible.name: "Include " + modelData.name
@@ -174,7 +174,7 @@ QQC2.ApplicationWindow {
                                 }
                                 Button {
                                     text: "Download"
-                                    visible: modelData.name.endsWith(" · Download only")
+                                    visible: modelData.name.endsWith(": Download only")
                                     enabled: !installer.busy
                                     onClicked: installer.download_iso(sourceIndex)
                                 }
