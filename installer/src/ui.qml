@@ -117,7 +117,7 @@ QQC2.ApplicationWindow {
                 contentItem: ColumnLayout {
                     spacing: 8
                     Muted {
-                        text: "Optional. Missing images download when you create the USB."
+                        text: "Images are optional. The installer downloads any you select that aren’t on this computer."
                     }
                     ListView {
                         id: imageList
@@ -195,7 +195,7 @@ QQC2.ApplicationWindow {
                         visible: installer.release_mode
                         Layout.fillWidth: true
                         QQC2.Label {
-                            text: "EFI release version"
+                            text: "EFI version"
                         }
                         QQC2.TextField {
                             id: efiVersion
@@ -203,13 +203,13 @@ QQC2.ApplicationWindow {
                             Layout.minimumWidth: 0
                             implicitHeight: 34
                             placeholderText: "latest or v0.1.1"
-                            Accessible.name: "EFI release version"
+                            Accessible.name: "EFI version"
                         }
                     }
                     RowLayout {
                         Layout.fillWidth: true
                         Muted {
-                            text: "Boot picker always included."
+                            text: "Every USB includes the boot picker."
                         }
                         Button {
                             text: "Clear all"
@@ -286,7 +286,7 @@ QQC2.ApplicationWindow {
                         }
                     }
                     Muted {
-                        text: "UEFI SCT also installs EFI Shell."
+                        text: "Selecting UEFI SCT also adds EFI Shell."
                     }
                     Item {
                         Layout.fillHeight: true
@@ -470,7 +470,7 @@ QQC2.ApplicationWindow {
         contentItem: ColumnLayout {
             spacing: 16
             Muted {
-                text: diskBox.currentText + "\n\nSelected images and tools will be installed. Existing data will be permanently erased."
+                text: diskBox.currentText + "\n\nThis permanently erases all data on this drive, then installs the boot picker and your selected images and tools."
             }
             RowLayout {
                 Layout.alignment: Qt.AlignRight

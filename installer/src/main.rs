@@ -244,7 +244,7 @@ impl Installer {
         let (tx, rx) = std::sync::mpsc::channel();
         self.updates = Some(rx);
         self.busy = true;
-        self.set_status(format!("Connecting to download {label}…"));
+        self.set_status(format!("Preparing to download {label}…"));
         let skip = self.skip_iso_checksum;
         std::thread::spawn(move || {
             let report = |message| {
@@ -290,7 +290,7 @@ impl Installer {
             .and_then(|line| line.split_whitespace().next())
             .map(str::to_owned);
         let Some(disk) = selected else {
-            self.set_status("Select a USB disk first");
+            self.set_status("Select a USB drive");
             return;
         };
         let mut selected_images = Vec::new();
@@ -301,7 +301,7 @@ impl Installer {
                 return;
             };
             if ISOS[index].0.ends_with(": Download only") {
-                self.set_status("A download-only image cannot be added to the picker USB");
+                self.set_status(format!("{} is available to download only. Deselect it to create the USB.", ISOS[index].0.trim_end_matches(": Download only")));
                 return;
             }
             selected_images.push(index);
@@ -327,7 +327,7 @@ impl Installer {
                 report,
             );
             report(match result {
-                Ok(()) => "USB created successfully".to_owned(),
+                Ok(()) => format!("Bootable USB ready: {disk}"),
                 Err(error) => format!("USB creation failed: {error}"),
             });
         });
