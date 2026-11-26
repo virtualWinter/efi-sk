@@ -279,18 +279,13 @@ impl Installer {
             self.set_status("Select a USB disk first");
             return;
         };
-        let indexes: Vec<usize> = iso_indices
-            .to_string()
-            .split(',')
-            .filter_map(|value| value.parse().ok())
-            .filter(|index| *index < ISOS.len())
-            .collect();
-        if indexes.is_empty() {
-            self.set_status("Select an ISO first");
-            return;
-        }
         let mut images = Vec::new();
-        for index in indexes {
+        let selection = iso_indices.to_string();
+        for value in selection.split(',').filter(|_| !selection.is_empty()) {
+            let Some(index) = value.parse::<usize>().ok().filter(|i| *i < ISOS.len()) else {
+                self.set_status("Invalid ISO selection");
+                return;
+            };
             if ISOS[index].0.ends_with(" · Download only") {
                 self.set_status("A download-only image cannot be added to the picker USB");
                 return;

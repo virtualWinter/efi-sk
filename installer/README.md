@@ -26,6 +26,8 @@ Replace `OWNER/REPO` with the GitHub repository that published the
 checksums before requesting administrator privileges. The repository can
 also be set at compile time using the same variable. If it is unset, the
 installer uses local tools and requires a [local picker build](../docs/build.md).
+Leave all boot images unchecked to create a drive without downloading any ISOs.
+You can copy ISO files into the `iso/` folder on the `ISOS` partition later.
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Clear all** to install only the picker and your
 images. Release mode downloads and verifies the EFI archive, then extracts

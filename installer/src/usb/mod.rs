@@ -220,11 +220,8 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     let include_sct = assets.contains(&SCT);
     let disk = fs::canonicalize(disk)?;
     let dir = Path::new(dir);
-    if images.is_empty()
-        || !disk.starts_with("/dev")
-        || !fs::metadata(&disk)?.file_type().is_block_device()
-    {
-        return Err("Select a whole USB disk and at least one ISO".into());
+    if !disk.starts_with("/dev") || !fs::metadata(&disk)?.file_type().is_block_device() {
+        return Err("Select a whole USB disk".into());
     }
     let identity = inspect(&disk, "TYPE,TRAN,RO", "-dnro")?;
     if !identity.split_whitespace().eq(["disk", "usb", "0"])

@@ -117,7 +117,7 @@ QQC2.ApplicationWindow {
                 contentItem: ColumnLayout {
                     spacing: 8
                     Muted {
-                        text: "Download images before installing. Some are download only."
+                        text: "Images are optional. You can add ISOs to the drive later."
                     }
                     ListView {
                         id: imageList
@@ -373,7 +373,7 @@ QQC2.ApplicationWindow {
                 Button {
                     text: "Create USB"
                     primary: true
-                    enabled: !installer.downloading && diskBox.currentIndex >= 0 && window.selectedIsoIndexes.length > 0
+                    enabled: !installer.downloading && diskBox.currentIndex >= 0
                     onClicked: eraseDialog.open()
                 }
             }

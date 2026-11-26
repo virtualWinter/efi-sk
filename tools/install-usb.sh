@@ -14,7 +14,6 @@ while (($#)); do
     esac
 done
 [[ $disk == /dev/* && -b $disk ]] || die "invalid disk"
-(( ${#isos_to_copy[@]} > 0 )) || die "select at least one ISO"
 for iso in "${isos_to_copy[@]}"; do
     [[ -f $iso && $iso == "$project"/isos/* ]] || die "ISO must be inside project isos/"
 done
