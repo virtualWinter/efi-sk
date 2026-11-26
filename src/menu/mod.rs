@@ -143,11 +143,12 @@ pub fn select(
 
             if state.pressed && !pressed {
                 pressed_entry = hovered;
-            } else if !state.pressed && pressed {
-                if let Some(entry) = pressed_entry.take().filter(|entry| Some(*entry) == hovered) {
-                    *selected = entry;
-                    break;
-                }
+            } else if !state.pressed
+                && pressed
+                && let Some(entry) = pressed_entry.take().filter(|entry| Some(*entry) == hovered)
+            {
+                *selected = entry;
+                break;
             }
             pressed = state.pressed;
 

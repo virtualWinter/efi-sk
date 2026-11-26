@@ -79,21 +79,21 @@ pub(super) fn open_partition(esp: Handle) -> Result<(Ext4, u64, u64), Status> {
 
         let disk = open_readonly::<DiskIo>(handle).map_err(|error| error.status())?;
         let partition = Partition { disk, media_id };
-        if let Ok(fs) = Ext4::load(Box::new(partition)) {
-            if fs.label().to_str() == Ok("ISOS") {
-                if found.is_some() {
-                    return Err(Status::NO_MAPPING);
-                }
-                let start = partition_node
-                    .partition_start()
-                    .checked_mul(sector)
-                    .ok_or(Status::BAD_BUFFER_SIZE)?;
-                let size = partition_node
-                    .partition_size()
-                    .checked_mul(sector)
-                    .ok_or(Status::BAD_BUFFER_SIZE)?;
-                found = Some((fs, start, size));
+        if let Ok(fs) = Ext4::load(Box::new(partition))
+            && fs.label().to_str() == Ok("ISOS")
+        {
+            if found.is_some() {
+                return Err(Status::NO_MAPPING);
             }
+            let start = partition_node
+                .partition_start()
+                .checked_mul(sector)
+                .ok_or(Status::BAD_BUFFER_SIZE)?;
+            let size = partition_node
+                .partition_size()
+                .checked_mul(sector)
+                .ok_or(Status::BAD_BUFFER_SIZE)?;
+            found = Some((fs, start, size));
         }
     }
 

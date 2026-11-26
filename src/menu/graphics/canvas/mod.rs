@@ -97,7 +97,7 @@ impl Canvas {
     }
 
     pub fn icon(&mut self, (x, y): (usize, usize), width: usize, pixels: &[u8]) {
-        for (index, rgba) in pixels.chunks_exact(4).enumerate() {
+        for (index, rgba) in pixels.as_chunks::<4>().0.iter().enumerate() {
             let px = x + index % width;
             let py = y + index / width;
             if rgba[3] != 0 && px < self.width && py < self.height {

@@ -102,8 +102,11 @@ fn local_option(esp: Handle) -> Option<u16> {
         }
     }
     for id in order
-        .chunks_exact(2)
-        .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]]))
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .copied()
+        .map(u16::from_le_bytes)
     {
         if Some(id) == current {
             continue;
@@ -147,8 +150,10 @@ fn option_path(data: &[u8]) -> Option<&DevicePath> {
     let length = usize::from(u16::from_le_bytes(data.get(4..6)?.try_into().ok()?));
     let description = data
         .get(6..)?
-        .chunks_exact(2)
-        .position(|pair| pair == [0, 0])?;
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .position(|pair| *pair == [0, 0])?;
     let start = 6 + (description + 1) * 2;
     data.get(start..start.checked_add(length)?)?.try_into().ok()
 }

@@ -78,8 +78,8 @@ impl Drop for Registration {
                 mem::forget(path);
             }
         }
-        if let Some(initrd) = self.initrd.take() {
-            if unsafe {
+        if let Some(initrd) = self.initrd.take()
+            && unsafe {
                 boot::uninstall_protocol_interface(
                     self.handle,
                     &LoadFile2Protocol::GUID,
@@ -87,9 +87,8 @@ impl Drop for Registration {
                 )
             }
             .is_err()
-            {
-                mem::forget(initrd);
-            }
+        {
+            mem::forget(initrd);
         }
     }
 }
