@@ -43,13 +43,6 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
         "proxmox",
     ),
     (
-        "OpenWrt 25.12.6: Download only",
-        "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/openwrt-25.12.6-x86-64-generic-ext4-combined-efi.img.gz",
-        "https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/sha256sums",
-        "openwrt-25\\.12\\.6-x86-64-generic-ext4-combined-efi\\.img\\.gz$",
-        "systemrescue",
-    ),
-    (
         "Xubuntu 24.04 LTS",
         "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/xubuntu-24.04.5-desktop-amd64.iso",
         "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/SHA256SUMS",
@@ -217,7 +210,6 @@ struct Installer {
     devices: qmetaobject::qt_property!(QString; NOTIFY devices_changed),
     devices_changed: qmetaobject::qt_signal!(),
     refresh: qmetaobject::qt_method!(fn(&mut self)),
-    download_iso: qmetaobject::qt_method!(fn(&mut self, index: i32)),
     create_usb: qmetaobject::qt_method!(
         fn(
             &mut self,
@@ -257,34 +249,6 @@ impl Installer {
         self.devices = list_usb_disks();
         self.devices_changed();
         self.set_status("USB drive list refreshed");
-    }
-
-    fn download_iso(&mut self, index: i32) {
-        let Some((label, url, checksum_url, pattern, _icon)) = ISOS.get(index as usize) else {
-            self.set_error("Invalid ISO selection");
-            return;
-        };
-        if self.busy {
-            return;
-        }
-        let (tx, rx) = std::sync::mpsc::channel();
-        self.updates = Some(rx);
-        self.busy = true;
-        self.progress = -1.0;
-        self.set_status(format!("Preparing to download {label}…"));
-        let skip = self.skip_iso_checksum;
-        std::thread::spawn(move || {
-            let report = |update| {
-                let _ = tx.send(update);
-            };
-            match fetch_iso(label, url, checksum_url, pattern, skip, report) {
-                Ok(_) if skip => report(Update::Status(format!(
-                    "{label} downloaded (checksum skipped)"
-                ))),
-                Ok(_) => report(Update::Status(format!("{label} downloaded and verified"))),
-                Err(error) => report(Update::Error(format!("{label}: {error}"))),
-            }
-        });
     }
 
     fn poll_updates(&mut self) {
@@ -332,13 +296,6 @@ impl Installer {
                 self.set_error("Invalid ISO selection");
                 return;
             };
-            if ISOS[index].0.ends_with(": Download only") {
-                self.set_error(format!(
-                    "{} is available to download only. Deselect it to create the USB.",
-                    ISOS[index].0.trim_end_matches(": Download only")
-                ));
-                return;
-            }
             selected_images.push(index);
         }
         let excluded = excluded_tools.to_string();
