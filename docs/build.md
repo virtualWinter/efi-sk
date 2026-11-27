@@ -33,8 +33,8 @@ The picker builds with a current stable Rust toolchain. Install Rust with
 rustup target add x86_64-unknown-uefi
 ```
 
-Distro packages are alternatives, though distro Rust tends to be older
-than `current stable`: Debian/Ubuntu `sudo apt install rustc cargo`,
+Distro packages also work, though they are often older than
+`current stable`: Debian/Ubuntu `sudo apt install rustc cargo`,
 Fedora `sudo dnf install rust cargo`, Arch `sudo pacman -S rust`.
 
 ## Building

@@ -2,8 +2,9 @@
 
 [`index.tsv`](index.tsv) covers the first 400 entries in the
 [DistroWatch 12-month Page Hit Ranking](https://distrowatch.com/dwres.php?resource=popularity),
-snapshot 2026-11-24, plus a few additional images. The ranking is used only
-for coverage. Logo recognition does not imply boot support.
+snapshot 2026-11-24, plus a few additional images. The ranking only
+determines which projects are listed. Logo recognition does not imply boot
+support.
 
 `logo` uses the distro's own mark when available. `family` uses a related
 project's mark. `generic` uses a neutral Tux icon. Unknown filenames use

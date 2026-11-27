@@ -54,7 +54,8 @@ device, not your system disk.
    them: `sudo mkfs.fat -F 32 /dev/sdX1` and
    `sudo mkfs.ext4 -L ISOS /dev/sdX2`.
 
-GPT fdisk and `fdisk` edit the partition table. Use the Linux `mkfs` commands above to create the filesystems.
+`fdisk` and GPT fdisk only edit the partition table. Create the
+filesystems with the `mkfs` commands above.
 
 ### Copy the picker and tools
 

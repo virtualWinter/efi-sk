@@ -35,7 +35,7 @@ To skip checksum validation for image downloads in this session, launch
 `efi-sk-installer --skip-iso-checksum` (or `tools/run-installer.sh --skip-iso-checksum`).
 Unchecked downloads go in the ISO directory's `unchecked/` subfolder and are
 not reused in normal mode. EFI release assets are still verified.
-You can copy ISO files into the `iso/` folder on the `ISOS` partition later.
+Copy ISO files into the `iso/` folder on the `ISOS` partition later.
 
 The **Optional EFI tools** checklist defaults to all tools. Deselect any you
 don't want, or use **Clear all** to install only the picker and your
