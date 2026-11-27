@@ -190,6 +190,12 @@ const ISOS: &[(&str, &str, &str, &str, &str)] = &[
     ),
 ];
 
+enum Update {
+    Status(String),
+    Progress(f64),
+    Error(String),
+}
+
 #[derive(Default, qmetaobject::QObject)]
 struct Installer {
     base: qmetaobject::qt_base_class!(trait QObject),
@@ -197,8 +203,10 @@ struct Installer {
     status_changed: qmetaobject::qt_signal!(),
     busy: qmetaobject::qt_property!(bool; NOTIFY status_changed),
     installing: qmetaobject::qt_property!(bool; NOTIFY status_changed),
+    progress: qmetaobject::qt_property!(f64; NOTIFY status_changed),
+    error: qmetaobject::qt_property!(bool; NOTIFY status_changed),
     skip_iso_checksum: bool,
-    updates: Option<std::sync::mpsc::Receiver<String>>,
+    updates: Option<std::sync::mpsc::Receiver<Update>>,
     poll_updates: qmetaobject::qt_method!(fn(&mut self)),
     iso_names: qmetaobject::qt_property!(QString),
     tool_names: qmetaobject::qt_property!(QString),
@@ -223,19 +231,36 @@ struct Installer {
 impl Installer {
     fn set_status(&mut self, message: impl Into<QString>) {
         self.status = message.into();
+        self.error = false;
         eprintln!("[efi-sk] {}", self.status);
         self.status_changed();
     }
 
+    fn set_error(&mut self, message: impl Into<QString>) {
+        self.status = message.into();
+        self.error = true;
+        self.progress = -1.0;
+        eprintln!("[efi-sk] error: {}", self.status);
+        self.status_changed();
+    }
+
+    fn set_progress(&mut self, progress: f64) {
+        self.progress = progress;
+        self.status_changed();
+    }
+
     fn refresh(&mut self) {
-        eprintln!("[efi-sk] Refreshing USB drives");
+        if self.busy {
+            return;
+        }
         self.devices = list_usb_disks();
         self.devices_changed();
+        self.set_status("USB drive list refreshed");
     }
 
     fn download_iso(&mut self, index: i32) {
         let Some((label, url, checksum_url, pattern, _icon)) = ISOS.get(index as usize) else {
-            self.set_status("Invalid ISO selection");
+            self.set_error("Invalid ISO selection");
             return;
         };
         if self.busy {
@@ -244,16 +269,19 @@ impl Installer {
         let (tx, rx) = std::sync::mpsc::channel();
         self.updates = Some(rx);
         self.busy = true;
+        self.progress = -1.0;
         self.set_status(format!("Preparing to download {label}…"));
         let skip = self.skip_iso_checksum;
         std::thread::spawn(move || {
-            let report = |message| {
-                let _ = tx.send(message);
+            let report = |update| {
+                let _ = tx.send(update);
             };
             match fetch_iso(label, url, checksum_url, pattern, skip, report) {
-                Ok(_) if skip => report(format!("{label} downloaded (checksum skipped)")),
-                Ok(_) => report(format!("{label} downloaded and verified")),
-                Err(error) => report(error),
+                Ok(_) if skip => report(Update::Status(format!(
+                    "{label} downloaded (checksum skipped)"
+                ))),
+                Ok(_) => report(Update::Status(format!("{label} downloaded and verified"))),
+                Err(error) => report(Update::Error(error)),
             }
         });
     }
@@ -261,12 +289,15 @@ impl Installer {
     fn poll_updates(&mut self) {
         while let Some(rx) = &self.updates {
             match rx.try_recv() {
-                Ok(message) => self.set_status(message),
+                Ok(Update::Status(message)) => self.set_status(message),
+                Ok(Update::Progress(progress)) => self.set_progress(progress),
+                Ok(Update::Error(message)) => self.set_error(message),
                 Err(std::sync::mpsc::TryRecvError::Empty) => break,
                 Err(std::sync::mpsc::TryRecvError::Disconnected) => {
                     self.updates = None;
                     self.busy = false;
                     self.installing = false;
+                    self.progress = -1.0;
                     self.status_changed();
                 }
             }
@@ -290,18 +321,21 @@ impl Installer {
             .and_then(|line| line.split_whitespace().next())
             .map(str::to_owned);
         let Some(disk) = selected else {
-            self.set_status("Select a USB drive");
+            self.set_error("Select a USB drive");
             return;
         };
         let mut selected_images = Vec::new();
         let selection = iso_indices.to_string();
         for value in selection.split(',').filter(|_| !selection.is_empty()) {
             let Some(index) = value.parse::<usize>().ok().filter(|i| *i < ISOS.len()) else {
-                self.set_status("Invalid ISO selection");
+                self.set_error("Invalid ISO selection");
                 return;
             };
             if ISOS[index].0.ends_with(": Download only") {
-                self.set_status(format!("{} is available to download only. Deselect it to create the USB.", ISOS[index].0.trim_end_matches(": Download only")));
+                self.set_error(format!(
+                    "{} is available to download only. Deselect it to create the USB.",
+                    ISOS[index].0.trim_end_matches(": Download only")
+                ));
                 return;
             }
             selected_images.push(index);
@@ -312,11 +346,12 @@ impl Installer {
         self.updates = Some(rx);
         self.busy = true;
         self.installing = true;
+        self.progress = -1.0;
         self.set_status(format!("Preparing {disk}…"));
         let skip = self.skip_iso_checksum;
         std::thread::spawn(move || {
-            let report = |message| {
-                let _ = tx.send(message);
+            let report = |update| {
+                let _ = tx.send(update);
             };
             let result = Self::prepare_usb(
                 &disk,
@@ -327,8 +362,8 @@ impl Installer {
                 report,
             );
             report(match result {
-                Ok(()) => format!("Bootable USB ready: {disk}"),
-                Err(error) => format!("USB creation failed: {error}"),
+                Ok(()) => Update::Status(format!("Bootable USB ready: {disk}")),
+                Err(error) => Update::Error(format!("USB creation failed: {error}")),
             });
         });
     }
@@ -339,7 +374,7 @@ impl Installer {
         excluded_tools: &str,
         efi_version: &str,
         skip: bool,
-        report: impl Fn(String),
+        report: impl Fn(Update),
     ) -> Result<(), Box<dyn std::error::Error>> {
         use std::io::{BufRead, BufReader};
         use std::process::Stdio;
@@ -351,16 +386,19 @@ impl Installer {
             let path = image_path(url, false);
             let unchecked = image_path(url, true);
             images.push(if path.is_file() {
-                report(format!("Using local image: {}", path.display()));
+                report(Update::Status(format!(
+                    "Using local image: {}",
+                    path.display()
+                )));
                 path
             } else if skip && unchecked.is_file() {
-                report(format!(
+                report(Update::Status(format!(
                     "Using unchecked local image: {}",
                     unchecked.display()
-                ));
+                )));
                 unchecked
             } else {
-                report(format!("Fetching {label}…"));
+                report(Update::Status(format!("Fetching {label}…")));
                 fetch_iso(label, url, sums, pattern, skip, &report)
                     .map_err(|error| format!("{label}: {error}"))?
             });
@@ -368,9 +406,11 @@ impl Installer {
         let stage = usb::Temp::new()?;
         let result = (|| {
             if let Some(repo) = release_repo() {
-                report("Downloading and verifying EFI binaries…".into());
-                usb::download(&repo, efi_version, &stage.0, &assets)?;
+                usb::download(&repo, efi_version, &stage.0, &assets, |message| {
+                    report(Update::Status(message));
+                })?;
             } else {
+                report(Update::Status("Copying local EFI assets…".into()));
                 let root = project_root();
                 let mut picker = root.join("build/BOOTX64.EFI");
                 if !picker.is_file() {
@@ -400,7 +440,9 @@ impl Installer {
                     );
                 }
             }
-            report(format!("Waiting for authorization to write {disk}…"));
+            report(Update::Status(format!(
+                "Waiting for authorization to write {disk}…"
+            )));
             let errors = stage.0.join("writer.stderr");
             let mut child = Command::new("pkexec")
                 .arg(std::env::current_exe()?)
@@ -418,7 +460,7 @@ impl Installer {
                 .spawn()?;
             for line in BufReader::new(child.stdout.take().unwrap()).lines() {
                 if let Some(message) = line?.strip_prefix("progress: ") {
-                    report(message.to_owned());
+                    report(Update::Status(message.to_owned()));
                 }
             }
             let status = child.wait()?;
@@ -455,13 +497,33 @@ fn image_path(url: &str, skip: bool) -> PathBuf {
     dir.join(name.strip_suffix(".bz2").unwrap_or(name))
 }
 
+fn remote_size(url: &str) -> Option<u64> {
+    let output = Command::new("curl")
+        .args(["--silent", "--head", "--location", "--max-time", "30"])
+        .arg(url)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let text = String::from_utf8_lossy(&output.stdout);
+    text.lines()
+        .filter_map(|line| {
+            let (name, value) = line.split_once(':')?;
+            name.eq_ignore_ascii_case("content-length")
+                .then(|| value.trim().parse::<u64>().ok())
+                .flatten()
+        })
+        .next_back()
+}
+
 fn fetch_iso(
     label: &str,
     url: &str,
     checksum_url: &str,
     pattern: &str,
     skip: bool,
-    report: impl Fn(String),
+    report: impl Fn(Update),
 ) -> Result<PathBuf, String> {
     let destination = image_path(url, skip);
     let directory = destination.parent().unwrap().join(".downloads");
@@ -470,6 +532,8 @@ fn fetch_iso(
     }
     let name = image_filename(url);
     let partial = directory.join(format!("{name}.part"));
+    let total = remote_size(url);
+    report(Update::Progress(-1.0));
     let result = Command::new("curl")
         .args([
             "--silent",
@@ -491,18 +555,30 @@ fn fetch_iso(
                     break Ok(status);
                 }
                 let bytes = fs::metadata(&partial).map_or(0, |meta| meta.len());
-                report(format!(
-                    "Downloading {label}: {:.1} MiB received",
-                    bytes as f64 / 1048576.0
-                ));
+                if let Some(total) = total.filter(|total| *total > 0) {
+                    report(Update::Progress(
+                        (bytes as f64 / total as f64).clamp(0.0, 1.0),
+                    ));
+                    report(Update::Status(format!(
+                        "Downloading {label}: {:.1} of {:.1} MiB",
+                        bytes as f64 / 1048576.0,
+                        total as f64 / 1048576.0
+                    )));
+                } else {
+                    report(Update::Status(format!(
+                        "Downloading {label}: {:.1} MiB received",
+                        bytes as f64 / 1048576.0
+                    )));
+                }
                 std::thread::sleep(std::time::Duration::from_millis(500));
             }
         });
+    report(Update::Progress(-1.0));
     if !result.is_ok_and(|status| status.success()) {
         return Err("Download failed; the partial file was kept for retry".into());
     }
     if !skip {
-        report("Verifying checksum…".into());
+        report(Update::Status("Verifying checksum…".into()));
         let sums = directory.join(format!("{name}.sums"));
         let fetched = (|| {
             if checksum_url.starts_with("sha256:") {
@@ -549,7 +625,7 @@ fn fetch_iso(
         }
     }
     if name.ends_with(".iso.bz2") {
-        report("Extracting ISO…".into());
+        report(Update::Status("Extracting ISO…".into()));
         let extracted = directory.join(format!("{name}.{}.tmp", std::process::id()));
         let out = match fs::File::create_new(&extracted) {
             Ok(out) => out,
@@ -666,6 +742,7 @@ fn main() {
         devices: list_usb_disks(),
         skip_iso_checksum,
         release_mode: release_repo().is_some(),
+        progress: -1.0,
         iso_names: names.into(),
         iso_icons: icons.into(),
         tool_names: usb::TOOLS

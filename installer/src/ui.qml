@@ -212,6 +212,7 @@ QQC2.ApplicationWindow {
                 QQC2.Button {
                     text: "Refresh"
                     icon.name: "view-refresh"
+                    enabled: !installer.busy
                     onClicked: installer.refresh()
                 }
                 QQC2.Button {
@@ -228,17 +229,24 @@ QQC2.ApplicationWindow {
             Layout.fillWidth: true
             visible: installer.status.length > 0 && !installer.installing
             QQC2.BusyIndicator {
-                running: installer.busy
+                running: installer.busy && installer.progress < 0
                 visible: running
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 24
+            }
+            QQC2.ProgressBar {
+                visible: installer.busy && installer.progress >= 0
+                indeterminate: false
+                value: installer.progress
+                Layout.preferredWidth: 90
+                Accessible.name: "Download progress"
             }
             QQC2.Label {
                 id: statusLabel
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 text: installer.status
-                color: palette.placeholderText
+                color: installer.error ? "#ef4444" : palette.placeholderText
                 elide: Text.ElideRight
             }
             QQC2.Button {
@@ -258,20 +266,22 @@ QQC2.ApplicationWindow {
         focus: true
         visible: installer.installing
         closePolicy: QQC2.Popup.NoAutoClose
-        title: "Installing to USB"
+        title: "Creating USB drive"
         contentItem: ColumnLayout {
             spacing: 16
             QQC2.Label {
                 Layout.fillWidth: true
                 text: installer.status
+                color: installer.error ? "#ef4444" : palette.text
                 wrapMode: Text.WrapAnywhere
             }
             QQC2.ProgressBar {
                 Layout.fillWidth: true
-                indeterminate: installProgress.visible
-                Accessible.name: "USB installation progress"
+                indeterminate: installer.progress < 0
+                value: Math.max(0, installer.progress)
+                Accessible.name: "USB creation progress"
             }
-            Muted { text: "Keep the drive connected until installation finishes." }
+            Muted { text: "Keep the drive connected until creation finishes." }
         }
     }
     QQC2.Dialog {

@@ -96,7 +96,13 @@ fn release_path(version: &str) -> Result<String> {
     Ok(format!("download/{version}"))
 }
 
-pub fn download(repo: &str, version: &str, dir: &Path, assets: &[Asset]) -> Result<()> {
+pub fn download(
+    repo: &str,
+    version: &str,
+    dir: &Path,
+    assets: &[Asset],
+    report: impl Fn(String),
+) -> Result<()> {
     let valid = |part: &str| {
         !part.is_empty()
             && part != "."
@@ -136,6 +142,7 @@ pub fn download(repo: &str, version: &str, dir: &Path, assets: &[Asset]) -> Resu
                 "https://github.com/{repo}/releases/{release}/{name}"
             )))
     };
+    report("Downloading EFI release checksums…".into());
     fetch("SHA256SUMS")?;
     let sums = fs::read_to_string(dir.join("SHA256SUMS"))?;
     let has_archive = sums.lines().any(|line| {
@@ -166,11 +173,14 @@ pub fn download(repo: &str, version: &str, dir: &Path, assets: &[Asset]) -> Resu
         Ok(())
     };
     if has_archive {
+        report(format!("Downloading {EFI_ARCHIVE}…"));
         fetch_verified(EFI_ARCHIVE)?;
+        report("Extracting EFI assets…".into());
         stage_archive(dir, assets)?;
     } else {
         // Older firmware releases published the EFI files individually.
         for (name, _, _) in assets {
+            report(format!("Downloading {name}…"));
             fetch_verified(name)?;
         }
     }
@@ -250,8 +260,14 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
             .ok_or("ISO size overflow")?;
     }
     let capacity: u64 = inspect(&disk, "SIZE", "-bdnro")?.trim().parse()?;
-    if capacity < total.saturating_add(768 * 1024 * 1024) {
-        return Err("Not enough space on the USB drive".into());
+    let required = total.saturating_add(768 * 1024 * 1024);
+    if capacity < required {
+        return Err(format!(
+            "Not enough space: need {:.0} MiB, drive has {:.0} MiB",
+            required as f64 / 1048576.0,
+            capacity as f64 / 1048576.0
+        )
+        .into());
     }
     for (asset, _, _) in &assets {
         if !fs::metadata(dir.join(asset))?.is_file() {
@@ -338,18 +354,38 @@ pub fn write(args: &[std::ffi::OsString]) -> Result<()> {
     }
     for image in images {
         let path = Path::new(image);
-        println!(
-            "progress: Copying {}…",
-            path.file_name().unwrap_or_default().to_string_lossy()
-        );
-        let destination = iso.join(path.file_name().ok_or("Missing ISO filename")?);
-        fs::copy(path, &destination)?;
-        std::os::unix::fs::chown(destination, Some(uid), Some(gid))?;
+        let name = path.file_name().ok_or("Missing ISO filename")?;
+        copy_with_progress(path, &iso.join(name), &name.to_string_lossy())?;
+        std::os::unix::fs::chown(iso.join(name), Some(uid), Some(gid))?;
     }
     std::os::unix::fs::chown(&iso, Some(uid), Some(gid))?;
     println!("progress: Flushing writes and unmounting…");
     data.unmount()?;
     efi.unmount()?;
+    Ok(())
+}
+
+fn copy_with_progress(source: &Path, destination: &Path, name: &str) -> Result<()> {
+    let mut input = fs::File::open(source)?;
+    let total = input.metadata()?.len();
+    let mut output = fs::File::create(destination)?;
+    let mut buffer = vec![0; 1024 * 1024];
+    let mut copied = 0u64;
+    let mut reported = 0u64;
+    println!("progress: Copying {name}…");
+    loop {
+        let read = input.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        output.write_all(&buffer[..read])?;
+        copied += read as u64;
+        let percent = copied * 100 / total.max(1);
+        if percent > reported {
+            println!("progress: Copying {name}… {percent}%");
+            reported = percent;
+        }
+    }
     Ok(())
 }
 
