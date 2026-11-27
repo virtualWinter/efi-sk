@@ -7,6 +7,7 @@ use std::{
 
 use qmetaobject::{QObject, QObjectPinned, QString, QmlEngine};
 
+mod download;
 mod usb;
 
 qmetaobject::qrc!(register_iso_icons,
@@ -281,7 +282,7 @@ impl Installer {
                     "{label} downloaded (checksum skipped)"
                 ))),
                 Ok(_) => report(Update::Status(format!("{label} downloaded and verified"))),
-                Err(error) => report(Update::Error(error)),
+                Err(error) => report(Update::Error(format!("{label}: {error}"))),
             }
         });
     }
@@ -497,26 +498,6 @@ fn image_path(url: &str, skip: bool) -> PathBuf {
     dir.join(name.strip_suffix(".bz2").unwrap_or(name))
 }
 
-fn remote_size(url: &str) -> Option<u64> {
-    let output = Command::new("curl")
-        .args(["--silent", "--head", "--location", "--max-time", "30"])
-        .arg(url)
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let text = String::from_utf8_lossy(&output.stdout);
-    text.lines()
-        .filter_map(|line| {
-            let (name, value) = line.split_once(':')?;
-            name.eq_ignore_ascii_case("content-length")
-                .then(|| value.trim().parse::<u64>().ok())
-                .flatten()
-        })
-        .next_back()
-}
-
 fn fetch_iso(
     label: &str,
     url: &str,
@@ -532,95 +513,43 @@ fn fetch_iso(
     }
     let name = image_filename(url);
     let partial = directory.join(format!("{name}.part"));
-    let total = remote_size(url);
+    let agent = download::agent();
     report(Update::Progress(-1.0));
-    let result = Command::new("curl")
-        .args([
-            "--silent",
-            "--show-error",
-            "--fail",
-            "--location",
-            "--retry",
-            "3",
-            "--continue-at",
-            "-",
-        ])
-        .arg("--output")
-        .arg(&partial)
-        .arg(url)
-        .spawn()
-        .and_then(|mut child| {
-            loop {
-                if let Some(status) = child.try_wait()? {
-                    break Ok(status);
-                }
-                let bytes = fs::metadata(&partial).map_or(0, |meta| meta.len());
-                if let Some(total) = total.filter(|total| *total > 0) {
-                    report(Update::Progress(
-                        (bytes as f64 / total as f64).clamp(0.0, 1.0),
-                    ));
-                    report(Update::Status(format!(
-                        "Downloading {label}: {:.1} of {:.1} MiB",
-                        bytes as f64 / 1048576.0,
-                        total as f64 / 1048576.0
-                    )));
-                } else {
-                    report(Update::Status(format!(
-                        "Downloading {label}: {:.1} MiB received",
-                        bytes as f64 / 1048576.0
-                    )));
-                }
-                std::thread::sleep(std::time::Duration::from_millis(500));
+    download::download(
+        &agent,
+        url,
+        &partial,
+        |message| report(Update::Status(message.to_string())),
+        |received, total| match total.filter(|total| *total > 0) {
+            Some(total) => {
+                report(Update::Progress(
+                    (received as f64 / total as f64).clamp(0.0, 1.0),
+                ));
+                report(Update::Status(format!(
+                    "Downloading {label}: {:.1} of {:.1} MiB",
+                    received as f64 / 1048576.0,
+                    total as f64 / 1048576.0
+                )));
             }
-        });
+            None => report(Update::Status(format!(
+                "Downloading {label}: {:.1} MiB received",
+                received as f64 / 1048576.0
+            ))),
+        },
+    )
+    .map_err(|error| format!("Download failed: {error}"))?;
     report(Update::Progress(-1.0));
-    if !result.is_ok_and(|status| status.success()) {
-        return Err("Download failed; the partial file was kept for retry".into());
-    }
     if !skip {
         report(Update::Status("Verifying checksum…".into()));
-        let sums = directory.join(format!("{name}.sums"));
-        let fetched = (|| {
-            if checksum_url.starts_with("sha256:") {
-                return Ok(true);
-            }
-            Command::new("curl")
-                .args([
-                    "--fail",
-                    "--location",
-                    "--retry",
-                    "3",
-                    "--silent",
-                    "--show-error",
-                ])
-                .arg("--output")
-                .arg(&sums)
-                .arg(checksum_url)
-                .status()
-                .map(|status| status.success())
-        })();
-        let actual = Command::new("sha256sum").arg(&partial).output();
-        let digest = |output: std::io::Result<std::process::Output>| {
-            let output = output.ok().filter(|o| o.status.success())?;
-            String::from_utf8(output.stdout)
-                .ok()?
-                .split_whitespace()
-                .find(|word| word.len() == 64 && word.bytes().all(|b| b.is_ascii_hexdigit()))
-                .map(str::to_ascii_lowercase)
-        };
         let expected = if let Some(pinned) = checksum_url.strip_prefix("sha256:") {
-            Some(pinned.to_owned())
+            pinned.to_owned()
         } else {
-            digest(
-                Command::new("grep")
-                    .args(["-E", "--"])
-                    .arg(pattern)
-                    .arg(&sums)
-                    .output(),
-            )
+            let sums = download::fetch_text(&agent, checksum_url)?;
+            download::expected_digest(&sums, pattern)
+                .ok_or_else(|| format!("No checksum found for {name}"))?
         };
-        let valid = fetched.unwrap_or(false) && expected.is_some() && expected == digest(actual);
-        if !valid {
+        let actual = download::sha256_file(&partial)?;
+        if !actual.eq_ignore_ascii_case(&expected) {
             return Err("Checksum verification failed; retry the download".into());
         }
     }

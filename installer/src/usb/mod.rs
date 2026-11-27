@@ -118,31 +118,26 @@ pub fn download(
         return Err("Expected a GitHub repository in OWNER/REPO form".into());
     }
     let release = release_path(version)?;
-    let fetch = |name: &str| {
-        run(Command::new("curl")
-            .args([
-                "--fail",
-                "--silent",
-                "--show-error",
-                "--location",
-                "--proto",
-                "=https",
-                "--proto-redir",
-                "=https",
-                "--connect-timeout",
-                "15",
-                "--max-time",
-                "180",
-                "--retry",
-                "2",
-            ])
-            .arg("--output")
-            .arg(dir.join(name))
-            .arg(format!(
-                "https://github.com/{repo}/releases/{release}/{name}"
-            )))
+    let agent = crate::download::agent();
+    let fetch = |name: &str| -> Result<()> {
+        let url = format!("https://github.com/{repo}/releases/{release}/{name}");
+        crate::download::download(
+            &agent,
+            &url,
+            &dir.join(name),
+            |_| {},
+            |received, total| {
+                if let Some(total) = total.filter(|total| *total > 0) {
+                    report(format!(
+                        "Downloading {name}... {:.0}%",
+                        received as f64 * 100.0 / total as f64
+                    ));
+                }
+            },
+        )
+        .map_err(Into::into)
     };
-    report("Downloading EFI release checksums…".into());
+    report("Downloading EFI release checksums...".into());
     fetch("SHA256SUMS")?;
     let sums = fs::read_to_string(dir.join("SHA256SUMS"))?;
     let has_archive = sums.lines().any(|line| {
@@ -150,24 +145,11 @@ pub fn download(
             .is_some_and(|(_, file)| file == EFI_ARCHIVE)
     });
     let fetch_verified = |name: &str| -> Result<()> {
-        let mut matches = sums.lines().filter_map(|line| {
-            let (hash, file) = line.split_once("  ")?;
-            (file == name && hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit()))
-                .then_some(hash)
-        });
-        let expected = matches
-            .next()
+        let expected = crate::download::expected_digest(&sums, &regex::escape(name))
             .ok_or_else(|| format!("Missing release checksum: {name}"))?;
-        if matches.next().is_some() {
-            return Err(format!("Duplicate release checksum: {name}").into());
-        }
         fetch(name)?;
-        let actual = output(Command::new("sha256sum").arg(dir.join(name)))?;
-        if !actual
-            .split_whitespace()
-            .next()
-            .is_some_and(|hash| hash.eq_ignore_ascii_case(expected))
-        {
+        let actual = crate::download::sha256_file(&dir.join(name))?;
+        if !actual.eq_ignore_ascii_case(&expected) {
             return Err(format!("Checksum mismatch: {name}").into());
         }
         Ok(())
@@ -476,6 +458,23 @@ mod tests {
             selected_assets("0,1,2,3,4,5").unwrap(),
             [PICKER, SCT, SHELL]
         );
+    }
+
+    #[test]
+    #[ignore]
+    fn downloads_a_release() -> Result<()> {
+        let dir = Temp::new()?;
+        let result = download(
+            "virtualWinter/efi-sk",
+            "latest",
+            &dir.0,
+            &[PICKER],
+            |message| eprintln!("{message}"),
+        );
+        for name in [PICKER.0, "SHA256SUMS", EFI_ARCHIVE] {
+            let _ = fs::remove_file(dir.0.join(name));
+        }
+        result
     }
 
     #[test]

@@ -6,3 +6,6 @@ license = "ISC"
 
 [dependencies]
 qmetaobject = "0.2.10"
+regex = "1"
+sha2 = "0.10"
+ureq = "3.5.2"

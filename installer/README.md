@@ -9,8 +9,9 @@ Use the Qt installer to prepare an EFI Swiss Knife USB drive on Linux. Run it as
 
 On Debian/Ubuntu, install `qt6-base-dev` and `qt6-declarative-dev`.
 
-On Linux, downloads use `curl` and `sha256sum`. USB creation requires
-`pkexec`, util-linux, udev, `mkfs.fat`, and `mkfs.ext4`.
+On Linux, USB creation requires `pkexec`, util-linux, udev, `mkfs.fat`, and
+`mkfs.ext4`. Downloads and checksum verification are handled inside the
+installer.
 Downloading the OPNsense DVD also requires `bzip2`.
 
 To use the latest published picker and EFI tools, run:
