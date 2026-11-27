@@ -41,6 +41,18 @@ install `qemu-ui-gtk` on Arch. To run headless, pass `-display none`.
 Set `ISO_DIR` to test a different directory of ISOs, or `QEMU_MEMORY`
 to change the default 4 GiB of guest RAM.
 
+### Headless smoke test
+
+`tools/smoke-test-qemu.sh` builds the picker with the `text-mode`
+feature, boots it from a minimal EFI system partition with no display
+and no ISO files, and fails unless the menu reaches the serial console.
+It needs QEMU, OVMF, mtools, and the Rust toolchain, but neither root
+nor network access, so it is the quickest check that a change still
+boots. The graphics build only draws to GOP, which no headless run can
+observe, so the assertion uses a text-mode build instead. The serial
+log of the last run is kept in `build/qemu-smoke/serial.log`. Set
+`SMOKE_TIMEOUT` to change the 120 second deadline.
+
 ### Drop-in ISO smoke test
 
 Set `ISO_DIR` to a directory containing just the checksum-verified,
@@ -55,6 +67,52 @@ installer reads its media before proceeding to disk partitioning:
 - **Proxmox VE:** reach the installer UI after it mounts its base system.
   `[EFI SK] Reopened installation media` alone confirms the USB handoff,
   but not that the installer payload was readable.
+
+## Booting an ISO or a disk image directly
+
+`tools/boot-iso-qemu.sh ISO` boots an ISO under OVMF without the
+picker, which is the quickest way to check that an installer itself
+starts. Pass `--usb` to attach it as USB storage instead of a SATA
+CD-ROM.
+
+`tools/boot-image-qemu.sh IMAGE` boots a raw disk image, for example
+`build/qemu-cache/usb.img` or the file written by the test below. The
+image is attached as USB storage; pass `--disk` to attach it as a SATA
+disk. Guest writes go to a temporary overlay that is discarded when
+QEMU exits unless you pass `--read-write`.
+
+Both open a GTK window. Pass `-display none`, `-nographic`, or `-vnc`
+to run without one, in which case the serial console goes to the
+terminal. Every other argument is forwarded to `qemu-system-x86_64`, so
+`-nic none` disables the default user-mode networking.
+
+## Installer end-to-end test
+
+`tools/test-installer-qemu.sh` exercises the real USB writer without a
+physical drive. It loads the `dummy_hcd` and `g_mass_storage` kernel
+modules so that a file appears to `lsblk` as a writable whole USB disk,
+runs the installer's `--write-usb` writer against it, unloads the
+modules, and boots the written image to assert the picker's menu on the
+serial console.
+
+The two modules must be available for the running kernel, and the
+script asks for a sudo password to load them and to run the writer. It
+never touches a physical drive. Without arguments it uses the smallest
+ISO in `isos/`, which must be one the picker lists
+([supported ISOs](profiles.md)). The virtual disk is the size of the
+ISOs plus 1 GiB, and the work directory is removed when the run ends.
+
+A desktop environment that automounts new USB devices can make the
+writer refuse the disk; unmount it or turn automounting off first. The
+written disk carries a text-mode picker so the final assertion can read
+the menu from serial.
+
+Set `SKIP_BOOT=1` to stop after the writer finishes, `EXPECT_ISO=0` if
+the picker is not expected to list the ISO, `EXCLUDE_TOOLS` to a
+comma-separated list of `usb::TOOLS` indices to leave out (UEFI SCT is
+index 6, and `bsdtar` is then not required), `KEEP_IMAGE=1` to keep the
+work directory for inspection, and `BOOT_TIMEOUT` to change the 120
+second deadline.
 
 ## Mouse input
 
