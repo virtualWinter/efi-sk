@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Downloads the ISOs used to test the generic Linux fallback, verifies them
-# against the published checksums and moves them into isos/.  Interrupted
+# against the published checksums and moves them into isos/. Interrupted
 # transfers resume on the next run.
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
